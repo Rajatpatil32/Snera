@@ -3,28 +3,41 @@ const slugify = require('slugify');
 const Product = require('../models/Product');
 const auth    = require('../middleware/auth');
 
-// GET /api/products — public, with filters
+// ─── STATIC NAMED ROUTES FIRST (before /:slug wildcard) ──────────────────────
+
+// GET /api/products/admin/all — admin: all products including inactive
+router.get('/admin/all', auth, async (req, res) => {
+  try {
+    const products = await Product.find().sort({ createdAt: -1 });
+    res.json({ products, total: products.length });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── PUBLIC ───────────────────────────────────────────────────────────────────
+
+// GET /api/products — list with filters
 router.get('/', async (req, res) => {
   try {
     const { category, gender, featured, limit = 20, page = 1 } = req.query;
     const filter = { isActive: true };
-    if (category) filter.category = category;
-    if (gender)   filter.gender   = gender;
+    if (category) filter.category   = category;
+    if (gender)   filter.gender     = gender;
     if (featured) filter.isFeatured = true;
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const [products, total] = await Promise.all([
       Product.find(filter).sort({ createdAt: -1 }).skip(skip).limit(parseInt(limit)),
-      Product.countDocuments(filter)
+      Product.countDocuments(filter),
     ]);
-
     res.json({ products, total, page: parseInt(page), pages: Math.ceil(total / parseInt(limit)) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// GET /api/products/:slug — public, single product
+// GET /api/products/:slug — single product by slug
 router.get('/:slug', async (req, res) => {
   try {
     const product = await Product.findOne({ slug: req.params.slug, isActive: true });
@@ -35,25 +48,23 @@ router.get('/:slug', async (req, res) => {
   }
 });
 
-// POST /api/products — admin only
+// ─── ADMIN ────────────────────────────────────────────────────────────────────
+
+// POST /api/products — create
 router.post('/', auth, async (req, res) => {
   try {
     const { name } = req.body;
-    const slug = slugify(name, { lower: true, strict: true });
-    // Ensure slug uniqueness
-    let finalSlug = slug;
-    let count = 1;
-    while (await Product.findOne({ slug: finalSlug })) {
-      finalSlug = `${slug}-${count++}`;
-    }
-    const product = await Product.create({ ...req.body, slug: finalSlug });
+    const base = slugify(name, { lower: true, strict: true });
+    let slug = base; let n = 1;
+    while (await Product.findOne({ slug })) slug = `${base}-${n++}`;
+    const product = await Product.create({ ...req.body, slug });
     res.status(201).json(product);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
 
-// PUT /api/products/:id — admin only
+// PUT /api/products/:id — update
 router.put('/:id', auth, async (req, res) => {
   try {
     const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
@@ -64,21 +75,11 @@ router.put('/:id', auth, async (req, res) => {
   }
 });
 
-// DELETE /api/products/:id — admin only (soft delete)
+// DELETE /api/products/:id — soft delete
 router.delete('/:id', auth, async (req, res) => {
   try {
     await Product.findByIdAndUpdate(req.params.id, { isActive: false });
     res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// GET /api/products/admin/all — admin sees all including inactive
-router.get('/admin/all', auth, async (req, res) => {
-  try {
-    const products = await Product.find().sort({ createdAt: -1 });
-    res.json({ products, total: products.length });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

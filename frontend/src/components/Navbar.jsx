@@ -39,21 +39,9 @@ export default function Navbar() {
           padding:'0 clamp(1.25rem,4vw,3rem)'
         }}>
           <Link to="/" className="nav-logo" style={{
-  display:'flex',
-  alignItems:'center'
-}}>
-  <img 
-    src="/images/logo1.png"
-    alt="SNERA"
-    style={{
-      height:'68px',   // 👈 adjust if needed
-      width:'auto',
-    objectFit:'contain',
-
-    filter:'brightness(0) saturate(100%)'
-    }}
-  />
-</Link>
+            fontFamily:'var(--serif)',fontSize:'1.6rem',fontWeight:500,
+            letterSpacing:'.2em',textTransform:'uppercase',color:'var(--ink)'
+          }}>SNERA</Link>
 
           {/* Desktop nav */}
           <ul style={{display:'flex',alignItems:'center',gap:'2.5rem'}} className="nav-menu-desktop">
@@ -62,7 +50,6 @@ export default function Navbar() {
                 <NavLink to={to} style={({ isActive }) => ({
                   fontSize:'.66rem',letterSpacing:'.18em',textTransform:'uppercase',
                   fontWeight:400,color: isActive ? 'var(--ink)' : 'var(--stone2)',
-
                   position:'relative',paddingBottom:'2px',
                   transition:'color var(--t)',
                   borderBottom: isActive ? '1px solid var(--ink)' : '1px solid transparent'

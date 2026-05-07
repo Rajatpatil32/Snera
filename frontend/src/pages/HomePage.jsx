@@ -130,7 +130,7 @@ export default function HomePage() {
           }}>
             {/* Image */}
             <img
-              src="/images/hero.png"   // 👈 add your image here
+              src="https://suvidhasetu.netraa.co.in/uploads/hero.png"   // 👈 add your image here
               alt=""
               style={{
                 width: '100%',
@@ -237,8 +237,8 @@ paddingLeft:'20%',
         borderTop: '1px solid var(--sand)', borderBottom: '1px solid var(--sand)'
       }} id="category">
         {[
-          { label: 'Collection', title: 'For\nHim', glyph: 'M', link: '/shop?gender=Men', linkTxt: "Shop Men's", image: '/images/men.png' },
-          { label: 'Collection', title: 'For\nHer', glyph: 'W', link: '/shop?gender=Women', linkTxt: "Shop Women's", image: '/images/women.png' }
+          { label: 'Collection', title: 'For\nHim', glyph: 'M', link: '/shop?gender=Men', linkTxt: "Shop Men's", image: 'https://suvidhasetu.netraa.co.in/uploads/men.png' },
+          { label: 'Collection', title: 'For\nHer', glyph: 'W', link: '/shop?gender=Women', linkTxt: "Shop Women's", image: 'https://suvidhasetu.netraa.co.in/uploads/women.png' }
         ].map((cat, i) => (
           <Link to={cat.link}
             key={i}

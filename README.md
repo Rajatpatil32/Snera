@@ -192,5 +192,3 @@ Use MongoDB Atlas (free tier works for MVP).
 | `RAZORPAY_KEY_SECRET` | Razorpay secret (when ready)         | —                             |
 | `FRONTEND_URL`        | CORS origin                          | http://localhost:3000         |
 | `REACT_APP_API_URL`   | API base URL (frontend)              | /api (proxied in dev)         |
-#   S n e r a  
- 

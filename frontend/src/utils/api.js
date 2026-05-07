@@ -24,9 +24,11 @@ export const BKGS = [
   '#EDE8E0','#E6E1D9','#EBE6DE','#E9E4DC','#ECDDE5','#E4E0D7'
 ];
 
-export const getImageUrl = (path) => {
-  if (!path) return null;
-  if (path.startsWith('http')) return path;
+export const getImageUrl = (p) => {
+  if (!p) return null;
+  // Already a full URL (FTP CDN, http, https)
+  if (p.startsWith('http://') || p.startsWith('https://')) return p;
+  // Local relative path — prepend backend URL
   const base = process.env.REACT_APP_API_URL?.replace('/api', '') || '';
-  return `${base}${path}`;
+  return `${base}${p}`;
 };

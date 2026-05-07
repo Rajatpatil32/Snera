@@ -69,14 +69,10 @@ export default function App() {
 
             {/* ── Admin ── */}
             <Route path="/admin" element={<AdminLoginPage/>}/>
-            <Route path="/admin/dashboard" element={
-              <AdminLayout/>
-            }>
-              {/* Redirect /admin/dashboard to itself (index) */}
-            </Route>
 
             {/* Admin layout with nested routes */}
             <Route path="/admin" element={<AdminLayout/>}>
+              <Route index element={<Navigate to="dashboard" replace/>}/>
               <Route path="dashboard"              element={<AdminDashboard/>}/>
               <Route path="orders"                 element={<AdminOrdersPage/>}/>
               <Route path="orders/:id"             element={<AdminOrderDetailPage/>}/>
