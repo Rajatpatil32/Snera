@@ -68,7 +68,7 @@ export default function App() {
             }/>
 
             {/* ── Admin ── */}
-            <Route path="/admin" element={<AdminLoginPage/>}/>
+            <Route path="/admin/login" element={<AdminLoginPage/>}/>
 
             {/* Admin layout with nested routes */}
             <Route path="/admin" element={<AdminLayout/>}>
