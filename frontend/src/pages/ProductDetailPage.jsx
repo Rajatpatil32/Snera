@@ -80,13 +80,13 @@ export default function ProductDetailPage() {
     dispatch({
       type: 'ADD',
       payload: {
-        product: { ...product, images: images.length ? images : product.images },
+        product: {
+          ...product,
+          // Use active colour's primary image for cart thumbnail
+          images: images.length ? images : product.images,
+        },
         size: selSize,
         qty,
-        // Colour data so cart / checkout can display it
-        colour: activeGroup
-          ? { name: activeGroup.name, hex: activeGroup.hex, image: images[0] || null }
-          : null,
       },
     });
     dispatch({ type: 'OPEN' });
@@ -301,7 +301,7 @@ export default function ProductDetailPage() {
               <div style={{ display:'flex', gap:'1.75rem', flexWrap:'wrap' }}>
                 {[
                   { i:<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>, t:'Ships in 24 hrs' },
-                  { i:<><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></>, t:'30-day returns' },
+                  { i:<><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></>, t:'2-day return' },
                   { i:<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>, t:'Secure checkout' },
                 ].map(({ i, t }) => (
                   <div key={t} style={{ fontSize:'.7rem', color:'var(--stone2)', display:'flex', alignItems:'center', gap:'.38rem' }}>
