@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect, useState, useCallback } from 'react';
 
 const CartContext = createContext();
-
 const initialState = { items: [], isOpen: false };
 
 function cartReducer(state, action) {
@@ -10,21 +9,36 @@ function cartReducer(state, action) {
       return { ...state, items: action.payload };
 
     case 'ADD': {
-      const { product, size, qty = 1 } = action.payload;
-      const key = `${product._id}_${size}`;
+      const { product, size, qty = 1, colour } = action.payload;
+      // Key includes colour so same product in different colours = separate line items
+      const colourKey = colour?.name || '';
+      const key = `${product._id}_${size}_${colourKey}`;
       const exists = state.items.find(i => i.key === key);
+
       if (exists) {
         return {
           ...state,
-          items: state.items.map(i => i.key === key ? { ...i, qty: i.qty + qty } : i)
+          items: state.items.map(i => i.key === key ? { ...i, qty: i.qty + qty } : i),
         };
       }
       return {
         ...state,
         items: [...state.items, {
-          key, id: product._id, name: product.name, price: product.price,
-          size, image: product.images?.[0] || null, glyph: product.glyph || '◈', qty
-        }]
+          key,
+          id:         product._id,
+          name:       product.name,
+          price:      product.price,
+          size,
+          qty,
+          // Colour info (null for products without colour groups)
+          colour:     colour?.name  || null,
+          colourHex:  colour?.hex   || null,
+          // Image: use the active colour's first image, fall back to product primary
+          image:      colour?.image || product.images?.[0] || null,
+          glyph:      product.glyph || '◈',
+          // Measurements entered at checkout (filled later, stored here for order payload)
+          measurements: null,
+        }],
       };
     }
 
@@ -37,7 +51,15 @@ function cartReducer(state, action) {
         ...state,
         items: state.items
           .map(i => i.key === key ? { ...i, qty: i.qty + delta } : i)
-          .filter(i => i.qty > 0)
+          .filter(i => i.qty > 0),
+      };
+    }
+
+    case 'SET_MEASUREMENTS': {
+      const { key, measurements } = action.payload;
+      return {
+        ...state,
+        items: state.items.map(i => i.key === key ? { ...i, measurements } : i),
       };
     }
 
@@ -56,10 +78,10 @@ function cartReducer(state, action) {
 }
 
 export function CartProvider({ children }) {
-  const [state, dispatch] = useReducer(cartReducer, initialState);
+  const [state,  dispatch] = useReducer(cartReducer, initialState);
   const [toasts, setToasts] = useState([]);
 
-  // Load cart from localStorage
+  // Load from localStorage on mount
   useEffect(() => {
     try {
       const saved = localStorage.getItem('snera_cart');
@@ -67,7 +89,7 @@ export function CartProvider({ children }) {
     } catch {}
   }, []);
 
-  // Persist cart to localStorage
+  // Persist to localStorage whenever items change
   useEffect(() => {
     localStorage.setItem('snera_cart', JSON.stringify(state.items));
   }, [state.items]);
@@ -78,8 +100,8 @@ export function CartProvider({ children }) {
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 2800);
   }, []);
 
-  const total = state.items.reduce((sum, i) => sum + i.price * i.qty, 0);
-  const count = state.items.reduce((sum, i) => sum + i.qty, 0);
+  const total = state.items.reduce((s, i) => s + i.price * i.qty, 0);
+  const count = state.items.reduce((s, i) => s + i.qty, 0);
 
   return (
     <CartContext.Provider value={{ ...state, total, count, dispatch, toast, toasts }}>

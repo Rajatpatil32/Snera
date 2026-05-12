@@ -148,18 +148,18 @@ export default function HomePage() {
           </div>
           <div style={{
             position: 'absolute',
-            inset: 6,
+            inset: 1,
             display: 'flex',
             alignItems: 'center',
             justifyContent:'flex-start',
-paddingLeft:'20%',
+paddingRight:'26%',
             pointerEvents: 'none'
           }}>
             <img
               src="/images/logo1.png"
               alt="SNERA"
               style={{
-                width: 'clamp(155px, 18vw, 270px)',
+                width: '800px',
                 opacity: 0.5,
                 objectFit: 'contain'
               }}

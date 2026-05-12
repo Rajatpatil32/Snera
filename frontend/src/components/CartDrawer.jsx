@@ -79,8 +79,16 @@ export default function CartDrawer() {
 
                 {/* Info */}
                 <div>
-                  <div style={{fontSize:'.8rem',fontWeight:500,letterSpacing:'.02em',marginBottom:'.22rem'}}>{item.name}</div>
-                  <div style={{fontSize:'.7rem',color:'var(--stone)',marginBottom:'.55rem'}}>Size: {item.size}</div>
+                  <div style={{fontSize:'.8rem',fontWeight:500,letterSpacing:'.02em',marginBottom:'.18rem'}}>{item.name}</div>
+                  <div style={{fontSize:'.7rem',color:'var(--stone)',marginBottom:'.42rem',display:'flex',flexDirection:'column',gap:'.1rem'}}>
+                    <span>Size: {item.size}</span>
+                    {item.colour && (
+                      <span style={{display:'flex',alignItems:'center',gap:'.35rem'}}>
+                        {item.colourHex && <span style={{width:10,height:10,borderRadius:'50%',background:item.colourHex,border:'1px solid rgba(0,0,0,.18)',display:'inline-block',flexShrink:0}}/>}
+                        {item.colour}
+                      </span>
+                    )}
+                  </div>
                   <div style={{fontSize:'.8rem',fontWeight:500,marginBottom:'.45rem'}}>{fmt(item.price)}</div>
                   {/* Qty control */}
                   <div style={{display:'flex',alignItems:'center',gap:'.45rem'}}>

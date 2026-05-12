@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import API, { fmt } from '../utils/api';
+import API, { fmt, getImageUrl } from '../utils/api';
 import SEOHead from '../components/SEOHead';
 import { useCart } from '../context/CartContext';
 
-const FREE_SHIPPING_THRESHOLD = 999;
-const SHIPPING_FEE = 99;
+const FREE_THRESHOLD = 999;
+const SHIPPING_FEE   = 99;
 
-// ─── Load Razorpay checkout.js once ───────────────────────────────────────────
-function loadRazorpayScript() {
+// ─── Razorpay script loader ───────────────────────────────────────────────────
+function loadRazorpay() {
   return new Promise(resolve => {
-    if (document.getElementById('razorpay-script')) return resolve(true);
+    if (document.getElementById('rzp-script')) return resolve(true);
     const s = document.createElement('script');
-    s.id  = 'razorpay-script';
+    s.id = 'rzp-script';
     s.src = 'https://checkout.razorpay.com/v1/checkout.js';
     s.onload  = () => resolve(true);
     s.onerror = () => resolve(false);
@@ -20,19 +20,183 @@ function loadRazorpayScript() {
   });
 }
 
-// ─── Field component ──────────────────────────────────────────────────────────
+// ─── Size guide / measurement diagram (SVG inline) ───────────────────────────
+function MeasurementGuide() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{ marginBottom: '1rem' }}>
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        style={{
+          display: 'flex', alignItems: 'center', gap: '.5rem',
+          background: 'none', border: 'none', cursor: 'pointer',
+          fontFamily: 'var(--sans)', fontSize: '.68rem', letterSpacing: '.1em',
+          textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500,
+          padding: 0,
+        }}
+      >
+        <svg viewBox="0 0 24 24" style={{ width: 15, height: 15, stroke: 'currentColor', fill: 'none', strokeWidth: 1.6 }}>
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        How to measure yourself {open ? '▲' : '▼'}
+      </button>
+
+      {open && (
+        <div style={{ marginTop: '.85rem', border: '1px solid var(--sand)', background: 'var(--off)', padding: '1.25rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: '1.5rem', alignItems: 'start' }}>
+
+            {/* SVG body measurement diagram */}
+            <svg viewBox="0 0 200 340" style={{ width: '100%', fontFamily: 'var(--sans)' }}>
+              {/* Body silhouette */}
+              <ellipse cx="100" cy="38" rx="26" ry="30" fill="none" stroke="#1C1B18" strokeWidth="1.5"/>
+              <path d="M74 68 C60 80 52 120 54 170 L60 230 L68 280 L80 280 L84 230 L100 190 L116 230 L120 280 L132 280 L140 230 L146 170 C148 120 140 80 126 68"
+                fill="none" stroke="#1C1B18" strokeWidth="1.5"/>
+              {/* Shoulders line */}
+              <line x1="54" y1="90" x2="146" y2="90" stroke="#1C1B18" strokeWidth=".8" strokeDasharray="3,3"/>
+              {/* Chest line */}
+              <line x1="56" y1="115" x2="144" y2="115" stroke="#8B7355" strokeWidth="1.2" strokeDasharray="4,2"/>
+              {/* Waist line */}
+              <line x1="60" y1="148" x2="140" y2="148" stroke="#8B7355" strokeWidth="1.2" strokeDasharray="4,2"/>
+              {/* Hip line */}
+              <line x1="55" y1="178" x2="145" y2="178" stroke="#8B7355" strokeWidth="1.2" strokeDasharray="4,2"/>
+
+              {/* Height arrow */}
+              <line x1="28" y1="10" x2="28" y2="295" stroke="#1C1B18" strokeWidth=".8"/>
+              <polygon points="28,6 25,14 31,14" fill="#1C1B18"/>
+              <polygon points="28,299 25,291 31,291" fill="#1C1B18"/>
+              <text x="8" y="155" fontSize="7" fill="#1C1B18" transform="rotate(-90 8 155)" textAnchor="middle">Height</text>
+
+              {/* Chest arrow */}
+              <line x1="150" y1="115" x2="170" y2="115" stroke="#8B7355" strokeWidth=".8"/>
+              <text x="172" y="118" fontSize="7.5" fill="#8B7355">Chest</text>
+
+              {/* Waist arrow */}
+              <line x1="143" y1="148" x2="170" y2="148" stroke="#8B7355" strokeWidth=".8"/>
+              <text x="172" y="151" fontSize="7.5" fill="#8B7355">Waist</text>
+
+              {/* Hip arrow */}
+              <line x1="148" y1="178" x2="170" y2="178" stroke="#8B7355" strokeWidth=".8"/>
+              <text x="172" y="181" fontSize="7.5" fill="#8B7355">Hips</text>
+
+              {/* Shoulder arrow */}
+              <line x1="147" y1="90" x2="170" y2="90" stroke="#1C1B18" strokeWidth=".8"/>
+              <text x="172" y="93" fontSize="7.5" fill="#1C1B18">Shoulder</text>
+
+              {/* Inseam line */}
+              <line x1="100" y1="185" x2="100" y2="280" stroke="#1C1B18" strokeWidth=".8" strokeDasharray="3,2"/>
+              <text x="49" y="298" fontSize="7" fill="#1C1B18">Inseam</text>
+              <line x1="80" y1="185" x2="120" y2="185" stroke="#1C1B18" strokeWidth=".6"/>
+            </svg>
+
+            {/* Instructions */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <p style={{ fontSize: '.72rem', color: 'var(--stone2)', lineHeight: 1.75, margin: 0 }}>
+                Stand straight in fitted clothes. Use a soft measuring tape and measure in centimetres (cm).
+              </p>
+              {[
+                ['Chest',    'Measure around the fullest part of your chest, keeping the tape parallel to the floor.'],
+                ['Waist',    'Measure around your natural waistline — the narrowest part of your torso.'],
+                // ['Hips',     'Measure around the fullest part of your hips, about 20 cm below your waistline.'],
+                ['Shoulder', 'Measure across your back from the edge of one shoulder to the other.'],
+                ['Height',   'Stand without shoes against a wall. Measure from the floor to the top of your head.'],
+                // ['Inseam',   'Measure from your crotch to the floor (inside leg length).'],
+              ].map(([label, desc]) => (
+                <div key={label}>
+                  <div style={{ fontSize: '.65rem', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 600, marginBottom: '.2rem' }}>{label}</div>
+                  <div style={{ fontSize: '.72rem', color: 'var(--stone2)', lineHeight: 1.65 }}>{desc}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Measurement input row for one cart item ──────────────────────────────────
+function MeasurementRow({ item, onChange }) {
+  const m = item.measurements || {};
+  const fields = [
+    { key: 'chest',    label: 'Chest',    unit: 'cm', placeholder: '94' },
+    { key: 'waist',    label: 'Waist',    unit: 'cm', placeholder: '80' },
+    // { key: 'hips',     label: 'Hips',     unit: 'cm', placeholder: '96' },
+    { key: 'shoulder', label: 'Shoulder', unit: 'cm', placeholder: '44' },
+    { key: 'height',   label: 'Height',   unit: 'cm', placeholder: '175' },
+    // { key: 'inseam',   label: 'Inseam',   unit: 'cm', placeholder: '80' },
+  ];
+
+  return (
+    <div style={{ padding: '1rem', background: 'var(--off)', border: '1px solid var(--sand)', marginBottom: '.85rem' }}>
+      {/* Item header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '.85rem' }}>
+        {/* Image */}
+        <div style={{ width: 44, height: 58, background: 'var(--sand)', flexShrink: 0, overflow: 'hidden' }}>
+          {item.image
+            ? <img src={getImageUrl(item.image)} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
+            : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--serif)', fontSize: '1.2rem', color: 'rgba(28,27,24,.2)' }}>{item.glyph}</div>
+          }
+        </div>
+
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: '.8rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginTop: '.18rem', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '.68rem', color: 'var(--stone)' }}>Size: {item.size}</span>
+            {item.colour && (
+              <>
+                <span style={{ color: 'var(--sand2)' }}>·</span>
+                {item.colourHex && <span style={{ width: 10, height: 10, borderRadius: '50%', background: item.colourHex, border: '1px solid rgba(0,0,0,.18)', display: 'inline-block', flexShrink: 0 }}/>}
+                <span style={{ fontSize: '.68rem', color: 'var(--stone)' }}>{item.colour}</span>
+              </>
+            )}
+            {item.qty > 1 && <><span style={{ color: 'var(--sand2)' }}>·</span><span style={{ fontSize: '.68rem', color: 'var(--stone)' }}>Qty: {item.qty}</span></>}
+          </div>
+        </div>
+
+        <div style={{ fontSize: '.82rem', fontWeight: 600, flexShrink: 0 }}>{fmt(item.price * item.qty)}</div>
+      </div>
+
+      {/* Measurement inputs grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '.5rem' }}>
+        {fields.map(({ key, label, unit, placeholder }) => (
+          <div key={key}>
+            <label style={{ fontSize: '.55rem', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--stone)', display: 'block', marginBottom: '.22rem' }}>
+              {label}
+            </label>
+            <div style={{ position: 'relative' }}>
+              <input
+                type="number"
+                value={m[key] || ''}
+                onChange={e => onChange(item.key, { ...m, [key]: e.target.value })}
+                placeholder={placeholder}
+                min="1"
+                max="300"
+                style={{
+                  width: '100%', border: '1px solid var(--sand)',
+                  padding: '.45rem .55rem', paddingRight: '1.8rem',
+                  fontFamily: 'var(--sans)', fontSize: '.72rem',
+                  color: 'var(--ink)', background: 'var(--white)', outline: 'none',
+                }}
+              />
+              <span style={{ position: 'absolute', right: '.45rem', top: '50%', transform: 'translateY(-50%)', fontSize: '.58rem', color: 'var(--stone)' }}>{unit}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Field ────────────────────────────────────────────────────────────────────
 function Field({ label, name, value, onChange, type = 'text', required, placeholder, error }) {
   return (
     <div className="form-group">
-      <label className="form-label" htmlFor={name}>
-        {label}{required && ' *'}
-      </label>
+      <label className="form-label" htmlFor={name}>{label}{required && ' *'}</label>
       <input
-        id={name} name={name} type={type}
-        value={value}
+        id={name} name={name} type={type} value={value}
         onChange={e => onChange(name, e.target.value)}
-        required={required}
-        placeholder={placeholder}
+        required={required} placeholder={placeholder}
         className="form-input"
         style={error ? { borderColor: 'var(--error)' } : {}}
       />
@@ -46,32 +210,34 @@ export default function CheckoutPage() {
   const { items, total, dispatch, toast } = useCart();
   const navigate = useNavigate();
 
-  const shipping   = total >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
+  const shipping   = total >= FREE_THRESHOLD ? 0 : SHIPPING_FEE;
   const grandTotal = total + shipping;
 
   const [form, setForm] = useState({
-    name:'', email:'', phone:'',
-    line1:'', line2:'', city:'', state:'', pincode:'',
+    name: '', email: '', phone: '',
+    line1: '', line2: '', city: '', state: '', pincode: '',
   });
-  const [payMethod,  setPayMethod]  = useState('razorpay'); // 'razorpay' | 'cod'
+  const [payMethod,  setPayMethod]  = useState('razorpay');
   const [submitting, setSubmitting] = useState(false);
   const [errors,     setErrors]     = useState({});
   const [rzpLoaded,  setRzpLoaded]  = useState(false);
 
-  // Pre-load Razorpay script
-  useEffect(() => {
-    loadRazorpayScript().then(setRzpLoaded);
-  }, []);
+  useEffect(() => { loadRazorpay().then(setRzpLoaded); }, []);
 
   const setField = (name, val) => {
     setForm(f => ({ ...f, [name]: val }));
     if (errors[name]) setErrors(e => ({ ...e, [name]: '' }));
   };
 
+  // Measurements per item
+  const setMeasurements = (key, measurements) => {
+    dispatch({ type: 'SET_MEASUREMENTS', payload: { key, measurements } });
+  };
+
   const validate = () => {
     const e = {};
     if (!form.name.trim())  e.name  = 'Full name is required';
-    if (!form.email.trim()) e.email = 'Email address is required';
+    if (!form.email.trim()) e.email = 'Email is required';
     if (!/^\d{10}$/.test(form.phone.trim())) e.phone = 'Enter a valid 10-digit phone number';
     if (!form.line1.trim()) e.line1   = 'Address line 1 is required';
     if (!form.city.trim())  e.city    = 'City is required';
@@ -81,149 +247,101 @@ export default function CheckoutPage() {
     return Object.keys(e).length === 0;
   };
 
-  // ─── Build order payload ────────────────────────────────────────────────────
   const buildOrderPayload = (method) => ({
     customer: { name: form.name, email: form.email, phone: form.phone },
     address:  { line1: form.line1, line2: form.line2, city: form.city, state: form.state, pincode: form.pincode },
-    items:    items.map(i => ({ name: i.name, size: i.size, price: i.price, qty: i.qty, image: i.image })),
-    subtotal: total,
+    items:    items.map(i => ({
+      name:         i.name,
+      size:         i.size,
+      price:        i.price,
+      qty:          i.qty,
+      image:        i.image,
+      colour:       i.colour  || null,
+      colourHex:    i.colourHex || null,
+      measurements: i.measurements || null,
+    })),
+    subtotal:    total,
     shippingFee: shipping,
-    total:    grandTotal,
-    payment:  { method, status: 'pending' },
+    total:       grandTotal,
+    payment:     { method, status: 'pending' },
   });
 
-  // ─── Handle submit ──────────────────────────────────────────────────────────
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validate()) return;
-
-    if (payMethod === 'cod') {
-      await handleCOD();
-    } else {
-      await handleRazorpay();
-    }
-  };
-
-  // ─── COD flow ──────────────────────────────────────────────────────────────
+  // ── COD ────────────────────────────────────────────────────────────────────
   const handleCOD = async () => {
     setSubmitting(true);
     try {
       const r = await API.post('/orders', buildOrderPayload('cod'));
       dispatch({ type: 'CLEAR' });
-      toast('Order placed successfully!');
+      toast('Order placed!');
       navigate(`/order-success?order=${r.data.order.orderNumber}`);
     } catch (err) {
       toast(err.response?.data?.error || 'Something went wrong. Please try again.');
-    } finally {
-      setSubmitting(false);
-    }
+    } finally { setSubmitting(false); }
   };
 
-  // ─── Razorpay flow ─────────────────────────────────────────────────────────
+  // ── Razorpay ───────────────────────────────────────────────────────────────
   const handleRazorpay = async () => {
-    if (!rzpLoaded) {
-      toast('Payment gateway loading… please try again in a moment.');
-      return;
-    }
-
+    if (!rzpLoaded) { toast('Payment gateway loading… try again in a moment.'); return; }
     setSubmitting(true);
     let createdOrder = null;
-
     try {
-      // 1. Create order record in DB (status: pending)
-      const orderRes = await API.post('/orders', buildOrderPayload('razorpay'));
-      createdOrder   = orderRes.data.order;
+      const orderRes  = await API.post('/orders', buildOrderPayload('razorpay'));
+      createdOrder    = orderRes.data.order;
+      const rzpRes    = await API.post('/orders/payment/create', { amount: grandTotal, receipt: createdOrder.orderNumber });
 
-      // 2. Create Razorpay payment order
-      const rzpRes = await API.post('/orders/payment/create', {
-        amount:  grandTotal,
-        receipt: createdOrder.orderNumber,
-      });
-
-      // 3. Open Razorpay checkout modal
       const options = {
         key:         rzpRes.data.key,
-        amount:      rzpRes.data.amount,          // paise
+        amount:      rzpRes.data.amount,
         currency:    rzpRes.data.currency,
         name:        'SNERA',
         description: `Order ${createdOrder.orderNumber}`,
         order_id:    rzpRes.data.id,
-        prefill: {
-          name:    form.name,
-          email:   form.email,
-          contact: form.phone,
-        },
-        notes: { orderNumber: createdOrder.orderNumber },
-        theme: { color: '#1C1B18' },
-
-        // ── Payment success ──
+        prefill:     { name: form.name, email: form.email, contact: form.phone },
+        theme:       { color: '#1C1B18' },
         handler: async (response) => {
           try {
             setSubmitting(true);
-            const verifyRes = await API.post('/orders/payment/verify', {
+            const vRes = await API.post('/orders/payment/verify', {
               razorpayOrderId:   response.razorpay_order_id,
               razorpayPaymentId: response.razorpay_payment_id,
               razorpaySignature: response.razorpay_signature,
               orderId:           createdOrder._id,
             });
-
-            if (verifyRes.data.success) {
+            if (vRes.data.success) {
               dispatch({ type: 'CLEAR' });
-              toast('Payment successful! Order confirmed.');
+              toast('Payment successful!');
               navigate(`/order-success?order=${createdOrder.orderNumber}`);
-            } else {
-              toast('Payment verification failed. Contact support.');
-            }
-          } catch {
-            toast('Payment verification failed. Please contact support with your order number: ' + createdOrder.orderNumber);
-          } finally {
-            setSubmitting(false);
-          }
+            } else { toast('Verification failed. Contact support.'); }
+          } catch { toast('Verification failed. Order: ' + createdOrder.orderNumber); }
+          finally { setSubmitting(false); }
         },
-
-        // ── Modal dismissed ──
-        modal: {
-          ondismiss: () => {
-            setSubmitting(false);
-            toast('Payment cancelled. Your order is saved — you can retry.');
-          },
-        },
+        modal: { ondismiss: () => { setSubmitting(false); toast('Payment cancelled. Order saved — you can retry.'); } },
       };
-
       const rzp = new window.Razorpay(options);
-
-      // Handle payment failure within modal
-      rzp.on('payment.failed', (response) => {
-        console.error('Razorpay payment failed:', response.error);
-        toast(`Payment failed: ${response.error.description}. Please try again.`);
-        setSubmitting(false);
-      });
-
+      rzp.on('payment.failed', r => { toast(`Payment failed: ${r.error.description}`); setSubmitting(false); });
       rzp.open();
     } catch (err) {
-      // If Razorpay order creation fails, still keep the DB order (user can contact support)
-      const msg = err.response?.data?.error || 'Payment gateway error. Please try again.';
-      toast(msg);
+      toast(err.response?.data?.error || 'Payment gateway error. Please try again.');
       setSubmitting(false);
     }
   };
 
-  // ─── Empty cart guard ───────────────────────────────────────────────────────
-  if (items.length === 0) {
-    return (
-      <div style={{ paddingTop: 'var(--nav-h)', textAlign: 'center', padding: '8rem 2rem' }}>
-        <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.8rem', fontWeight: 300, marginBottom: '1rem' }}>
-          Your cart is empty
-        </h2>
-        <Link to="/shop" className="btn btn-dark">Continue Shopping</Link>
-      </div>
-    );
-  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validate()) return;
+    payMethod === 'cod' ? await handleCOD() : await handleRazorpay();
+  };
 
-  // ─── Render ─────────────────────────────────────────────────────────────────
+  if (items.length === 0) return (
+    <div style={{ paddingTop: 'var(--nav-h)', textAlign: 'center', padding: '8rem 2rem' }}>
+      <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.8rem', fontWeight: 300, marginBottom: '1rem' }}>Your cart is empty</h2>
+      <Link to="/shop" className="btn btn-dark">Continue Shopping</Link>
+    </div>
+  );
+
   return (
     <>
-      <SEOHead title="Checkout — SNERA" url="https://snera.in/checkout" />
+      <SEOHead title="Checkout — SNERA" url="https://snera.in/checkout"/>
 
       <div style={{ paddingTop: 'var(--nav-h)' }}>
         <div className="container" style={{ paddingTop: '1rem' }}>
@@ -233,128 +351,138 @@ export default function CheckoutPage() {
             <span style={{ color: 'var(--ink)' }}>Checkout</span>
           </div>
 
-          <h1 style={{ fontFamily: 'var(--serif)', fontWeight: 300, fontSize: 'clamp(1.8rem,3vw,2.5rem)', marginBottom: '2.5rem' }}>
-            Checkout
-          </h1>
+          <h1 style={{ fontFamily: 'var(--serif)', fontWeight: 300, fontSize: 'clamp(1.8rem,3vw,2.5rem)', marginBottom: '2.5rem' }}>Checkout</h1>
 
           <form onSubmit={handleSubmit}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 420px', gap: '3rem', alignItems: 'start' }}>
 
-              {/* ── Left: forms ── */}
+              {/* ── LEFT ── */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
 
                 {/* Contact */}
                 <div>
-                  <h2 style={{ fontFamily: 'var(--serif)', fontWeight: 300, fontSize: '1.4rem', marginBottom: '1.25rem', paddingBottom: '.75rem', borderBottom: '1px solid var(--sand)' }}>
-                    Contact
-                  </h2>
+                  <h2 style={{ fontFamily: 'var(--serif)', fontWeight: 300, fontSize: '1.4rem', marginBottom: '1.25rem', paddingBottom: '.75rem', borderBottom: '1px solid var(--sand)' }}>Contact</h2>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                     <div style={{ gridColumn: '1 / -1' }}>
-                      <Field label="Full Name" name="name" value={form.name} onChange={setField} required placeholder="Aarav Shah" error={errors.name} />
+                      <Field label="Full Name" name="name" value={form.name} onChange={setField} required placeholder="Aarav Shah" error={errors.name}/>
                     </div>
-                    <Field label="Email" name="email" type="email" value={form.email} onChange={setField} required placeholder="you@email.com" error={errors.email} />
-                    <Field label="Phone" name="phone" type="tel" value={form.phone} onChange={setField} required placeholder="9876543210" error={errors.phone} />
+                    <Field label="Email"  name="email" type="email" value={form.email} onChange={setField} required placeholder="you@email.com" error={errors.email}/>
+                    <Field label="Phone"  name="phone" type="tel"   value={form.phone} onChange={setField} required placeholder="9876543210"    error={errors.phone}/>
                   </div>
                 </div>
 
                 {/* Shipping address */}
                 <div>
-                  <h2 style={{ fontFamily: 'var(--serif)', fontWeight: 300, fontSize: '1.4rem', marginBottom: '1.25rem', paddingBottom: '.75rem', borderBottom: '1px solid var(--sand)' }}>
-                    Shipping Address
-                  </h2>
+                  <h2 style={{ fontFamily: 'var(--serif)', fontWeight: 300, fontSize: '1.4rem', marginBottom: '1.25rem', paddingBottom: '.75rem', borderBottom: '1px solid var(--sand)' }}>Shipping Address</h2>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                     <div style={{ gridColumn: '1 / -1' }}>
-                      <Field label="Address Line 1" name="line1" value={form.line1} onChange={setField} required placeholder="Flat / House / Building" error={errors.line1} />
+                      <Field label="Address Line 1" name="line1" value={form.line1} onChange={setField} required placeholder="Flat / House / Building" error={errors.line1}/>
                     </div>
                     <div style={{ gridColumn: '1 / -1' }}>
-                      <Field label="Address Line 2 (optional)" name="line2" value={form.line2} onChange={setField} placeholder="Area / Locality / Landmark" />
+                      <Field label="Address Line 2 (optional)" name="line2" value={form.line2} onChange={setField} placeholder="Area / Locality / Landmark"/>
                     </div>
-                    <Field label="City"  name="city"  value={form.city}  onChange={setField} required placeholder="Mumbai"      error={errors.city} />
-                    <Field label="State" name="state" value={form.state} onChange={setField} required placeholder="Maharashtra" error={errors.state} />
-                    <Field label="Pincode" name="pincode" value={form.pincode} onChange={setField} required placeholder="400001" error={errors.pincode} />
+                    <Field label="City"    name="city"    value={form.city}    onChange={setField} required placeholder="Mumbai"      error={errors.city}/>
+                    <Field label="State"   name="state"   value={form.state}   onChange={setField} required placeholder="Maharashtra" error={errors.state}/>
+                    <Field label="Pincode" name="pincode" value={form.pincode} onChange={setField} required placeholder="400001"      error={errors.pincode}/>
                   </div>
                 </div>
 
-                {/* Payment method selector */}
+                {/* ── Measurements ── */}
                 <div>
-                  <h2 style={{ fontFamily: 'var(--serif)', fontWeight: 300, fontSize: '1.4rem', marginBottom: '1.25rem', paddingBottom: '.75rem', borderBottom: '1px solid var(--sand)' }}>
-                    Payment
-                  </h2>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '.75rem', borderBottom: '1px solid var(--sand)', marginBottom: '1.1rem' }}>
+                    <div>
+                      <h2 style={{ fontFamily: 'var(--serif)', fontWeight: 300, fontSize: '1.4rem' }}>Measurements</h2>
+                      <p style={{ fontSize: '.7rem', color: 'var(--stone2)', marginTop: '.25rem' }}>
+                        Optional — helps us personalise your experience and handle returns faster.
+                      </p>
+                    </div>
+                    <span style={{ fontSize: '.58rem', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--stone)', background: 'var(--off)', border: '1px solid var(--sand)', padding: '.2rem .55rem' }}>
+                      Optional
+                    </span>
+                  </div>
 
+                  <MeasurementGuide/>
+
+                  {items.map(item => (
+                    <MeasurementRow key={item.key} item={item} onChange={setMeasurements}/>
+                  ))}
+                </div>
+
+                {/* Payment */}
+                <div>
+                  <h2 style={{ fontFamily: 'var(--serif)', fontWeight: 300, fontSize: '1.4rem', marginBottom: '1.25rem', paddingBottom: '.75rem', borderBottom: '1px solid var(--sand)' }}>Payment</h2>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '.65rem' }}>
-                    {/* Razorpay option */}
-                    <label style={{
-                      display: 'flex', alignItems: 'flex-start', gap: '1rem',
-                      padding: '1rem 1.25rem',
-                      border: `1px solid ${payMethod === 'razorpay' ? 'var(--ink)' : 'var(--sand)'}`,
-                      cursor: 'pointer', transition: 'border-color var(--t)',
-                      background: payMethod === 'razorpay' ? 'var(--off)' : 'var(--white)',
-                    }}>
-                      <input
-                        type="radio" name="payMethod" value="razorpay"
-                        checked={payMethod === 'razorpay'}
-                        onChange={() => setPayMethod('razorpay')}
-                        style={{ marginTop: 3, accentColor: 'var(--ink)', flexShrink: 0 }}
-                      />
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '.3rem' }}>
-                          <span style={{ fontSize: '.82rem', fontWeight: 500 }}>Pay Online</span>
-                          <span style={{ fontSize: '.58rem', letterSpacing: '.14em', textTransform: 'uppercase', background: 'var(--ink)', color: 'var(--white)', padding: '.15rem .45rem' }}>Recommended</span>
+                    {[
+                      {
+                        val: 'razorpay', title: 'Pay Online', badge: 'Recommended',
+                        desc: 'UPI, Credit / Debit Card, Net Banking, Wallets via Razorpay. 256-bit SSL encrypted.',
+                        sub: ['UPI','Visa','Mastercard','RuPay','Wallets'],
+                      },
+                      {
+                        val: 'cod', title: 'Cash on Delivery', badge: null,
+                        desc: 'Pay when your order arrives at your doorstep. Available across India.',
+                        sub: null,
+                      },
+                    ].map(({ val, title, badge, desc, sub }) => (
+                      <label key={val} style={{
+                        display: 'flex', alignItems: 'flex-start', gap: '1rem', padding: '1rem 1.25rem',
+                        border: `1px solid ${payMethod===val?'var(--ink)':'var(--sand)'}`,
+                        cursor: 'pointer', background: payMethod===val?'var(--off)':'var(--white)', transition: 'all var(--t)',
+                      }}>
+                        <input type="radio" name="payMethod" value={val} checked={payMethod===val} onChange={() => setPayMethod(val)} style={{ marginTop: 3, accentColor: 'var(--ink)', flexShrink: 0 }}/>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '.3rem' }}>
+                            <span style={{ fontSize: '.82rem', fontWeight: 500 }}>{title}</span>
+                            {badge && <span style={{ fontSize: '.55rem', letterSpacing: '.14em', textTransform: 'uppercase', background: 'var(--ink)', color: 'var(--white)', padding: '.15rem .45rem' }}>{badge}</span>}
+                          </div>
+                          <p style={{ fontSize: '.75rem', color: 'var(--stone2)', margin: 0, lineHeight: 1.6 }}>{desc}</p>
+                          {sub && (
+                            <div style={{ display: 'flex', gap: '.45rem', marginTop: '.55rem', flexWrap: 'wrap' }}>
+                              {sub.map(p => <span key={p} style={{ fontSize: '.55rem', letterSpacing: '.1em', border: '1px solid var(--sand)', padding: '.15rem .45rem', color: 'var(--stone2)' }}>{p}</span>)}
+                            </div>
+                          )}
                         </div>
-                        <p style={{ fontSize: '.75rem', color: 'var(--stone2)', margin: 0, lineHeight: 1.6 }}>
-                          UPI, Credit / Debit Card, Net Banking, Wallets via Razorpay. 256-bit SSL encrypted.
-                        </p>
-                        <div style={{ display: 'flex', gap: '.5rem', marginTop: '.6rem', flexWrap: 'wrap' }}>
-                          {['UPI', 'Visa', 'Mastercard', 'RuPay', 'Wallets'].map(p => (
-                            <span key={p} style={{ fontSize: '.55rem', letterSpacing: '.1em', border: '1px solid var(--sand)', padding: '.15rem .45rem', color: 'var(--stone2)' }}>{p}</span>
-                          ))}
-                        </div>
-                      </div>
-                    </label>
-
-                    {/* COD option */}
-                    <label style={{
-                      display: 'flex', alignItems: 'flex-start', gap: '1rem',
-                      padding: '1rem 1.25rem',
-                      border: `1px solid ${payMethod === 'cod' ? 'var(--ink)' : 'var(--sand)'}`,
-                      cursor: 'pointer', transition: 'border-color var(--t)',
-                      background: payMethod === 'cod' ? 'var(--off)' : 'var(--white)',
-                    }}>
-                      <input
-                        type="radio" name="payMethod" value="cod"
-                        checked={payMethod === 'cod'}
-                        onChange={() => setPayMethod('cod')}
-                        style={{ marginTop: 3, accentColor: 'var(--ink)', flexShrink: 0 }}
-                      />
-                      <div>
-                        <div style={{ fontSize: '.82rem', fontWeight: 500, marginBottom: '.3rem' }}>Cash on Delivery</div>
-                        <p style={{ fontSize: '.75rem', color: 'var(--stone2)', margin: 0, lineHeight: 1.6 }}>
-                          Pay when your order arrives at your doorstep. Available across India.
-                        </p>
-                      </div>
-                    </label>
+                      </label>
+                    ))}
                   </div>
                 </div>
               </div>
 
-              {/* ── Right: order summary ── */}
+              {/* ── RIGHT: Order summary ── */}
               <div style={{ position: 'sticky', top: 'calc(var(--nav-h) + 1.5rem)' }}>
                 <div style={{ border: '1px solid var(--sand)', background: 'var(--white)' }}>
                   <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--sand)' }}>
                     <h3 style={{ fontFamily: 'var(--serif)', fontWeight: 400, fontSize: '1.1rem' }}>Order Summary</h3>
                   </div>
 
-                  {/* Items */}
-                  <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--sand)', display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
+                  {/* Items with image + colour */}
+                  <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--sand)', display: 'flex', flexDirection: 'column', gap: '.9rem' }}>
                     {items.map(item => (
-                      <div key={item.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
-                        <div>
-                          <div style={{ fontSize: '.82rem', fontWeight: 500 }}>{item.name}</div>
-                          <div style={{ fontSize: '.7rem', color: 'var(--stone)', marginTop: '.1rem' }}>
-                            Size: {item.size} · Qty: {item.qty}
+                      <div key={item.key} style={{ display: 'flex', gap: '.85rem', alignItems: 'flex-start' }}>
+                        {/* Product image */}
+                        <div style={{ width: 52, height: 70, background: 'var(--off)', flexShrink: 0, overflow: 'hidden', border: '1px solid var(--sand)' }}>
+                          {item.image
+                            ? <img src={getImageUrl(item.image)} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
+                            : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--serif)', fontSize: '1.5rem', color: 'rgba(28,27,24,.15)' }}>{item.glyph}</div>
+                          }
+                        </div>
+
+                        {/* Info */}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: '.8rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '.2rem' }}>{item.name}</div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '.12rem' }}>
+                            <span style={{ fontSize: '.68rem', color: 'var(--stone)' }}>Size: {item.size}</span>
+                            {item.colour && (
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '.35rem', fontSize: '.68rem', color: 'var(--stone)' }}>
+                                {item.colourHex && <span style={{ width: 10, height: 10, borderRadius: '50%', background: item.colourHex, border: '1px solid rgba(0,0,0,.18)', display: 'inline-block', flexShrink: 0 }}/>}
+                                {item.colour}
+                              </span>
+                            )}
+                            {item.qty > 1 && <span style={{ fontSize: '.68rem', color: 'var(--stone)' }}>Qty: {item.qty}</span>}
                           </div>
                         </div>
-                        <div style={{ fontSize: '.82rem', fontWeight: 500, flexShrink: 0 }}>{fmt(item.price * item.qty)}</div>
+
+                        <div style={{ fontSize: '.82rem', fontWeight: 600, flexShrink: 0 }}>{fmt(item.price * item.qty)}</div>
                       </div>
                     ))}
                   </div>
@@ -369,8 +497,8 @@ export default function CheckoutPage() {
                       <span>{shipping === 0 ? <span style={{ color: 'var(--success)' }}>Free</span> : fmt(shipping)}</span>
                     </div>
                     {shipping > 0 && (
-                      <p style={{ fontSize: '.65rem', color: 'var(--stone)', borderTop: '1px dashed var(--sand)', paddingTop: '.5rem' }}>
-                        Add {fmt(FREE_SHIPPING_THRESHOLD - total)} more for free shipping
+                      <p style={{ fontSize: '.65rem', color: 'var(--stone)', borderTop: '1px dashed var(--sand)', paddingTop: '.5rem', margin: 0 }}>
+                        Add {fmt(FREE_THRESHOLD - total)} more for free shipping
                       </p>
                     )}
                     <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--sand)', paddingTop: '.75rem', fontSize: '1rem', fontWeight: 600 }}>
@@ -381,43 +509,38 @@ export default function CheckoutPage() {
                   {/* CTA */}
                   <div style={{ padding: '0 1.5rem 1.5rem' }}>
                     <button
-                      type="submit"
-                      disabled={submitting}
+                      type="submit" disabled={submitting}
                       className="btn btn-dark"
                       style={{ width: '100%', justifyContent: 'center', opacity: submitting ? .7 : 1, fontSize: '.68rem' }}
                     >
-                      {submitting
-                        ? 'Processing...'
-                        : payMethod === 'cod'
-                        ? `Place Order · ${fmt(grandTotal)}`
-                        : `Pay ${fmt(grandTotal)} →`}
+                      {submitting ? 'Processing...' : payMethod==='cod' ? `Place Order · ${fmt(grandTotal)}` : `Pay ${fmt(grandTotal)} →`}
                     </button>
                     <p style={{ fontSize: '.62rem', color: 'var(--stone)', textAlign: 'center', marginTop: '.75rem' }}>
-                      {payMethod === 'razorpay'
-                        ? '🔒 Secured by Razorpay · SSL encrypted'
-                        : '📦 Pay on delivery · No advance required'}
+                      {payMethod==='razorpay' ? '🔒 Secured by Razorpay · SSL encrypted' : '📦 Pay on delivery · No advance required'}
                     </p>
                   </div>
                 </div>
 
-                {/* Trust badges */}
+                {/* Trust */}
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', marginTop: '1rem', flexWrap: 'wrap' }}>
-                  {['Secure Payment', 'Free Returns', 'Made in India'].map(t => (
+                  {['Secure Payment','Free Returns','Made in India'].map(t => (
                     <span key={t} style={{ fontSize: '.58rem', letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--stone)' }}>{t}</span>
                   ))}
                 </div>
               </div>
             </div>
           </form>
-
-          <div style={{ height: '4rem' }} />
+          <div style={{ height: '4rem' }}/>
         </div>
       </div>
 
       <style>{`
         @media(max-width:900px){
-          form > div { grid-template-columns: 1fr !important; }
-          form > div > div:last-child { position: relative !important; top: 0 !important; }
+          form>div{grid-template-columns:1fr!important}
+          form>div>div:last-child{position:relative!important;top:0!important}
+        }
+        @media(max-width:480px){
+          .meas-grid{grid-template-columns:repeat(2,1fr)!important}
         }
       `}</style>
     </>
