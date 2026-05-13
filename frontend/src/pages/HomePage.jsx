@@ -5,6 +5,193 @@ import SEOHead from '../components/SEOHead';
 import ProductCard from '../components/ProductCard';
 import { useReveal } from '../hooks/useReveal';
 
+const WA_NUMBER = '919826992021';
+
+const CATEGORIES = ['Dress', 'Kurta / Set', 'Co-ord Set', 'Jacket', 'Top', 'Trousers / Skirt', 'Saree / Drape', 'Other'];
+
+function ConceptSection() {
+  const [category, setCategory] = useState('');
+  const [text, setText] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [guidance, setGuidance] = useState(null);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async () => {
+    if (!text.trim()) { setError('Please describe your concept first.'); return; }
+    setError('');
+    setLoading(true);
+    setGuidance(null);
+    const catLine = category ? `Category: ${category}\n` : '';
+    const prompt = `You are a creative fashion consultant for SNERA, a premium Indian clothing brand — refined, minimal, editorial.
+A customer has shared their concept:
+${catLine}Concept: "${text.trim()}"
+Respond ONLY with a JSON object, no markdown, no preamble:
+{"silhouette":"short label e.g. Fluid A-line with gathered waist","palette":"2 sentences naming specific tones","fabric":"2 sentences naming specific materials","detail":"one specific finishing detail"}`;
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 400,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+      const data = await res.json();
+      const raw = data.content.map(b => b.text || '').join('').replace(/```json|```/g, '').trim();
+      setGuidance(JSON.parse(raw));
+    } catch {
+      setGuidance({
+        silhouette: 'Relaxed structured silhouette',
+        palette: 'Dusty rose, warm ivory, and deep terracotta — tones that feel quiet and considered.',
+        fabric: 'Handloom cotton or linen — honours the relaxed spirit while keeping it refined.',
+        detail: 'Hand-rolled hems for a handcrafted finish.'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openWA = () => {
+    const g = guidance;
+    const catLine = category ? `*Category:* ${category}\n` : '';
+    const msg = `Hello SNERA 👋\n\nI have a custom design concept I'd love to discuss.\n\n*My idea:*\n"${text.trim()}"\n\n${catLine}*Creative direction:*\n• *Silhouette:* ${g.silhouette}\n• *Palette:* ${g.palette}\n• *Fabric:* ${g.fabric}\n• *Detail:* ${g.detail}\n\nWould love to explore this further!`;
+    window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+  };
+
+  return (
+    <section className="sect" id="concept" style={{ borderTop: '1px solid var(--sand)', background: 'var(--off)' }}>
+      <div className="container">
+        <div style={{
+          display: 'grid', gridTemplateColumns: '1fr 1fr',
+          gap: 'clamp(2rem,5vw,5rem)', alignItems: 'start'
+        }} id="concept-section">
+
+          {/* Left: copy */}
+          <div className="reveal">
+            <span className="label">Custom Design</span>
+            <h2 style={{
+              fontFamily: 'var(--serif)', fontWeight: 300,
+              fontSize: 'clamp(1.8rem,4vw,3rem)', letterSpacing: '-.01em', lineHeight: 1.15,
+              marginBottom: '1rem'
+            }}>
+              Have a vision?<br /><em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>Let's craft it.</em>
+            </h2>
+            <p style={{ fontSize: '.85rem', color: 'var(--stone2)', lineHeight: 1.8, maxWidth: '38ch' }}>
+              Describe your concept — an occasion, a feeling, a silhouette. Our team will take it from there and connect with you personally on WhatsApp.
+            </p>
+            <div style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '.65rem' }}>
+              {[
+                ['Share your idea', 'A few words or sentences — however it comes to you.'],
+                ['Get instant direction', 'Silhouette, palette, and fabric suggestions tailored to your concept.'],
+                ['Talk to our team', 'Continue the conversation directly on WhatsApp.'],
+              ].map(([title, body], i) => (
+                <div key={i} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                  <div style={{
+                    flexShrink: 0, width: 22, height: 22, border: '1px solid var(--sand2)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '.62rem', fontWeight: 500, color: 'var(--stone)', marginTop: 2
+                  }}>{i + 1}</div>
+                  <div>
+                    <div style={{ fontSize: '.78rem', fontWeight: 500, color: 'var(--ink)', marginBottom: '.15rem' }}>{title}</div>
+                    <div style={{ fontSize: '.75rem', color: 'var(--stone2)', lineHeight: 1.7 }}>{body}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right: form + result */}
+          <div className="reveal reveal-d2">
+            <div style={{ background: 'var(--white)', border: '1px solid var(--sand)', padding: 'clamp(1.5rem,3vw,2.25rem)' }}>
+
+              {/* Category chips */}
+              <div style={{ fontSize: '.62rem', letterSpacing: '.2em', textTransform: 'uppercase', fontWeight: 500, color: 'var(--stone)', marginBottom: '.6rem' }}>
+                What are you designing?
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '1.4rem' }}>
+                {CATEGORIES.map(c => (
+                  <button key={c} onClick={() => setCategory(cat => cat === c ? '' : c)} style={{
+                    fontSize: '.7rem', padding: '5px 12px',
+                    border: `1px solid ${category === c ? 'var(--ink)' : 'var(--sand)'}`,
+                    background: category === c ? 'var(--ink)' : 'transparent',
+                    color: category === c ? 'var(--white)' : 'var(--stone2)',
+                    cursor: 'pointer', transition: 'all .15s', fontFamily: 'var(--sans)', fontWeight: 300
+                  }}>{c}</button>
+                ))}
+              </div>
+
+              {/* Textarea */}
+              <div style={{ fontSize: '.62rem', letterSpacing: '.2em', textTransform: 'uppercase', fontWeight: 500, color: 'var(--stone)', marginBottom: '.6rem' }}>
+                Describe your concept
+              </div>
+              <textarea
+                value={text}
+                onChange={e => { setText(e.target.value); setError(''); }}
+                placeholder="e.g. A flowy linen dress for a beach wedding — earthy tones, relaxed but elegant..."
+                rows={4}
+                style={{
+                  width: '100%', border: '1px solid var(--sand)', borderBottom: guidance ? '1px solid var(--sand)' : '1px solid var(--sand)',
+                  padding: '.85rem 1rem', fontFamily: 'var(--sans)', fontSize: '.82rem',
+                  fontWeight: 300, background: 'var(--white)', color: 'var(--ink)',
+                  resize: 'none', lineHeight: 1.75, outline: 'none',
+                  transition: 'border-color var(--t)', boxSizing: 'border-box'
+                }}
+                onFocus={e => e.target.style.borderColor = 'var(--stone2)'}
+                onBlur={e => e.target.style.borderColor = 'var(--sand)'}
+              />
+              {error && <p style={{ fontSize: '.72rem', color: 'var(--error)', margin: '.4rem 0 0' }}>{error}</p>}
+
+              {/* Get guidance button */}
+              {!guidance && (
+                <button
+                  onClick={handleSubmit}
+                  disabled={loading}
+                  className="btn btn-dark"
+                  style={{ marginTop: '1rem', width: '100%', justifyContent: 'center', opacity: loading ? .7 : 1 }}
+                >
+                  {loading ? 'Getting your guidance…' : 'Get creative guidance →'}
+                </button>
+              )}
+
+              {/* Guidance result */}
+              {guidance && (
+                <div style={{ marginTop: '1.25rem', borderTop: '1px solid var(--sand)', paddingTop: '1.25rem', animation: 'fadeUp .4s var(--ease) forwards' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: 'var(--sand)', border: '1px solid var(--sand)', marginBottom: '1rem' }}>
+                    {[
+                      ['Silhouette', guidance.silhouette],
+                      ['Palette', guidance.palette],
+                      ['Fabric', guidance.fabric],
+                      ['Detail', guidance.detail],
+                    ].map(([label, val]) => (
+                      <div key={label} style={{ background: 'var(--white)', padding: '.9rem 1rem' }}>
+                        <div style={{ fontSize: '.58rem', letterSpacing: '.2em', textTransform: 'uppercase', fontWeight: 500, color: 'var(--stone)', marginBottom: '.35rem' }}>{label}</div>
+                        <div style={{ fontSize: '.78rem', color: 'var(--stone2)', lineHeight: 1.7 }}>{val}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button onClick={openWA} className="btn btn-dark" style={{ flex: 1, justifyContent: 'center', background: '#25D366', borderColor: '#25D366' }}>
+                      <svg viewBox="0 0 24 24" style={{ width: 15, height: 15, fill: 'currentColor', flexShrink: 0 }} aria-hidden="true">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                      </svg>
+                      Continue on WhatsApp
+                    </button>
+                    <button onClick={() => { setGuidance(null); }} className="btn btn-outline" style={{ whiteSpace: 'nowrap', fontSize: '.72rem' }}>
+                      Edit
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 const WHY = [
   {
     icon: (
@@ -316,6 +503,49 @@ paddingRight:'26%',
         ))}
       </section>
 
+      {/* ── NOSTALGIC ─────────────────────────────────────────────────────── */}
+      <section style={{
+        position: 'relative', overflow: 'hidden',
+        borderTop: '1px solid var(--sand)', borderBottom: '1px solid var(--sand)',
+        aspectRatio: '16/7'
+      }} id="nostalgic">
+        {/* 👇 Replace src with your nostalgic image */}
+        <img
+          src="https://suvidhasetu.netraa.co.in/uploads/nostalgic.png"
+          alt="Nostalgic collection"
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        />
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(28,24,18,.32)' }} />
+
+        {/* Overlay text */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          display: 'flex', flexDirection: 'column',
+          justifyContent: 'flex-end',
+          padding: 'clamp(1.5rem,4vw,3rem)'
+        }}>
+          <span className="label" style={{ color: 'rgba(248,247,244,.6)', marginBottom: '.5rem' }}>Nostalgic Edit</span>
+          <h2 style={{
+            fontFamily: 'var(--serif)', fontWeight: 300,
+            fontSize: 'clamp(2rem,5vw,4rem)', letterSpacing: '-.01em',
+            color: '#F8F7F4', lineHeight: 1.1, marginBottom: '1.25rem'
+          }}>
+            Dressed in <em style={{ fontStyle: 'italic' }}>memory.</em>
+          </h2>
+          <Link to="/shop?collection=nostalgic" style={{
+            display: 'inline-flex', alignItems: 'center', gap: '.45rem',
+            fontSize: '.63rem', letterSpacing: '.18em', textTransform: 'uppercase', fontWeight: 500,
+            color: '#F8F7F4', borderBottom: '1px solid rgba(248,247,244,.5)',
+            paddingBottom: 2, textDecoration: 'none', alignSelf: 'flex-start'
+          }}>
+            Explore the Edit
+            <svg viewBox="0 0 24 24" style={{ width: 13, height: 13, stroke: 'currentColor', fill: 'none', strokeWidth: 1.8 }}>
+              <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
+            </svg>
+          </Link>
+        </div>
+      </section>
+
       {/* ── WHY SNERA ─────────────────────────────────────────────────────── */}
       <section className="sect why-sect" id="why">
         <div className="container">
@@ -343,6 +573,9 @@ paddingRight:'26%',
         </div>
       </section>
 
+      {/* ── CONCEPT → WHATSAPP ───────────────────────────────────────────── */}
+      <ConceptSection />
+
       <style>{`
         @keyframes fadeUp {
           from { opacity:0; transform:translateY(18px); }
@@ -357,6 +590,8 @@ paddingRight:'26%',
           #hero > div:last-child { min-height: 55vw; }
           #category { grid-template-columns: 1fr !important; }
           #category > a:first-child { border-right: none !important; border-bottom: 1px solid var(--sand); }
+          #nostalgic { aspect-ratio: 9/5 !important; }
+          #concept-section { grid-template-columns: 1fr !important; }
         }
       `}</style>
     </>

@@ -17,6 +17,13 @@ import CheckoutPage      from './pages/CheckoutPage';
 import { OrderSuccessPage } from './pages/OrderSuccessPage';
 import TrackOrderPage    from './pages/TrackOrderPage';
 
+// Policy pages
+import PrivacyPolicyPage  from './pages/PrivacyPolicyPage';
+import RefundPolicyPage   from './pages/RefundPolicyPage';
+import TermsPage          from './pages/TermsPage';
+import ContactPage        from './pages/ContactPage';
+import ShippingPolicyPage from './pages/ShippingPolicyPage';
+
 // Admin pages
 import AdminLoginPage        from './pages/admin/AdminLoginPage';
 import AdminLayout           from './pages/admin/AdminLayout';
@@ -65,6 +72,21 @@ export default function App() {
             }/>
             <Route path="/track-order" element={
               <StoreLayout><TrackOrderPage/></StoreLayout>
+            }/>
+            <Route path="/privacy-policy" element={
+              <StoreLayout><PrivacyPolicyPage/></StoreLayout>
+            }/>
+            <Route path="/refund-policy" element={
+              <StoreLayout><RefundPolicyPage/></StoreLayout>
+            }/>
+            <Route path="/terms" element={
+              <StoreLayout><TermsPage/></StoreLayout>
+            }/>
+            <Route path="/contact" element={
+              <StoreLayout><ContactPage/></StoreLayout>
+            }/>
+            <Route path="/shipping-policy" element={
+              <StoreLayout><ShippingPolicyPage/></StoreLayout>
             }/>
 
             {/* ── Admin ── */}

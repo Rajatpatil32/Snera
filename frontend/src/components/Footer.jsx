@@ -70,8 +70,8 @@ export default function Footer() {
           </div>
           {[
             {head:'Shop', links:[['New Arrivals','/shop'],['Men','/shop?gender=Men'],['Women','/shop?gender=Women']]},
-            {head:'Help', links:[['Track Order','/track-order'],['Returns','#'],['Size Guide','#']]},
-            {head:'Brand', links:[['Our Story','#'],['Sustainability','#'],['Contact','#']]},
+            {head:'Help', links:[['Track Order','/track-order'],['Returns & Refunds','/refund-policy'],['Contact Us','/contact']]},
+            {head:'Legal', links:[['Privacy Policy','/privacy-policy'],['Terms & Conditions','/terms'],['Shipping Policy','/shipping-policy']]},
           ].map(col => (
             <div key={col.head}>
               <span className="label">{col.head}</span>
@@ -96,8 +96,8 @@ export default function Footer() {
             © {new Date().getFullYear()} SNERA. All rights reserved. Made in India.
           </p>
           <div style={{display:'flex',gap:'1.5rem'}}>
-            {['Privacy','Terms','Shipping'].map(l => (
-              <a key={l} href="#" style={{fontSize:'.65rem',color:'var(--stone)',letterSpacing:'.08em',transition:'color var(--t)'}}>{l}</a>
+            {[['Privacy','/privacy-policy'],['Terms','/terms'],['Shipping','/shipping-policy']].map(([label, to]) => (
+              <Link key={label} to={to} style={{fontSize:'.65rem',color:'var(--stone)',letterSpacing:'.08em',transition:'color var(--t)'}}>{label}</Link>
             ))}
           </div>
         </div>
