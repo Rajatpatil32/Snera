@@ -532,7 +532,7 @@ paddingRight:'26%',
           }}>
             Dressed in <em style={{ fontStyle: 'italic' }}>memory.</em>
           </h2>
-          <Link to="/shop?collection=nostalgic" style={{
+          <Link to="/shop?gender=Unisex" style={{
             display: 'inline-flex', alignItems: 'center', gap: '.45rem',
             fontSize: '.63rem', letterSpacing: '.18em', textTransform: 'uppercase', fontWeight: 500,
             color: '#F8F7F4', borderBottom: '1px solid rgba(248,247,244,.5)',

@@ -132,7 +132,7 @@ export default function ShopPage() {
           ) : (
             <>
               <div className="prod-grid">
-                {products.map((p, i) => <ProductCard key={p._id} product={p} index={i}/>)}
+                {products.map((p, i) => <ProductCard key={p._id} product={p} index={i} showFlip />)}
               </div>
 
               {/* Pagination */}

@@ -2,63 +2,114 @@ import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fmt, getImageUrl, BKGS } from '../utils/api';
 
-export default function ProductCard({ product, index = 0 }) {
+export default function ProductCard({ product, index = 0, showFlip = false }) {
   const navigate = useNavigate();
   const bg = BKGS[index % BKGS.length];
 
   // ── Colour state ────────────────────────────────────────────────────────────
-  // Determine active colour group index
   const hasGroups = product.colorGroups?.length > 0;
   const defaultIdx = hasGroups
     ? Math.max(0, product.colorGroups.findIndex(g => g.isDefault))
     : 0;
 
   const [activeColour, setActiveColour] = useState(defaultIdx);
-  const [imgIdx,       setImgIdx]       = useState(0); // current image within colour group
+  const [imgIdx,       setImgIdx]       = useState(0);
+  const [flipped,      setFlipped]      = useState(false);
 
   // Active group data
-  const activeGroup = hasGroups ? product.colorGroups[activeColour] : null;
-  const images      = activeGroup?.images?.length
+  const activeGroup  = hasGroups ? product.colorGroups[activeColour] : null;
+  const images       = activeGroup?.images?.length
     ? activeGroup.images
     : product.images || [];
 
-  const primaryImage = images[imgIdx] || images[0] || null;
+  const primaryImage   = images[imgIdx] || images[0] || null;
+  const secondaryImage = images[1] || null; // back / hover image
 
-  // Switch colour: reset to first image of that group
   const switchColour = useCallback((e, i) => {
     e.stopPropagation();
     setActiveColour(i);
     setImgIdx(0);
+    setFlipped(false);
   }, []);
 
   const go = () => {
-    // Pass active colour as query param so detail page can pre-select it
     const query = hasGroups ? `?colour=${activeColour}` : '';
     navigate(`/product/${product.slug}${query}`);
   };
+
+  const handleMouseEnter = () => { if (showFlip && secondaryImage) setFlipped(true);  };
+  const handleMouseLeave = () => { if (showFlip)                    setFlipped(false); };
 
   return (
     <article
       className="prod-card reveal"
       onClick={go}
       onKeyDown={e => (e.key==='Enter'||e.key===' ') && go()}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       tabIndex={0}
       role="button"
       aria-label={`View ${product.name}`}
     >
       {/* ── Image area ── */}
-      <div className="prod-card-img" style={{ background: bg }}>
-        {primaryImage ? (
-          <img
-            src={getImageUrl(primaryImage)}
-            alt={`${product.name}${activeGroup ? ` — ${activeGroup.name}` : ''}`}
-            loading="lazy"
-            style={{ width:'100%', height:'100%', objectFit:'cover', transition:'transform .55s var(--ease)' }}
-          />
-        ) : (
-          <div className="prod-card-inner">
-            <span className="prod-glyph">{product.glyph || '◈'}</span>
+      <div className="prod-card-img" style={{ background: bg, perspective: '1000px' }}>
+
+        {/* Flip wrapper — only mounted when showFlip + secondaryImage exist */}
+        {showFlip && secondaryImage ? (
+          <div style={{
+            position: 'relative', width: '100%', height: '100%',
+            transformStyle: 'preserve-3d',
+            transition: 'transform .65s cubic-bezier(.4,0,.2,1)',
+            // transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+            transform: flipped ? 'scale(1.08)' : 'scale(1)'
+          }}>
+            {/* Front face */}
+            <div style={{
+              position: 'absolute', inset: 0,
+              backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden',
+            }}>
+              {primaryImage ? (
+                <img
+                  src={getImageUrl(primaryImage)}
+                  alt={`${product.name}${activeGroup ? ` — ${activeGroup.name}` : ''}`}
+                  loading="lazy"
+                  style={{ width:'100%', height:'100%', objectFit:'cover' }}
+                />
+              ) : (
+                <div className="prod-card-inner">
+                  <span className="prod-glyph">{product.glyph || '◈'}</span>
+                </div>
+              )}
+            </div>
+            {/* Back face */}
+            <div style={{
+              position: 'absolute', inset: 0,
+              backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden',
+              transform: 'rotateY(180deg)',
+            }}>
+              <img
+                src={getImageUrl(secondaryImage)}
+                alt={`${product.name} — back view`}
+                loading="lazy"
+                style={{ width:'100%', height:'100%', objectFit:'cover' }}
+              />
+            </div>
           </div>
+        ) : (
+          /* Normal (no flip) rendering — used on detail page & cards with no secondary image */
+          primaryImage ? (
+            <img
+              src={getImageUrl(primaryImage)}
+              alt={`${product.name}${activeGroup ? ` — ${activeGroup.name}` : ''}`}
+              loading="lazy"
+              style={{ width:'100%', height:'100%', objectFit:'cover', 
+                transition:'transform .55s var(--ease)' }}
+            />
+          ) : (
+            <div className="prod-card-inner">
+              <span className="prod-glyph">{product.glyph || '◈'}</span>
+            </div>
+          )
         )}
 
         {/* Badge */}
