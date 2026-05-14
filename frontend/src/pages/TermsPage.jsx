@@ -1,9 +1,16 @@
 import React, { useEffect } from 'react';
+import SEOHead from '../components/SEOHead';
 
 export default function TermsPage() {
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
   return (
+    <>
+      <SEOHead
+        title="Terms & Conditions | SNERA"
+        description="Read SNERA's Terms & Conditions governing your use of our website and purchase of products."
+        canonical="https://snera.in/terms"
+      />
     <div style={{ background: 'var(--white)', minHeight: '100vh', paddingTop: 'var(--nav-h)' }}>
       {/* Header */}
       <div style={{ background: 'var(--off)', borderBottom: '1px solid var(--sand)', padding: 'clamp(3rem,6vw,5rem) 0' }}>
@@ -63,11 +70,12 @@ export default function TermsPage() {
 
         <PolicySection title="8. Contact Us">
           <p>If you have any questions about these Terms and Conditions, please contact us:</p>
-          <p><strong>Email:</strong> contact@snera.in</p>
+          <p><strong>Email:</strong> support@snera.in</p>
           <p><strong>Website:</strong> snera.in</p>
         </PolicySection>
       </div>
     </div>
+    </>
   );
 }
 

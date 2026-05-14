@@ -49,7 +49,7 @@ export default function TrackOrderPage() {
 
   return (
     <>
-      <SEOHead title="Track Your Order — SNERA" url="https://snera.in/track-order"/>
+      <SEOHead title="Track Your Order | SNERA" canonical="https://snera.in/track-order" noindex={true} />
 
       <div style={{paddingTop:'var(--nav-h)'}}>
         {/* Header */}

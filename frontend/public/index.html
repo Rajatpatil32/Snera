@@ -1,74 +1,133 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-IN">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#FFFFFF" />
 
-    <!-- Primary SEO -->
-    <title>SNERA — Premium Essentials</title>
-    <meta name="description" content="Premium essentials crafted for those who believe the quietest statement is often the loudest. Shop SNERA — minimal, timeless fashion made in India." />
-    <meta name="keywords" content="SNERA, premium fashion, minimal clothing, essentials, tshirts, Indian fashion, luxury basics" />
-    <meta name="robots" content="index, follow" />
+    <!-- ── Viewport & Mobile SEO ─────────────────────────────────────────── -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#1C1B18" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="SNERA" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <!-- ── Primary SEO (fallback — react-helmet-async overrides per page) ── -->
+    <title>SNERA — Premium Essentials | Minimal Fashion India</title>
+    <meta name="description" content="Shop SNERA — premium minimal essentials for men and women. Crafted in India. Free shipping above ₹999. Explore Tops, Bottoms, Outerwear and more." />
+    <meta name="keywords" content="SNERA, premium fashion India, minimal clothing, essentials, kurta, co-ord set, premium tshirts, Indian fashion, buy clothes online India" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow" />
     <link rel="canonical" href="https://snera.in" />
 
-    <!-- Open Graph -->
+    <!-- ── Geo ───────────────────────────────────────────────────────────── -->
+    <meta name="geo.region"   content="IN" />
+    <meta name="language"     content="English" />
+    <meta name="content-language" content="en-IN" />
+
+    <!-- ── Open Graph ────────────────────────────────────────────────────── -->
     <meta property="og:type"        content="website" />
-    <meta property="og:title"       content="SNERA — Premium Essentials" />
-    <meta property="og:description" content="Premium essentials crafted for those who believe the quietest statement is often the loudest." />
+    <meta property="og:title"       content="SNERA — Premium Essentials | Minimal Fashion India" />
+    <meta property="og:description" content="Shop SNERA — premium minimal essentials for men and women. Crafted in India. Free shipping above ₹999." />
     <meta property="og:image"       content="https://snera.in/og-image.jpg" />
+    <meta property="og:image:width"  content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta property="og:url"         content="https://snera.in" />
     <meta property="og:site_name"   content="SNERA" />
+    <meta property="og:locale"      content="en_IN" />
 
-    <!-- Twitter -->
+    <!-- ── Twitter Card ──────────────────────────────────────────────────── -->
     <meta name="twitter:card"        content="summary_large_image" />
+    <meta name="twitter:site"        content="@snera_official" />
     <meta name="twitter:title"       content="SNERA — Premium Essentials" />
-    <meta name="twitter:description" content="Premium essentials crafted for those who believe the quietest statement is often the loudest." />
+    <meta name="twitter:description" content="Shop SNERA — premium minimal essentials for men and women. Crafted in India." />
     <meta name="twitter:image"       content="https://snera.in/og-image.jpg" />
 
-    <!-- Preconnect for performance -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- ── Performance: DNS prefetch + Preconnect ────────────────────────── -->
+    <!-- Reduces connection latency for critical external origins -->
+    <link rel="dns-prefetch"    href="//fonts.googleapis.com" />
+    <link rel="dns-prefetch"    href="//fonts.gstatic.com" />
+    <link rel="dns-prefetch"    href="//checkout.razorpay.com" />
+    <link rel="preconnect"      href="https://fonts.googleapis.com" crossorigin />
+    <link rel="preconnect"      href="https://fonts.gstatic.com" crossorigin />
 
-    <!-- Favicons -->
+    <!--
+      Performance note: Fonts are loaded via @import in index.css.
+      For production, move the <link> here with rel="preload" + as="style"
+      and use font-display:swap (already in index.css via &display=swap).
+
+      CRITICAL CSS NOTE: In production, inline critical CSS here to eliminate
+      render-blocking. Use critters or critical npm packages in your build step.
+    -->
+
+    <!-- ── Favicons & PWA ────────────────────────────────────────────────── -->
     <link rel="icon"             href="/favicon.ico" />
+    <link rel="icon"             href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/logo192.png" />
     <link rel="manifest"         href="/manifest.json" />
 
-    <!-- Organization structured data -->
+    <!-- ── Google Search Console Verification ────────────────────────────── -->
+    <!-- Replace with your actual GSC verification token -->
+    <!-- <meta name="google-site-verification" content="YOUR_GSC_TOKEN_HERE" /> -->
+
+    <!-- ── Organisation (global baseline — react-helmet-async enhances per-page) -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "Organization",
+      "@id": "https://snera.in/#organization",
       "name": "SNERA",
       "url": "https://snera.in",
-      "logo": "https://snera.in/logo.png",
-      "description": "Premium essentials crafted for those who believe the quietest statement is often the loudest.",
-      "address": {
-        "@type": "PostalAddress",
-        "addressCountry": "IN"
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://snera.in/images/logo.png",
+        "width": 200,
+        "height": 60
       },
-      "sameAs": ["https://instagram.com/sneraofficial"]
+      "description": "Premium essentials crafted for those who believe the quietest statement is often the loudest.",
+      "address": { "@type": "PostalAddress", "addressCountry": "IN" },
+      "sameAs": ["https://instagram.com/snera.official"],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer service",
+        "email": "support@snera.in"
+      }
     }
     </script>
 
-    <!-- Website structured data -->
+    <!-- ── WebSite + SearchBox ────────────────────────────────────────────── -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
+      "@id": "https://snera.in/#website",
       "name": "SNERA",
       "url": "https://snera.in",
+      "publisher": { "@id": "https://snera.in/#organization" },
       "potentialAction": {
         "@type": "SearchAction",
-        "target": "https://snera.in/shop?q={search_term_string}",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://snera.in/shop?q={search_term_string}"
+        },
         "query-input": "required name=search_term_string"
       }
     }
     </script>
   </head>
   <body>
-    <noscript>You need to enable JavaScript to run SNERA.</noscript>
+    <!--
+      noscript: React is a SPA — crawlers with JS disabled see this.
+      The JSON-LD above is still parsed by Googlebot even without JS.
+      For full SSR/SSG, consider migrating to Next.js.
+    -->
+    <noscript>
+      <div style="font-family:sans-serif;text-align:center;padding:3rem;">
+        <h1>SNERA — Premium Essentials</h1>
+        <p>Premium minimal fashion made in India. Please enable JavaScript to browse our collection.</p>
+        <p><a href="mailto:support@snera.in">support@snera.in</a></p>
+      </div>
+    </noscript>
     <div id="root"></div>
   </body>
 </html>

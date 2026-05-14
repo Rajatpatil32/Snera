@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
+import SEOHead from '../components/SEOHead';
 
 export default function ContactPage() {
   useEffect(() => { window.scrollTo(0, 0); }, []);
@@ -44,6 +45,12 @@ export default function ContactPage() {
   };
 
   return (
+    <>
+      <SEOHead
+        title="Contact Us | SNERA"
+        description="Get in touch with SNERA's team. We respond within 24–48 hours, Monday–Saturday."
+        canonical="https://snera.in/contact"
+      />
     <div style={{ background: 'var(--white)', minHeight: '100vh', paddingTop: 'var(--nav-h)' }}>
       {/* Header */}
       <div style={{ background: 'var(--off)', borderBottom: '1px solid var(--sand)', padding: 'clamp(3rem,6vw,5rem) 0' }}>
@@ -67,7 +74,7 @@ export default function ContactPage() {
             <div style={{ marginBottom: '2.5rem' }}>
               <span className="label">Email</span>
               <p style={{ fontSize: '.9rem', color: 'var(--ink)' }}>
-                <a href="mailto:contact@snera.in" style={{ color: 'var(--accent)' }}>contact@snera.in</a>
+                <a href="mailto:support@snera.in" style={{ color: 'var(--accent)' }}>support@snera.in</a>
               </p>
               <p style={{ fontSize: '.78rem', color: 'var(--stone2)', marginTop: '.35rem' }}>
                 We respond within 24–48 hours on business days.
@@ -208,5 +215,6 @@ export default function ContactPage() {
         }
       `}</style>
     </div>
+    </>
   );
 }

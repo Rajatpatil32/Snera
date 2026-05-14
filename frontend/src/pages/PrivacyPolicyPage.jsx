@@ -1,9 +1,16 @@
 import React, { useEffect } from 'react';
+import SEOHead from '../components/SEOHead';
 
 export default function PrivacyPolicyPage() {
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
   return (
+    <>
+      <SEOHead
+        title="Privacy Policy | SNERA"
+        description="Read SNERA's Privacy Policy — how we collect, use, and protect your personal information."
+        canonical="https://snera.in/privacy-policy"
+      />
     <div style={{ background: 'var(--white)', minHeight: '100vh', paddingTop: 'var(--nav-h)' }}>
       {/* Header */}
       <div style={{ background: 'var(--off)', borderBottom: '1px solid var(--sand)', padding: 'clamp(3rem,6vw,5rem) 0' }}>
@@ -78,10 +85,12 @@ export default function PrivacyPolicyPage() {
 
         <PolicySection title="9. Contact Us">
           <p>If you have any questions about this Privacy Policy, please contact us:</p>
-          <p><strong>Email:</strong> contact@snera.in</p>
+          <p><strong>Email:</strong> support@snera.in</p>
+          <p><strong>Address:</strong> SNERA, India</p>
         </PolicySection>
       </div>
     </div>
+    </>
   );
 }
 

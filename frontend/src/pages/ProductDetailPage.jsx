@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import API, { fmt, getImageUrl } from '../utils/api';
 import SEOHead from '../components/SEOHead';
+import useSEO from '../hooks/useseo';
 import { useCart } from '../context/CartContext';
 
 export default function ProductDetailPage() {
@@ -95,18 +96,55 @@ export default function ProductDetailPage() {
     setTimeout(() => setAdded(false), 2000);
   };
 
+  // ── SEO ────────────────────────────────────────────────────────────────────
+  const crumbs = [
+    { name: 'Home', url: '/' },
+    { name: 'Shop', url: '/shop' },
+    { name: product.category, url: `/shop?category=${product.category}` },
+    { name: product.name, url: `/product/${product.slug}` },
+  ];
+
+  // Auto-generate meta description from product data
+  const metaDescription = product.description
+    ? `${product.description.slice(0, 120)}. Buy ${product.name} online at SNERA. Free shipping on orders above ₹999.`
+    : `Shop ${product.name} by SNERA — premium Indian fashion. ${product.fabric ? `Made from ${product.fabric}. ` : ''}Available in sizes ${(product.sizes || []).join(', ')}.`;
+
+  // Primary image for OG
+  const ogImg = (() => {
+    const imgs = (product.colorGroups?.find(g => g.isDefault) || product.colorGroups?.[0])?.images || product.images || [];
+    return imgs[0] ? (imgs[0].startsWith('http') ? imgs[0] : `https://snera.in${imgs[0]}`) : 'https://snera.in/og-image.jpg';
+  })();
+
+  const schemas = useSEO({
+    type: 'product',
+    product,
+    breadcrumbs: crumbs,
+    pageUrl: `/product/${product.slug}`,
+    pageName: `${product.name} | SNERA`,
+    pageDescription: metaDescription,
+  });
+
+  // SEO keywords from product data
+  const keywords = [
+    product.name,
+    product.category,
+    product.gender,
+    product.fabric,
+    'SNERA',
+    'buy online India',
+    'premium fashion',
+  ].filter(Boolean).join(', ');
+
   return (
     <>
       <SEOHead
-        title={`${product.name} — SNERA`}
-        description={product.description}
-        url={`https://snera.in/product/${product.slug}`}
-        product={product}
-        breadcrumbs={[
-          { name:'Home', url:'/' },
-          { name:'Shop', url:'/shop' },
-          { name: product.name, url:`/product/${product.slug}` },
-        ]}
+        title={`${product.name} | ${product.category} | SNERA`}
+        description={metaDescription}
+        canonical={`https://snera.in/product/${product.slug}`}
+        image={ogImg}
+        schemas={schemas}
+        ogType="product"
+        keywords={keywords}
       />
 
       <div style={{ paddingTop:'var(--nav-h)' }}>
@@ -114,6 +152,7 @@ export default function ProductDetailPage() {
           <div className="breadcrumb">
             <Link to="/">Home</Link><span>/</span>
             <Link to="/shop">Shop</Link><span>/</span>
+            <Link to={`/shop?category=${product.category}`}>{product.category}</Link><span>/</span>
             <span style={{ color:'var(--ink)' }}>{product.name}</span>
           </div>
         </div>
@@ -165,7 +204,7 @@ export default function ProductDetailPage() {
                         cursor:'pointer', background:'none', transition:'border-color var(--t)',
                       }}
                     >
-                      <img src={getImageUrl(img)} alt={`View ${i+1}`} style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
+                      <img src={getImageUrl(img)} alt={`${product.name}${activeGroup ? ` ${activeGroup.name}` : ''} — view ${i + 1}`} loading="lazy" decoding="async" style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
                     </button>
                   ))}
                 </div>

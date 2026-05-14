@@ -1,9 +1,16 @@
 import React, { useEffect } from 'react';
+import SEOHead from '../components/SEOHead';
 
 export default function ShippingPolicyPage() {
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
   return (
+    <>
+      <SEOHead
+        title="Shipping Policy | SNERA"
+        description="SNERA offers standard and express delivery across India. Free shipping above ₹999."
+        canonical="https://snera.in/shipping-policy"
+      />
     <div style={{ background: 'var(--white)', minHeight: '100vh', paddingTop: 'var(--nav-h)' }}>
       {/* Header */}
       <div style={{ background: 'var(--off)', borderBottom: '1px solid var(--sand)', padding: 'clamp(3rem,6vw,5rem) 0' }}>
@@ -72,16 +79,17 @@ export default function ShippingPolicyPage() {
         </PolicySection>
 
         <PolicySection title="7. Damaged in Transit">
-          <p>In the rare event that your order arrives damaged, please contact us within <strong>48 hours</strong> of delivery at <strong>contact@snera.in</strong> with photographs of the damaged packaging and product. We will arrange a replacement or refund promptly.</p>
+          <p>In the rare event that your order arrives damaged, please contact us within <strong>48 hours</strong> of delivery at <strong>support@snera.in</strong> with photographs of the damaged packaging and product. We will arrange a replacement or refund promptly.</p>
         </PolicySection>
 
         <PolicySection title="8. Contact Us">
           <p>For any shipping-related queries, please contact us:</p>
-          <p><strong>Email:</strong> contact@snera.in</p>
+          <p><strong>Email:</strong> support@snera.in</p>
           <p><strong>Response time:</strong> Within 24–48 hours on business days</p>
         </PolicySection>
       </div>
     </div>
+    </>
   );
 }
 

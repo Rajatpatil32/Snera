@@ -341,7 +341,7 @@ export default function CheckoutPage() {
 
   return (
     <>
-      <SEOHead title="Checkout — SNERA" url="https://snera.in/checkout"/>
+      <SEOHead title="Checkout | SNERA" canonical="https://snera.in/checkout" noindex={true} />
 
       <div style={{ paddingTop: 'var(--nav-h)' }}>
         <div className="container" style={{ paddingTop: '1rem' }}>

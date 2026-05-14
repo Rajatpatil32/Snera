@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../utils/api';
 import SEOHead from '../components/SEOHead';
+import useSEO from '../hooks/useseo';
 import ProductCard from '../components/ProductCard';
 import { useReveal } from '../hooks/useReveal';
 
@@ -253,7 +254,13 @@ export default function HomePage() {
 
   return (
     <>
-      <SEOHead />
+      <SEOHead
+        title="SNERA — Premium Essentials | Minimal Fashion India"
+        description="Shop SNERA — premium minimal essentials for men and women. Crafted in India. Free shipping above ₹999. Explore Tops, Bottoms, Outerwear and more."
+        canonical="https://snera.in"
+        keywords="SNERA, premium fashion India, minimal clothing, essentials, kurta, co-ord set, premium tshirts, Indian fashion, buy clothes online India"
+        schemas={useSEO({ type: 'home', pageUrl: '/', pageName: 'SNERA — Premium Essentials | Minimal Fashion India', pageDescription: 'Shop SNERA — premium minimal essentials for men and women. Crafted in India.' })}
+      />
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
       <section id="hero" style={{
@@ -315,10 +322,13 @@ export default function HomePage() {
             inset: 0,
             overflow: 'hidden'
           }}>
-            {/* Image */}
+            {/* LCP image — eager + fetchpriority high to boost Largest Contentful Paint */}
             <img
-              src="https://suvidhasetu.netraa.co.in/uploads/hero.png"   // 👈 add your image here
-              alt=""
+              src="https://suvidhasetu.netraa.co.in/uploads/hero.png"
+              alt="SNERA — Premium minimal fashion collection for men and women"
+              loading="eager"
+              fetchPriority="high"
+              decoding="sync"
               style={{
                 width: '100%',
                 height: '100%',
@@ -446,7 +456,9 @@ paddingRight:'26%',
               {/* Image */}
               <img
                 src={cat.image}
-                alt=""
+                alt={`SNERA ${cat.title.replace('\n', ' ')} — ${cat.linkTxt}`}
+                loading="lazy"
+                decoding="async"
                 style={{
                   width: '100%',
                   height: '100%',
@@ -511,7 +523,7 @@ paddingRight:'26%',
       }} id="nostalgic">
         {/* 👇 Replace src with your nostalgic image */}
         <img
-          src="https://suvidhasetu.netraa.co.in/uploads/nostalgic.png"
+          src=""
           alt="Nostalgic collection"
           style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
         />
@@ -532,7 +544,7 @@ paddingRight:'26%',
           }}>
             Dressed in <em style={{ fontStyle: 'italic' }}>memory.</em>
           </h2>
-          <Link to="/shop?gender=Unisex" style={{
+          <Link to="/shop?collection=nostalgic" style={{
             display: 'inline-flex', alignItems: 'center', gap: '.45rem',
             fontSize: '.63rem', letterSpacing: '.18em', textTransform: 'uppercase', fontWeight: 500,
             color: '#F8F7F4', borderBottom: '1px solid rgba(248,247,244,.5)',

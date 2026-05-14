@@ -8,7 +8,7 @@ export function OrderSuccessPage() {
 
   return (
     <>
-      <SEOHead title="Order Confirmed — SNERA"/>
+      <SEOHead title="Order Confirmed | SNERA" noindex={true} />
       <div style={{
         paddingTop:'var(--nav-h)',
         minHeight:'80vh',

@@ -2,6 +2,8 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import API from '../utils/api';
 import SEOHead from '../components/SEOHead';
+import useSEO, { itemListSchema } from '../hooks/useseo';
+import useCanonical from '../hooks/useCanonical';
 import ProductCard from '../components/ProductCard';
 import { useReveal } from '../hooks/useReveal';
 
@@ -48,12 +50,45 @@ export default function ShopPage() {
     setSearchParams(next);
   };
 
+  // ── SEO ────────────────────────────────────────────────────────────────────
+  const canonicalUrl = useCanonical();
+  const categoryLabel = catParam !== 'All' ? catParam : 'All Products';
+  const genderLabel   = genderParam !== 'All' ? ` for ${genderParam}` : '';
+  const shopTitle     = `${categoryLabel}${genderLabel} | Shop | SNERA`;
+  const shopDesc      = catParam !== 'All'
+    ? `Shop premium ${catParam.toLowerCase()}${genderLabel} at SNERA. Minimal, timeless fashion made in India. Free shipping above ₹999.`
+    : 'Browse the complete SNERA collection — premium essentials for men and women. Minimal, timeless fashion made in India. Free shipping above ₹999.';
+
+  const shopCrumbs = [
+    { name: 'Home', url: '/' },
+    { name: 'Shop', url: '/shop' },
+    ...(catParam !== 'All' ? [{ name: catParam, url: `/shop?category=${catParam}` }] : []),
+  ];
+
+  const shopKeywords = [
+    catParam !== 'All' ? `${catParam} online India` : 'premium fashion India',
+    genderParam !== 'All' ? `${genderParam.toLowerCase()} clothing` : '',
+    'SNERA', 'minimal fashion', 'premium essentials', 'buy clothes India',
+  ].filter(Boolean).join(', ');
+
+  const schemas = useSEO({
+    type: 'shop',
+    products,
+    breadcrumbs: shopCrumbs,
+    pageUrl: `/shop${catParam !== 'All' ? `?category=${catParam}` : ''}`,
+    pageName: shopTitle,
+    pageDescription: shopDesc,
+    categoryName: categoryLabel,
+  });
+
   return (
     <>
       <SEOHead
-        title="Shop — SNERA"
-        description="Browse the complete SNERA collection. Premium essentials for men and women."
-        url="https://snera.in/shop"
+        title={shopTitle}
+        description={shopDesc}
+        canonical={canonicalUrl}
+        schemas={schemas}
+        keywords={shopKeywords}
       />
 
       <div style={{ paddingTop:'var(--nav-h)' }}>

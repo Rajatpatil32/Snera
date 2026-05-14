@@ -1,5 +1,37 @@
 /* ─── FONTS ─────────────────────────────────────────────────────────────────── */
+/* font-display:swap via &display=swap param — prevents FOIT (invisible text flash) */
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap');
+
+/* ─── CORE WEB VITALS — CLS prevention ────────────────────────────────────────
+   Explicit aspect-ratio on image containers prevents layout shift while images load.
+   These rules complement inline styles on individual components.
+─────────────────────────────────────────────────────────────────────────────── */
+img {
+  /* Prevent layout shift — images always reserve space */
+  display: block;
+  max-width: 100%;
+  /* Improves LCP: browser can decode off-main-thread */
+  content-visibility: auto;
+}
+
+/* Product card image container — fixed aspect ratio prevents CLS */
+.prod-card-img {
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  /* contain: layout — tells browser this subtree won't affect outside layout */
+  contain: layout style;
+}
+
+/* Promote animated elements to their own compositor layer — reduces FID/TBT */
+.prod-card:hover img,
+.reveal {
+  will-change: transform, opacity;
+}
+
+/* Avoid will-change on static elements (wastes GPU memory) */
+.prod-card img {
+  will-change: auto;
+}
 
 /* ─── DESIGN TOKENS ──────────────────────────────────────────────────────────── */
 :root {
@@ -121,7 +153,9 @@ ul { list-style: none; }
 .btn-accent:hover { background: var(--accent2); border-color: var(--accent2); transform: translateY(-1px); }
 
 /* ─── SECTIONS ───────────────────────────────────────────────────────────────── */
-.sect { padding: clamp(4rem, 9vw, 8rem) 0; }
+/* content-visibility: auto skips rendering of off-screen sections entirely
+   until they are about to enter the viewport — significant LCP + TTI improvement */
+.sect { padding: clamp(4rem, 9vw, 8rem) 0; content-visibility: auto; contain-intrinsic-size: 0 600px; }
 .sect-head { margin-bottom: clamp(2.5rem, 5vw, 4.5rem); }
 .sect-head h2 {
   font-family: var(--serif);
