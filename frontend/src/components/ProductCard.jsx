@@ -60,7 +60,7 @@ export default function ProductCard({ product, index = 0, showFlip = false }) {
             position: 'relative', width: '100%', height: '100%',
             transformStyle: 'preserve-3d',
             transition: 'transform .65s cubic-bezier(.4,0,.2,1)',
-            transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+            transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
           }}>
             {/* Front face */}
             <div style={{
