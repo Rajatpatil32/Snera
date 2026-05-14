@@ -56,47 +56,49 @@ export default function ProductCard({ product, index = 0, showFlip = false }) {
 
         {/* Flip wrapper — only mounted when showFlip + secondaryImage exist */}
         {showFlip && secondaryImage ? (
-          <div style={{
-            position: 'relative',
-            width: '100%',
-            height: '100%',
-            transformStyle: 'preserve-3d',
-            transition: 'transform .7s ease-in-out, opacity .7s ease-in-out',
-            transform: flipped ? 'scale(1.08)' : 'scale(1)'
-          }}>
-            {/* Front face */}
-            <div style={{
-              position: 'absolute', inset: 0,
-              backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden',
-            }}>
-              {primaryImage ? (
-                <img
-                  src={getImageUrl(primaryImage)}
-                  alt={`${product.name}${activeGroup ? ` — ${activeGroup.name}` : ''}`}
-                  loading="lazy"
-                  decoding="async"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
-              ) : (
-                <div className="prod-card-inner">
-                  <span className="prod-glyph">{product.glyph || '◈'}</span>
-                </div>
-              )}
-            </div>
-            {/* Back face */}
-            <div style={{
-              position: 'absolute', inset: 0,
-              backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden',
-              transform: 'rotateY(180deg)',
-            }}>
-              <img
-                src={getImageUrl(secondaryImage)}
-                alt={`${product.name} — back view`}
-                loading="lazy"
-                decoding="async"
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-            </div>
+          <div
+            style={{
+              position: 'relative',
+              width: '100%',
+              height: '100%',
+              overflow: 'hidden',
+            }}
+          >
+            {/* First Image */}
+            <img
+              src={getImageUrl(primaryImage)}
+              alt={`${product.name}${activeGroup ? ` — ${activeGroup.name}` : ''}`}
+              loading="lazy"
+              decoding="async"
+              style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                transition: 'all .7s ease-in-out',
+                opacity: flipped ? 0 : 1,
+                transform: flipped ? 'scale(1.08)' : 'scale(1)',
+              }}
+            />
+
+            {/* Second Image */}
+            <img
+              src={getImageUrl(secondaryImage)}
+              alt={`${product.name} — back view`}
+              loading="lazy"
+              decoding="async"
+              style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                transition: 'all .7s ease-in-out',
+                opacity: flipped ? 1 : 0,
+                transform: flipped ? 'scale(1)' : 'scale(1.08)',
+              }}
+            />
           </div>
         ) : (
           /* Normal (no flip) rendering — used on detail page & cards with no secondary image */
