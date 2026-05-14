@@ -13,16 +13,16 @@ export default function ProductCard({ product, index = 0, showFlip = false }) {
     : 0;
 
   const [activeColour, setActiveColour] = useState(defaultIdx);
-  const [imgIdx,       setImgIdx]       = useState(0);
-  const [flipped,      setFlipped]      = useState(false);
+  const [imgIdx, setImgIdx] = useState(0);
+  const [flipped, setFlipped] = useState(false);
 
   // Active group data
-  const activeGroup  = hasGroups ? product.colorGroups[activeColour] : null;
-  const images       = activeGroup?.images?.length
+  const activeGroup = hasGroups ? product.colorGroups[activeColour] : null;
+  const images = activeGroup?.images?.length
     ? activeGroup.images
     : product.images || [];
 
-  const primaryImage   = images[imgIdx] || images[0] || null;
+  const primaryImage = images[imgIdx] || images[0] || null;
   const secondaryImage = images[1] || null; // back / hover image
 
   const switchColour = useCallback((e, i) => {
@@ -37,14 +37,14 @@ export default function ProductCard({ product, index = 0, showFlip = false }) {
     navigate(`/product/${product.slug}${query}`);
   };
 
-  const handleMouseEnter = () => { if (showFlip && secondaryImage) setFlipped(true);  };
-  const handleMouseLeave = () => { if (showFlip)                    setFlipped(false); };
+  const handleMouseEnter = () => { if (showFlip && secondaryImage) setFlipped(true); };
+  const handleMouseLeave = () => { if (showFlip) setFlipped(false); };
 
   return (
     <article
       className="prod-card reveal"
       onClick={go}
-      onKeyDown={e => (e.key==='Enter'||e.key===' ') && go()}
+      onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && go()}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       tabIndex={0}
@@ -57,10 +57,12 @@ export default function ProductCard({ product, index = 0, showFlip = false }) {
         {/* Flip wrapper — only mounted when showFlip + secondaryImage exist */}
         {showFlip && secondaryImage ? (
           <div style={{
-            position: 'relative', width: '100%', height: '100%',
+            position: 'relative',
+            width: '100%',
+            height: '100%',
             transformStyle: 'preserve-3d',
-            transition: 'transform .65s cubic-bezier(.4,0,.2,1)',
-            transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
+            transition: 'transform .7s ease-in-out, opacity .7s ease-in-out',
+            transform: flipped ? 'scale(1.08)' : 'scale(1)'
           }}>
             {/* Front face */}
             <div style={{
@@ -73,7 +75,7 @@ export default function ProductCard({ product, index = 0, showFlip = false }) {
                   alt={`${product.name}${activeGroup ? ` — ${activeGroup.name}` : ''}`}
                   loading="lazy"
                   decoding="async"
-                  style={{ width:'100%', height:'100%', objectFit:'cover' }}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
               ) : (
                 <div className="prod-card-inner">
@@ -91,8 +93,8 @@ export default function ProductCard({ product, index = 0, showFlip = false }) {
                 src={getImageUrl(secondaryImage)}
                 alt={`${product.name} — back view`}
                 loading="lazy"
-                  decoding="async"
-                style={{ width:'100%', height:'100%', objectFit:'cover' }}
+                decoding="async"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
             </div>
           </div>
@@ -103,8 +105,8 @@ export default function ProductCard({ product, index = 0, showFlip = false }) {
               src={getImageUrl(primaryImage)}
               alt={`${product.name}${activeGroup ? ` — ${activeGroup.name}` : ''}`}
               loading="lazy"
-                  decoding="async"
-              style={{ width:'100%', height:'100%', objectFit:'cover', transition:'transform .55s var(--ease)' }}
+              decoding="async"
+              style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform .55s var(--ease)' }}
             />
           ) : (
             <div className="prod-card-inner">
@@ -127,14 +129,14 @@ export default function ProductCard({ product, index = 0, showFlip = false }) {
       </div>
 
       {/* ── Info row ── */}
-      <div style={{ paddingTop:'.65rem' }}>
+      <div style={{ paddingTop: '.65rem' }}>
         <div className="prod-cat">{product.category}</div>
         <div className="prod-name">{product.name}</div>
 
         {/* Colour swatches — only shown if product has multiple colour groups */}
         {hasGroups && product.colorGroups.length > 1 && (
           <div
-            style={{ display:'flex', gap:'.38rem', alignItems:'center', marginBottom:'.42rem', flexWrap:'wrap' }}
+            style={{ display: 'flex', gap: '.38rem', alignItems: 'center', marginBottom: '.42rem', flexWrap: 'wrap' }}
             onClick={e => e.stopPropagation()} // prevent card nav when clicking swatch
           >
             {product.colorGroups.map((g, i) => (
@@ -143,7 +145,7 @@ export default function ProductCard({ product, index = 0, showFlip = false }) {
                 type="button"
                 onClick={e => switchColour(e, i)}
                 title={g.name}
-                aria-label={`${g.name}${activeColour===i?' (selected)':''}`}
+                aria-label={`${g.name}${activeColour === i ? ' (selected)' : ''}`}
                 style={{
                   width: 16,
                   height: 16,
@@ -161,15 +163,15 @@ export default function ProductCard({ product, index = 0, showFlip = false }) {
               />
             ))}
             {/* Active colour name */}
-            <span style={{ fontSize:'.58rem', color:'var(--stone)', letterSpacing:'.06em', marginLeft:'.1rem' }}>
+            <span style={{ fontSize: '.58rem', color: 'var(--stone)', letterSpacing: '.06em', marginLeft: '.1rem' }}>
               {product.colorGroups[activeColour]?.name}
             </span>
           </div>
-      )}
+        )}
 
         {/* Single colour name label */}
         {hasGroups && product.colorGroups.length === 1 && (
-          <div style={{ fontSize:'.6rem', color:'var(--stone)', letterSpacing:'.08em', marginBottom:'.35rem' }}>
+          <div style={{ fontSize: '.6rem', color: 'var(--stone)', letterSpacing: '.08em', marginBottom: '.35rem' }}>
             {product.colorGroups[0].name}
           </div>
         )}
