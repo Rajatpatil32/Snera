@@ -418,7 +418,14 @@ paddingRight:'26%',
             </div>
           ) : (
             <div className="prod-grid">
-              {products.map((p, i) => <ProductCard key={p._id} product={p} index={i} />)}
+              {products.map((p, i) => (
+              <ProductCard
+                key={p._id}
+                product={p}
+                index={i}
+                showFlip={true}
+              />
+            ))}
             </div>
           )}
 
@@ -523,7 +530,7 @@ paddingRight:'26%',
       }} id="nostalgic">
         {/* 👇 Replace src with your nostalgic image */}
         <img
-          src=""
+          src="https://suvidhasetu.netraa.co.in/uploads/nostalgic.png"
           alt="Nostalgic collection"
           style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
         />
@@ -544,7 +551,7 @@ paddingRight:'26%',
           }}>
             Dressed in <em style={{ fontStyle: 'italic' }}>memory.</em>
           </h2>
-          <Link to="/shop?collection=nostalgic" style={{
+          <Link to="/shop?collection=Unisex" style={{ 
             display: 'inline-flex', alignItems: 'center', gap: '.45rem',
             fontSize: '.63rem', letterSpacing: '.18em', textTransform: 'uppercase', fontWeight: 500,
             color: '#F8F7F4', borderBottom: '1px solid rgba(248,247,244,.5)',

@@ -47,12 +47,29 @@ export default function ProductCard({ product, index = 0, showFlip = false }) {
       onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && go()}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onTouchStart={() => {
+        if (showFlip && secondaryImage) setFlipped(true);
+      }}
+
+      onTouchEnd={() => {
+        if (showFlip) setFlipped(false);
+      }}
       tabIndex={0}
       role="button"
       aria-label={`View ${product.name}`}
     >
       {/* ── Image area ── */}
-      <div className="prod-card-img" style={{ background: bg, perspective: '1000px' }}>
+      <div
+  className="prod-card-img"
+  style={{
+   background: `
+  radial-gradient(circle at top, rgba(255,255,255,0.45), transparent 60%),
+  linear-gradient(145deg, #ffffff 0%, #ffffff 100%)
+`,
+    perspective: '1000px',
+    overflow: 'hidden',
+  }}
+>
 
         {/* Flip wrapper — only mounted when showFlip + secondaryImage exist */}
         {showFlip && secondaryImage ? (
@@ -77,6 +94,7 @@ export default function ProductCard({ product, index = 0, showFlip = false }) {
                 height: '100%',
                 objectFit: 'cover',
                 transition: 'all .7s ease-in-out',
+                filter: flipped ? 'brightness(.92)' : 'brightness(1)',
                 opacity: flipped ? 0 : 1,
                 transform: flipped ? 'scale(1.08)' : 'scale(1)',
               }}
@@ -95,8 +113,9 @@ export default function ProductCard({ product, index = 0, showFlip = false }) {
                 height: '100%',
                 objectFit: 'cover',
                 transition: 'all .7s ease-in-out',
+                filter: flipped ? 'brightness(1.08)' : 'brightness(.95)',
                 opacity: flipped ? 1 : 0,
-                transform: flipped ? 'scale(1)' : 'scale(1.08)',
+                transform: flipped ? 'scale(1.08)' : 'scale(1)',
               }}
             />
           </div>

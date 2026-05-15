@@ -281,7 +281,7 @@ export default function ProductDesignComposer({ onComposed, onCancel }) {
         ctx.globalCompositeOperation = blend;
         ctx.translate(x + w/2, y + h/2);
         ctx.rotate((rotation * Math.PI) / 180);
-        ctx.drawImage(designImage.img, -w/2, -h/2, w, h);
+        ctx.drawImage(designImage.img, -w/2, -h/2, w, h); 
         ctx.restore();
       }
 
@@ -476,7 +476,7 @@ export default function ProductDesignComposer({ onComposed, onCancel }) {
               </div>
             ) : (
               <div style={{ position: 'relative' }}>
-                <img src={baseImage.url} alt="Base" style={{ width: '100%', aspectRatio: '3/4', objectFit: 'cover', display: 'block' }} />
+                <img src={baseImage.url} alt="Base" style={{ width: '100%', aspectRatio: '3/4', objectFit: 'contain', background: '#f5f3ee', display: 'block' }} />
                 <button
                   onClick={() => { setBaseImage(null); setStep(1); setComposedUrl(null); }}
                   style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(28,27,24,0.8)', border: 'none', color: 'white', cursor: 'pointer', width: 24, height: 24, fontSize: '.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
