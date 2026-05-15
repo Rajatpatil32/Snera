@@ -59,6 +59,27 @@ app.use('/api/sitemap',  require('./routes/sitemap'));
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', brand: 'SNERA' }));
 
+// ─── Keep-Alive (Render free tier) ───────────────────────────────────────────
+// Render spins down free services after ~15 min of inactivity.
+// This self-ping every 14 minutes keeps the server awake.
+// RENDER_EXTERNAL_URL is automatically set by Render in production.
+const SELF_URL = process.env.RENDER_EXTERNAL_URL;
+if (SELF_URL) {
+  const https = require('https');
+  const PING_INTERVAL_MS = 14 * 60 * 1000; // 14 minutes
+
+  setInterval(() => {
+    const url = `${SELF_URL}/api/health`;
+    https.get(url, (res) => {
+      console.log(`[keep-alive] ping → ${url} | status: ${res.statusCode}`);
+    }).on('error', (err) => {
+      console.warn(`[keep-alive] ping failed: ${err.message}`);
+    });
+  }, PING_INTERVAL_MS);
+
+  console.log(`✓ Keep-alive enabled — pinging ${SELF_URL}/api/health every 14 min`);
+}
+
 // ─── Database ─────────────────────────────────────────────────────────────────
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/snera')
   .then(() => {
