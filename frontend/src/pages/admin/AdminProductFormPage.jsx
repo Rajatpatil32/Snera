@@ -37,6 +37,17 @@ const emptyForm = {
   tags:'', weight:220,
   colorGroups:[], // primary data
   images:[],      // legacy fallback
+  // ── SEO ──────────────────────────────────────────────────────────────────
+  seo: {
+    metaTitle:       '',
+    metaDescription: '',
+    focusKeyword:    '',
+    keywords:        '', // comma-separated in the form, stored as array
+    ogTitle:         '',
+    ogDescription:   '',
+    canonicalUrl:    '',
+    noIndex:         false,
+  },
 };
 
 // ─── Small helpers ────────────────────────────────────────────────────────────
@@ -302,7 +313,18 @@ export default function AdminProductFormPage() {
       if (!colorGroups.length && p.images?.length) {
         colorGroups = [{ name:'Default', hex:'#1C1B18', images: p.images, soldSizes:[], isDefault:true }];
       }
-      setForm({ ...emptyForm, ...p, price:p.price||'', comparePrice:p.comparePrice||'', tags:(p.tags||[]).join(', '), colorGroups });
+      setForm({ ...emptyForm, ...p, price:p.price||'', comparePrice:p.comparePrice||'', tags:(p.tags||[]).join(', '), colorGroups,
+        seo: {
+          metaTitle:       p.seo?.metaTitle       || '',
+          metaDescription: p.seo?.metaDescription || '',
+          focusKeyword:    p.seo?.focusKeyword     || '',
+          keywords:        (p.seo?.keywords || []).join(', '),
+          ogTitle:         p.seo?.ogTitle         || '',
+          ogDescription:   p.seo?.ogDescription   || '',
+          canonicalUrl:    p.seo?.canonicalUrl     || '',
+          noIndex:         p.seo?.noIndex          || false,
+        },
+      });
     });
   }, [id, isEdit]);
 
@@ -350,6 +372,12 @@ export default function AdminProductFormPage() {
       tags:         form.tags ? form.tags.split(',').map(t=>t.trim()).filter(Boolean) : [],
       // Also keep flat images = primary colour's images (for backwards compat)
       images:       (form.colorGroups.find(g=>g.isDefault)||form.colorGroups[0])?.images || [],
+      seo: {
+        ...form.seo,
+        keywords: form.seo.keywords
+          ? form.seo.keywords.split(',').map(k=>k.trim()).filter(Boolean)
+          : [],
+      },
     };
     try {
       if (isEdit) {
@@ -625,7 +653,212 @@ export default function AdminProductFormPage() {
         </div>
       </form>
 
-      {/* Design composer overlay */}
+      {/* ══════════════════════════════════════════════════════════════════
+          SEO SECTION — full width below the two-column product grid
+      ══════════════════════════════════════════════════════════════════ */}
+      <form onSubmit={e => e.preventDefault()} style={{marginTop:'1.5rem'}}>
+      <div className="admin-card">
+
+        {/* Header */}
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'1.5rem', flexWrap:'wrap', gap:'1rem' }}>
+          <div>
+            <h3 style={{ fontFamily:'var(--serif)', fontWeight:400, fontSize:'1rem' }}>🔍 SEO Settings</h3>
+            <p style={{ fontSize:'.68rem', color:'var(--stone2)', marginTop:'.25rem' }}>
+              Controls how this product appears on Google, WhatsApp shares, and social media.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="btn btn-ghost"
+            style={{ fontSize:'.62rem', padding:'.45rem .9rem' }}
+            onClick={() => {
+              const slug = form.name
+                ? `/product/${form.name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'')}`
+                : '/product/product-slug';
+              setForm(f => ({
+                ...f,
+                seo: {
+                  ...f.seo,
+                  metaTitle:       f.seo.metaTitle       || `${f.name} — Buy Online | SNERA`,
+                  metaDescription: f.seo.metaDescription || (f.description?.slice(0,155) || ''),
+                  ogTitle:         f.seo.ogTitle         || `${f.name} | SNERA`,
+                  ogDescription:   f.seo.ogDescription   || (f.description?.slice(0,200) || ''),
+                  canonicalUrl:    f.seo.canonicalUrl    || `https://snera.in${slug}`,
+                },
+              }));
+            }}
+          >
+            ✨ Auto-fill from product info
+          </button>
+        </div>
+
+        {/* Google SERP Preview */}
+        <div style={{ background:'var(--off)', border:'1px solid var(--sand)', padding:'1.1rem 1.25rem', marginBottom:'1.5rem' }}>
+          <div style={{ fontSize:'.58rem', letterSpacing:'.18em', textTransform:'uppercase', color:'var(--stone)', marginBottom:'.75rem' }}>Google Search Preview</div>
+          <div style={{ fontSize:'.78rem', color:'#1a7340', marginBottom:'.15rem' }}>
+            snera.in/product/{form.name ? form.name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'') : 'product-slug'}
+          </div>
+          <div style={{ fontSize:'1.05rem', color:'#1a0dab', marginBottom:'.2rem', lineHeight:1.3 }}>
+            {(form.seo.metaTitle || form.name || 'Product Title — SNERA').slice(0, 60)}
+          </div>
+          <div style={{ fontSize:'.82rem', color:'#4d5156', lineHeight:1.6 }}>
+            {(form.seo.metaDescription || form.description || 'Product description will appear here…').slice(0, 160)}
+          </div>
+        </div>
+
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'1.1rem' }}>
+
+          {/* Focus Keyword */}
+          <div className="form-group" style={{ gridColumn:'1 / -1' }}>
+            <label className="form-label">🎯 Focus Keyword
+              <span style={{ fontWeight:400, textTransform:'none', letterSpacing:0, color:'var(--stone)', marginLeft:'.4rem' }}>— the single keyword you most want to rank for</span>
+            </label>
+            <input className="form-input" value={form.seo.focusKeyword}
+              onChange={e => setForm(f=>({...f, seo:{...f.seo, focusKeyword:e.target.value}}))}
+              placeholder="e.g. oversized t-shirt india" />
+            {form.seo.focusKeyword && (
+              <div style={{ fontSize:'.66rem', marginTop:'.35rem' }}>
+                {form.seo.metaTitle?.toLowerCase().includes(form.seo.focusKeyword.toLowerCase())
+                  ? <span style={{color:'var(--success)'}}>✅ Focus keyword found in Meta Title</span>
+                  : <span style={{color:'var(--accent)'}}>⚠ Add focus keyword to Meta Title for better ranking</span>}
+              </div>
+            )}
+          </div>
+
+          {/* Meta Title */}
+          <div className="form-group" style={{ gridColumn:'1 / -1' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'.3rem' }}>
+              <label className="form-label" style={{margin:0}}>📌 SEO Meta Title
+                <span style={{ fontWeight:400, textTransform:'none', letterSpacing:0, color:'var(--stone)', marginLeft:'.4rem' }}>— ideal 50–60 chars</span>
+              </label>
+              <span style={{
+                fontSize:'.65rem', fontWeight:500, padding:'.15rem .5rem', borderRadius:100,
+                background: form.seo.metaTitle.length === 0 ? 'var(--off)' : form.seo.metaTitle.length <= 60 ? 'rgba(61,122,86,.1)' : '#FEF2F2',
+                color: form.seo.metaTitle.length === 0 ? 'var(--stone)' : form.seo.metaTitle.length <= 60 ? 'var(--success)' : '#991B1B',
+                border: `1px solid ${form.seo.metaTitle.length <= 60 ? 'rgba(61,122,86,.25)' : '#FECACA'}`,
+              }}>{form.seo.metaTitle.length}/60</span>
+            </div>
+            <input className="form-input" value={form.seo.metaTitle}
+              onChange={e => setForm(f=>({...f, seo:{...f.seo, metaTitle:e.target.value}}))}
+              placeholder="SNERA Essential Tee — Premium Cotton T-Shirt | Buy Online India"
+              maxLength={80}
+              style={form.seo.metaTitle.length > 60 ? {borderColor:'var(--error)'} : {}} />
+            <div style={{ fontSize:'.63rem', color:'var(--stone)', marginTop:'.3rem' }}>Formula: <strong>Product Name + Benefit + Brand</strong></div>
+          </div>
+
+          {/* Meta Description */}
+          <div className="form-group" style={{ gridColumn:'1 / -1' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'.3rem' }}>
+              <label className="form-label" style={{margin:0}}>📝 SEO Meta Description
+                <span style={{ fontWeight:400, textTransform:'none', letterSpacing:0, color:'var(--stone)', marginLeft:'.4rem' }}>— ideal 140–160 chars</span>
+              </label>
+              <span style={{
+                fontSize:'.65rem', fontWeight:500, padding:'.15rem .5rem', borderRadius:100,
+                background: form.seo.metaDescription.length === 0 ? 'var(--off)' : form.seo.metaDescription.length <= 160 ? 'rgba(61,122,86,.1)' : '#FEF2F2',
+                color: form.seo.metaDescription.length === 0 ? 'var(--stone)' : form.seo.metaDescription.length <= 160 ? 'var(--success)' : '#991B1B',
+                border: `1px solid ${form.seo.metaDescription.length <= 160 ? 'rgba(61,122,86,.25)' : '#FECACA'}`,
+              }}>{form.seo.metaDescription.length}/160</span>
+            </div>
+            <textarea className="form-textarea" value={form.seo.metaDescription}
+              onChange={e => setForm(f=>({...f, seo:{...f.seo, metaDescription:e.target.value}}))}
+              placeholder="Shop SNERA Essential Tee — ultra-soft 240gsm cotton, relaxed fit. Free shipping above ₹999. Easy 7-day returns."
+              rows={3} maxLength={200}
+              style={{ minHeight:72, ...(form.seo.metaDescription.length > 160 ? {borderColor:'var(--error)'} : {}) }} />
+            <div style={{ fontSize:'.63rem', color:'var(--stone)', marginTop:'.3rem' }}>Include focus keyword naturally. End with a CTA: "Shop now", "Free shipping", "Order today".</div>
+          </div>
+
+          {/* SEO Keywords */}
+          <div className="form-group" style={{ gridColumn:'1 / -1' }}>
+            <label className="form-label">🔑 SEO Keywords
+              <span style={{ fontWeight:400, textTransform:'none', letterSpacing:0, color:'var(--stone)', marginLeft:'.4rem' }}>— comma-separated · 5–10 recommended</span>
+            </label>
+            <input className="form-input" value={form.seo.keywords}
+              onChange={e => setForm(f=>({...f, seo:{...f.seo, keywords:e.target.value}}))}
+              placeholder="oversized t-shirt india, cotton tee, snera tshirt, minimal streetwear, buy tshirt online india" />
+            {form.seo.keywords && (
+              <div style={{ display:'flex', flexWrap:'wrap', gap:'.3rem', marginTop:'.45rem' }}>
+                {form.seo.keywords.split(',').map(k=>k.trim()).filter(Boolean).map(k=>(
+                  <span key={k} style={{ fontSize:'.62rem', padding:'.2rem .6rem', background:'var(--off)', border:'1px solid var(--sand)', color:'var(--stone2)' }}>{k}</span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* OG Title */}
+          <div className="form-group">
+            <label className="form-label">📱 OG Title
+              <span style={{ fontWeight:400, textTransform:'none', letterSpacing:0, color:'var(--stone)', marginLeft:'.4rem' }}>— WhatsApp / Instagram share</span>
+            </label>
+            <input className="form-input" value={form.seo.ogTitle}
+              onChange={e => setForm(f=>({...f, seo:{...f.seo, ogTitle:e.target.value}}))}
+              placeholder="SNERA Essential Tee | Shop Now" />
+          </div>
+
+          {/* OG Description */}
+          <div className="form-group">
+            <label className="form-label">📱 OG Description
+              <span style={{ fontWeight:400, textTransform:'none', letterSpacing:0, color:'var(--stone)', marginLeft:'.4rem' }}>— WhatsApp / Instagram share</span>
+            </label>
+            <input className="form-input" value={form.seo.ogDescription}
+              onChange={e => setForm(f=>({...f, seo:{...f.seo, ogDescription:e.target.value}}))}
+              placeholder="Premium 240gsm cotton. Free shipping above ₹999." />
+          </div>
+
+          {/* Canonical URL */}
+          <div className="form-group">
+            <label className="form-label">🔗 Canonical URL
+              <span style={{ fontWeight:400, textTransform:'none', letterSpacing:0, color:'var(--stone)', marginLeft:'.4rem' }}>— leave blank unless you have duplicate pages</span>
+            </label>
+            <input className="form-input" value={form.seo.canonicalUrl}
+              onChange={e => setForm(f=>({...f, seo:{...f.seo, canonicalUrl:e.target.value}}))}
+              placeholder="https://snera.in/product/snera-essential-tee" />
+          </div>
+
+          {/* No Index */}
+          <div style={{ display:'flex', alignItems:'center', gap:'.9rem', gridColumn:'1 / -1', padding:'.85rem', background:'rgba(220,38,38,.04)', border:'1px solid rgba(220,38,38,.12)' }}>
+            <button type="button"
+              onClick={() => setForm(f=>({...f, seo:{...f.seo, noIndex:!f.seo.noIndex}}))}
+              style={{ width:40, height:22, borderRadius:11, border:'none', cursor:'pointer', background: form.seo.noIndex ? '#DC2626' : 'var(--sand2)', position:'relative', transition:'background .2s', flexShrink:0 }}>
+              <span style={{ position:'absolute', top:3, left: form.seo.noIndex ? 21 : 3, width:16, height:16, borderRadius:'50%', background:'white', transition:'left .2s' }}/>
+            </button>
+            <div>
+              <div style={{ fontSize:'.75rem', fontWeight:500, color: form.seo.noIndex ? '#991B1B' : 'var(--ink)' }}>
+                No Index — Hide this product from Google
+              </div>
+              <div style={{ fontSize:'.62rem', color:'var(--stone)', marginTop:'.1rem' }}>
+                {form.seo.noIndex
+                  ? '⚠ Google will NOT index this page. Use only for draft/test products.'
+                  : 'Google will index and rank this product page normally.'}
+              </div>
+            </div>
+          </div>
+
+          {/* SEO Checklist */}
+          <div style={{ gridColumn:'1 / -1', background:'var(--off)', border:'1px solid var(--sand)', padding:'1rem 1.25rem' }}>
+            <div style={{ fontSize:'.62rem', letterSpacing:'.18em', textTransform:'uppercase', color:'var(--stone)', marginBottom:'.75rem' }}>SEO Checklist</div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'.3rem' }}>
+              {[
+                { ok: !!form.name,                                                                                                        label: 'Product name filled' },
+                { ok: !!form.seo.focusKeyword,                                                                                            label: 'Focus keyword set' },
+                { ok: form.seo.metaTitle.length >= 30 && form.seo.metaTitle.length <= 60,                                                 label: `Meta title 30–60 chars (${form.seo.metaTitle.length})` },
+                { ok: !!form.seo.focusKeyword && form.seo.metaTitle.toLowerCase().includes(form.seo.focusKeyword.toLowerCase()),           label: 'Focus keyword in meta title' },
+                { ok: form.seo.metaDescription.length >= 100 && form.seo.metaDescription.length <= 160,                                   label: `Meta desc 100–160 chars (${form.seo.metaDescription.length})` },
+                { ok: !!form.seo.focusKeyword && form.seo.metaDescription.toLowerCase().includes(form.seo.focusKeyword.toLowerCase()),     label: 'Focus keyword in meta desc' },
+                { ok: form.seo.keywords.split(',').filter(Boolean).length >= 3,                                                           label: 'At least 3 keywords added' },
+                { ok: !!form.seo.ogTitle,                                                                                                 label: 'OG Title set (WhatsApp)' },
+                { ok: form.colorGroups.length > 0 && form.colorGroups.some(g=>g.images.length>0),                                        label: 'Product images uploaded' },
+                { ok: !!form.description,                                                                                                 label: 'Description filled' },
+              ].map(({ ok, label }) => (
+                <div key={label} style={{ display:'flex', alignItems:'center', gap:'.4rem', fontSize:'.68rem', padding:'.3rem .5rem', background: ok ? 'rgba(61,122,86,.06)' : 'transparent', color: ok ? 'var(--success)' : 'var(--stone)' }}>
+                  <span style={{flexShrink:0}}>{ok ? '✅' : '❌'}</span>{label}
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
+      </div>
+      </form>
       {composerFor !== null && (
         <ProductDesignComposer
           onComposed={url => {

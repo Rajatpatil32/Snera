@@ -43,6 +43,18 @@ const productSchema = new mongoose.Schema({
   isFeatured: { type: Boolean, default: false },
   tags:       { type: [String], default: [] },
   weight:     { type: Number, default: 200 },
+
+  // ── SEO fields (set in Admin → Add/Edit Product → SEO tab) ───────────────
+  seo: {
+    metaTitle:       { type: String },   // <title> tag — ideal 50–60 chars
+    metaDescription: { type: String },   // <meta description> — ideal 140–160 chars
+    focusKeyword:    { type: String },   // primary keyword to rank for
+    keywords:        { type: [String], default: [] }, // shown in <meta keywords>
+    ogTitle:         { type: String },   // WhatsApp / Facebook share title override
+    ogDescription:   { type: String },   // WhatsApp / Facebook share description override
+    canonicalUrl:    { type: String },   // canonical URL override (leave blank = auto)
+    noIndex:         { type: Boolean, default: false }, // true = hide from Google
+  },
 }, { timestamps: true });
 
 // ─── Auto slug ────────────────────────────────────────────────────────────────
