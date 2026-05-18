@@ -221,6 +221,7 @@ export default function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [errors,     setErrors]     = useState({});
   const [rzpLoaded,  setRzpLoaded]  = useState(false);
+  const [showWaConfirm, setShowWaConfirm] = useState(false); // WhatsApp confirm modal
 
   useEffect(() => { loadRazorpay().then(setRzpLoaded); }, []);
 
@@ -326,9 +327,59 @@ export default function CheckoutPage() {
     }
   };
 
+  // ── WhatsApp checkout ──────────────────────────────────────────────────────
+  // Builds a pre-filled WhatsApp message and opens wa.me deep-link.
+  // Order is saved to DB first (status: pending_whatsapp) so owner can see it.
+  const OWNER_WHATSAPP = process.env.REACT_APP_OWNER_WHATSAPP || '919999999999'; // set in .env
+
+  const handleWhatsApp = async () => {
+    setSubmitting(true);
+    try {
+      const payload = buildOrderPayload('whatsapp');
+      const r = await API.post('/orders', { ...payload, payment: { method: 'whatsapp', status: 'pending' } });
+      const orderNum = r.data.order.orderNumber;
+
+      const itemLines = items
+        .map(i => `• ${i.name} (${i.size}${i.colour ? `, ${i.colour}` : ''}) × ${i.qty} — ${fmt(i.price * i.qty)}`)
+        .join('\n');
+
+      const msg = [
+        `Hi SNERA! I'd like to place an order 🛍️`,
+        ``,
+        `*Order Ref: ${orderNum}*`,
+        ``,
+        itemLines,
+        ``,
+        `Subtotal: ${fmt(total)}`,
+        `Shipping: ${shipping === 0 ? 'Free' : fmt(shipping)}`,
+        `*Total: ${fmt(grandTotal)}*`,
+        ``,
+        `*Delivery to:*`,
+        `${form.name}`,
+        `${form.line1}${form.line2 ? ', ' + form.line2 : ''}`,
+        `${form.city}, ${form.state} — ${form.pincode}`,
+        `Phone: ${form.phone}`,
+        ``,
+        `Please confirm availability and payment details. Thank you!`,
+      ].join('\n');
+
+      dispatch({ type: 'CLEAR' });
+      // Open WhatsApp
+      window.open(
+        `https://wa.me/${OWNER_WHATSAPP}?text=${encodeURIComponent(msg)}`,
+        '_blank'
+      );
+      navigate(`/order-success?order=${orderNum}&method=whatsapp`);
+    } catch (err) {
+      toast(err.response?.data?.error || 'Something went wrong. Please try again.');
+      setSubmitting(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
+    if (payMethod === 'whatsapp') { setShowWaConfirm(true); return; }
     payMethod === 'cod' ? await handleCOD() : await handleRazorpay();
   };
 
@@ -423,17 +474,29 @@ export default function CheckoutPage() {
                         desc: 'Pay when your order arrives at your doorstep. Available across India.',
                         sub: null,
                       },
-                    ].map(({ val, title, badge, desc, sub }) => (
+                      {
+                        val: 'whatsapp', title: 'Order via WhatsApp', badge: 'Chat with us',
+                        desc: 'Discuss size, customisation, or bulk queries directly with the SNERA team before paying.',
+                        sub: null,
+                        icon: (
+                          <svg viewBox="0 0 24 24" style={{ width:15, height:15, fill:'#25D366', flexShrink:0, marginTop:3 }}>
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                            <path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.555 4.122 1.528 5.855L.057 23.882l6.162-1.616A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.898 0-3.67-.522-5.181-1.427l-.371-.22-3.851 1.01 1.028-3.748-.242-.386A9.944 9.944 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
+                          </svg>
+                        ),
+                      },
+                    ].map(({ val, title, badge, desc, sub, icon }) => (
                       <label key={val} style={{
                         display: 'flex', alignItems: 'flex-start', gap: '1rem', padding: '1rem 1.25rem',
-                        border: `1px solid ${payMethod===val?'var(--ink)':'var(--sand)'}`,
-                        cursor: 'pointer', background: payMethod===val?'var(--off)':'var(--white)', transition: 'all var(--t)',
+                        border: `1px solid ${payMethod===val ? (val==='whatsapp'?'#25D366':'var(--ink)') : 'var(--sand)'}`,
+                        cursor: 'pointer', background: payMethod===val ? (val==='whatsapp'?'#f0fdf4':'var(--off)') : 'var(--white)', transition: 'all var(--t)',
                       }}>
-                        <input type="radio" name="payMethod" value={val} checked={payMethod===val} onChange={() => setPayMethod(val)} style={{ marginTop: 3, accentColor: 'var(--ink)', flexShrink: 0 }}/>
+                        <input type="radio" name="payMethod" value={val} checked={payMethod===val} onChange={() => setPayMethod(val)} style={{ marginTop: 3, accentColor: val==='whatsapp'?'#25D366':'var(--ink)', flexShrink: 0 }}/>
+                        {icon || null}
                         <div style={{ flex: 1 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '.3rem' }}>
                             <span style={{ fontSize: '.82rem', fontWeight: 500 }}>{title}</span>
-                            {badge && <span style={{ fontSize: '.55rem', letterSpacing: '.14em', textTransform: 'uppercase', background: 'var(--ink)', color: 'var(--white)', padding: '.15rem .45rem' }}>{badge}</span>}
+                            {badge && <span style={{ fontSize: '.55rem', letterSpacing: '.14em', textTransform: 'uppercase', background: val==='whatsapp'?'#25D366':'var(--ink)', color: 'var(--white)', padding: '.15rem .45rem' }}>{badge}</span>}
                           </div>
                           <p style={{ fontSize: '.75rem', color: 'var(--stone2)', margin: 0, lineHeight: 1.6 }}>{desc}</p>
                           {sub && (
@@ -511,12 +574,20 @@ export default function CheckoutPage() {
                     <button
                       type="submit" disabled={submitting}
                       className="btn btn-dark"
-                      style={{ width: '100%', justifyContent: 'center', opacity: submitting ? .7 : 1, fontSize: '.68rem' }}
+                      style={{
+                        width: '100%', justifyContent: 'center', opacity: submitting ? .7 : 1, fontSize: '.68rem',
+                        ...(payMethod === 'whatsapp' ? { background: '#25D366', borderColor: '#25D366' } : {}),
+                      }}
                     >
-                      {submitting ? 'Processing...' : payMethod==='cod' ? `Place Order · ${fmt(grandTotal)}` : `Pay ${fmt(grandTotal)} →`}
+                      {submitting ? 'Processing...'
+                        : payMethod === 'cod'       ? `Place Order · ${fmt(grandTotal)}`
+                        : payMethod === 'whatsapp'  ? `Continue on WhatsApp →`
+                        : `Pay ${fmt(grandTotal)} →`}
                     </button>
                     <p style={{ fontSize: '.62rem', color: 'var(--stone)', textAlign: 'center', marginTop: '.75rem' }}>
-                      {payMethod==='razorpay' ? '🔒 Secured by Razorpay · SSL encrypted' : '📦 Pay on delivery · No advance required'}
+                      {payMethod === 'razorpay'  && '🔒 Secured by Razorpay · SSL encrypted'}
+                      {payMethod === 'cod'       && '📦 Pay on delivery · No advance required'}
+                      {payMethod === 'whatsapp'  && '💬 Your order details will be sent to our team'}
                     </p>
                   </div>
                 </div>
@@ -543,6 +614,57 @@ export default function CheckoutPage() {
           .meas-grid{grid-template-columns:repeat(2,1fr)!important}
         }
       `}</style>
+
+      {/* ── WhatsApp confirm modal ── */}
+      {showWaConfirm && (
+        <div style={{
+          position:'fixed', inset:0, background:'rgba(28,27,24,.55)', backdropFilter:'blur(4px)',
+          zIndex:200, display:'flex', alignItems:'center', justifyContent:'center', padding:'1rem',
+        }}>
+          <div style={{ background:'var(--white)', maxWidth:420, width:'100%', padding:'2rem', border:'1px solid var(--sand)' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:'.75rem', marginBottom:'1rem' }}>
+              <svg viewBox="0 0 24 24" style={{ width:28, height:28, fill:'#25D366', flexShrink:0 }}>
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                <path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.555 4.122 1.528 5.855L.057 23.882l6.162-1.616A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.898 0-3.67-.522-5.181-1.427l-.371-.22-3.851 1.01 1.028-3.748-.242-.386A9.944 9.944 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
+              </svg>
+              <h3 style={{ fontFamily:'var(--serif)', fontWeight:300, fontSize:'1.2rem' }}>Order via WhatsApp</h3>
+            </div>
+
+            <p style={{ fontSize:'.8rem', color:'var(--stone2)', lineHeight:1.75, marginBottom:'1.25rem' }}>
+              Your cart and delivery details will be sent as a WhatsApp message to our team. We'll confirm availability,
+              discuss any customisation, and share payment instructions — usually within a few minutes.
+            </p>
+
+            {/* Order preview */}
+            <div style={{ background:'var(--off)', border:'1px solid var(--sand)', padding:'.85rem 1rem', marginBottom:'1.25rem', fontSize:'.75rem', lineHeight:1.8, color:'var(--stone2)', fontFamily:'monospace' }}>
+              {items.map(i => (
+                <div key={i.key}>• {i.name} ({i.size}{i.colour?`, ${i.colour}`:''}) × {i.qty} — {fmt(i.price*i.qty)}</div>
+              ))}
+              <div style={{ borderTop:'1px solid var(--sand)', marginTop:'.5rem', paddingTop:'.5rem', fontWeight:600, color:'var(--ink)' }}>
+                Total: {fmt(grandTotal)}
+              </div>
+            </div>
+
+            <div style={{ display:'flex', gap:'.75rem' }}>
+              <button
+                className="btn btn-ghost"
+                style={{ flex:1, fontSize:'.7rem' }}
+                onClick={() => setShowWaConfirm(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-dark"
+                style={{ flex:2, fontSize:'.7rem', background:'#25D366', borderColor:'#25D366', justifyContent:'center' }}
+                onClick={async () => { setShowWaConfirm(false); await handleWhatsApp(); }}
+                disabled={submitting}
+              >
+                {submitting ? 'Saving…' : 'Open WhatsApp →'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

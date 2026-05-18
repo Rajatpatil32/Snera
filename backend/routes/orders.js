@@ -128,10 +128,18 @@ router.post('/', async (req, res) => {
       shippingFee: shippingFee || 0,
       total:       total       || 0,
       payment:     { method, status: 'pending' },
-      status:      method === 'cod' ? 'confirmed' : 'pending',
+      // cod = confirmed immediately (pay on delivery)
+      // whatsapp = pending until admin confirms payment received on WhatsApp
+      // razorpay = pending until Razorpay verify callback
+      status: method === 'cod' ? 'confirmed' : 'pending',
     });
 
-    if (method === 'cod') sendOrderConfirmation(order).catch(console.error);
+    // Only COD gets confirmation email immediately
+    // WhatsApp → admin manually confirms → email sent from admin panel
+    // Razorpay → email sent after payment/verify succeeds
+    if (method === 'cod') {
+      sendOrderConfirmation(order).catch(console.error);
+    }
     res.status(201).json({ success: true, order });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -209,17 +217,21 @@ router.patch('/:id', auth, async (req, res) => {
     if (notes !== undefined) update.notes = notes;
     if (payment)    update.payment    = payment;
 
+    
     const prevOrder = await Order.findById(req.params.id);
     if (!prevOrder) return res.status(404).json({ error: 'Order not found' });
 
     const order = await Order.findByIdAndUpdate(req.params.id, update, { new: true });
 
     // Fire shipping email when status → 'shipped' for the first time with an AWB
-    const becomesShipped = status === 'shipped' && prevOrder.status !== 'shipped';
+    const becomesShipped  = status === 'shipped'   && prevOrder.status !== 'shipped';
+    // Send confirmation email when admin confirms a WhatsApp order (payment received)
+    const becomesConfirmed = status === 'confirmed' && prevOrder.status === 'pending'
+                             && prevOrder.payment?.method === 'whatsapp';
+
     const awb = update.trackingId || order.trackingId;
-    if (becomesShipped && awb) {
-      sendShippingNotification(order).catch(console.error);
-    }
+    if (becomesShipped && awb)   sendShippingNotification(order).catch(console.error);
+    if (becomesConfirmed)        sendOrderConfirmation(order).catch(console.error);
 
     res.json(order);
   } catch (err) {
