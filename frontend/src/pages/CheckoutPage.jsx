@@ -299,6 +299,16 @@ export default function CheckoutPage() {
         order_id:    rzpRes.data.id,
         prefill:     { name: form.name, email: form.email, contact: form.phone },
         theme:       { color: '#1C1B18' },
+        method: {
+          upi: true,
+          card: true,
+          netbanking: true,
+          wallet: true
+        },
+
+        upi: {
+          flow: 'collect'
+        },
         handler: async (response) => {
           try {
             setSubmitting(true);
