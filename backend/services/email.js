@@ -289,14 +289,15 @@ async function sendOrderConfirmation(order) {
   try {
     const transporter = createTransporter();
     await transporter.sendMail({
-      from:    `"SNERA" <${process.env.EMAIL_FROM || process.env.EMAIL_USER}>`,
+      from: process.env.EMAIL_FROM,
       to:      order.customer.email,
+      cc: "snerastore@gmail.com, rajatpatil32@gmail.com",
       subject: `Order Confirmed — ${order.orderNumber} | SNERA`,
       html:    buildOrderConfirmationHTML(order),
     });
     console.log(`✓ Order confirmation email sent to ${order.customer.email}`);
   } catch (err) {
-    console.error('✗ Failed to send order confirmation email:', err.message);
+    console.error('✗ Failed to send order confirmation email:', err);
     // Non-fatal — order still created
   }
 }
@@ -309,7 +310,7 @@ async function sendShippingNotification(order) {
   try {
     const transporter = createTransporter();
     await transporter.sendMail({
-      from:    `"SNERA" <${process.env.EMAIL_FROM || process.env.EMAIL_USER}>`,
+      from: process.env.EMAIL_FROM,
       to:      order.customer.email,
       subject: `Your order ${order.orderNumber} has shipped! 🚚 | SNERA`,
       html:    buildShippingHTML(order),
