@@ -142,7 +142,7 @@ router.post('/', async (req, res) => {
     // Razorpay → email sent after payment/verify succeeds
     if (method === 'cod') {
       console.log("called mail")
-      sendOrderConfirmation(order);
+      await sendOrderConfirmation(order);
     }
 
     console.log("Done")

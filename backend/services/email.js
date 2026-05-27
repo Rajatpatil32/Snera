@@ -298,7 +298,7 @@ async function sendOrderConfirmation(order) {
 console.log(order.customer.email);
     await api.sendTransacEmail({
       sender: {
-        email: process.env.EMAIL_FROM,
+        email: 'contact@snera.in',
         name: 'SNERA',
       },
 
