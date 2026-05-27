@@ -59,6 +59,53 @@ app.use('/api/sitemap',  require('./routes/sitemap'));
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', brand: 'SNERA' }));
 
+//temp
+app.get('/api/test-email', async (req, res) => {
+  try {
+    const SibApiV3Sdk = require('sib-api-v3-sdk');
+
+    const client = SibApiV3Sdk.ApiClient.instance;
+
+    client.authentications['api-key'].apiKey =
+      process.env.BREVO_API_KEY;
+
+    const api = new SibApiV3Sdk.TransactionalEmailsApi();
+
+    const response = await api.sendTransacEmail({
+      sender: {
+        name: 'SNERA',
+        email: 'contact@snera.in',
+      },
+
+      to: [
+        {
+          email: 'rajatpatil3264@gmail.com',
+        },
+      ],
+
+      subject: 'Production Email Test',
+
+      htmlContent: `
+        <h1>Email Working 🚀</h1>
+      `,
+    });
+
+    console.log(response);
+
+    res.json({
+      success: true,
+      response,
+    });
+  } catch (err) {
+    console.log(err);
+
+    res.status(500).json({
+      error: err.message,
+      full: err,
+    });
+  }
+});
+
 // ─── Keep-Alive (Render free tier) ───────────────────────────────────────────
 // Render spins down free services after ~15 min of inactivity.
 // This self-ping every 14 minutes keeps the server awake.
