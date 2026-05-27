@@ -138,7 +138,7 @@ router.post('/', async (req, res) => {
     // WhatsApp → admin manually confirms → email sent from admin panel
     // Razorpay → email sent after payment/verify succeeds
     if (method === 'cod') {
-      sendOrderConfirmation(order).catch(console.error);
+      sendOrderConfirmation(order);
     }
     res.status(201).json({ success: true, order });
   } catch (err) {

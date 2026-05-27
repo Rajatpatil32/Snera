@@ -294,6 +294,8 @@ function buildShippingHTML(order) {
 
 async function sendOrderConfirmation(order) {
   try {
+    console.log('EMAIL STARTED');
+console.log(order.customer.email);
     await api.sendTransacEmail({
       sender: {
         email: process.env.EMAIL_FROM,
