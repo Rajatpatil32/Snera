@@ -23,13 +23,16 @@ function createTransporter() {
 
   // Generic SMTP (Brevo, Mailgun, AWS SES, etc.)
   return nodemailer.createTransport({
-    host:   process.env.SMTP_HOST   || 'smtp.gmail.com',
-    port:   parseInt(process.env.SMTP_PORT || '587'),
-    secure: process.env.SMTP_SECURE === 'true',
+    host:   process.env.SMTP_HOST,
+    port:   Number(process.env.SMTP_PORT || '587'),
+    secure: false,
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
     },
+  tls: {
+    rejectUnauthorized: false,
+  },
   });
 }
 
@@ -288,6 +291,13 @@ async function sendOrderConfirmation(order) {
   }
   try {
     const transporter = createTransporter();
+    transporter.verify(function (error, success) {
+  if (error) {
+    console.log('SMTP ERROR:', error);
+  } else {
+    console.log('SMTP SERVER READY');
+  }
+});
     await transporter.sendMail({
       from: process.env.EMAIL_FROM,
       to:      order.customer.email,
@@ -309,6 +319,13 @@ async function sendShippingNotification(order) {
   }
   try {
     const transporter = createTransporter();
+    transporter.verify(function (error, success) {
+  if (error) {
+    console.log('SMTP ERROR:', error);
+  } else {
+    console.log('SMTP SERVER READY');
+  }
+});
     await transporter.sendMail({
       from: process.env.EMAIL_FROM,
       to:      order.customer.email,
