@@ -30,16 +30,16 @@ function createTransporter() {
 
   // Generic SMTP (Brevo, Mailgun, AWS SES, etc.)
   return nodemailer.createTransport({
-    host:   process.env.SMTP_HOST,
-    port:   Number(process.env.SMTP_PORT || '587'),
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT || '587'),
     secure: false,
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
     },
-  tls: {
-    rejectUnauthorized: false,
-  },
+    tls: {
+      rejectUnauthorized: false,
+    },
   });
 }
 
@@ -196,10 +196,10 @@ function buildOrderConfirmationHTML(order) {
             <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#A09D96;margin-bottom:16px;">What Happens Next</div>
             <table width="100%" cellpadding="0" cellspacing="0">
               ${[
-                ['📦', 'Order Processing', 'We\'re picking and packing your items carefully.'],
-                ['🚚', 'Shipped', 'You\'ll receive a tracking number once dispatched.'],
-                ['🏠', 'Delivered', 'Expected within 3–5 business days.'],
-              ].map(([icon, title, desc]) => `
+      ['📦', 'Order Processing', 'We\'re picking and packing your items carefully.'],
+      ['🚚', 'Shipped', 'You\'ll receive a tracking number once dispatched.'],
+      ['🏠', 'Delivered', 'Expected within 3–5 business days.'],
+    ].map(([icon, title, desc]) => `
                 <tr>
                   <td width="36" valign="top" style="padding-bottom:14px;font-size:18px;">${icon}</td>
                   <td style="padding-bottom:14px;padding-left:12px;">
@@ -234,8 +234,8 @@ function buildOrderConfirmationHTML(order) {
 
 // ─── Shipping notification email ───────────────────────────────────────────────
 function buildShippingHTML(order) {
-  const siteUrl    = process.env.FRONTEND_URL || 'https://snera.in';
-  const trackUrl   = `${siteUrl}/track-order?order=${order.orderNumber}`;
+  const siteUrl = process.env.FRONTEND_URL || 'https://snera.in';
+  const trackUrl = `${siteUrl}/track-order?order=${order.orderNumber}`;
   const courierUrl = getCourierTrackingUrl(order.courier, order.trackingId);
 
   return `<!DOCTYPE html>
@@ -294,11 +294,9 @@ function buildShippingHTML(order) {
 
 async function sendOrderConfirmation(order) {
   try {
-    console.log('EMAIL STARTED');
-console.log(order.customer.email);
     await api.sendTransacEmail({
       sender: {
-        email: 'contact@snera.in',
+        email: process.env.EMAIL_FROM,
         name: 'SNERA',
       },
 
@@ -307,13 +305,20 @@ console.log(order.customer.email);
           email: order.customer.email,
         },
       ],
+      cc: [
+        {
+          email: 'snerastore@gmail.com',
+        },
+        {
+          email: 'rajatpatil32@gmail.com',
+        },
+      ],
 
       subject: `Order Confirmed — ${order.orderNumber}`,
 
       htmlContent: buildOrderConfirmationHTML(order),
     });
 
-    console.log('EMAIL SENT');
   } catch (err) {
     console.log(err);
   }
@@ -355,17 +360,17 @@ async function sendShippingNotification(order) {
   try {
     const transporter = createTransporter();
     transporter.verify(function (error, success) {
-  if (error) {
-    console.log('SMTP ERROR:', error);
-  } else {
-    console.log('SMTP SERVER READY');
-  }
-});
+      if (error) {
+        console.log('SMTP ERROR:', error);
+      } else {
+        console.log('SMTP SERVER READY');
+      }
+    });
     await transporter.sendMail({
       from: process.env.EMAIL_FROM,
-      to:      order.customer.email,
+      to: order.customer.email,
       subject: `Your order ${order.orderNumber} has shipped! 🚚 | SNERA`,
-      html:    buildShippingHTML(order),
+      html: buildShippingHTML(order),
     });
     console.log(`✓ Shipping notification email sent to ${order.customer.email}`);
   } catch (err) {

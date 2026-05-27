@@ -121,7 +121,6 @@ router.post('/', async (req, res) => {
     if (!items?.length)
       return res.status(400).json({ error: 'Order must have at least one item' });
 
-    console.log("initialzed")
     const method = payment?.method || 'razorpay';
     const order  = await Order.create({
       customer, address, items,
@@ -135,17 +134,14 @@ router.post('/', async (req, res) => {
       status: method === 'cod' ? 'confirmed' : 'pending',
     });
 
-    console.log("order done")
 
     // Only COD gets confirmation email immediately
     // WhatsApp → admin manually confirms → email sent from admin panel
     // Razorpay → email sent after payment/verify succeeds
     if (method === 'cod') {
-      console.log("called mail")
       await sendOrderConfirmation(order);
     }
 
-    console.log("Done")
     res.status(201).json({ success: true, order });
   } catch (err) {
     res.status(400).json({ error: err.message });
