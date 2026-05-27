@@ -5,6 +5,13 @@
  */
 
 const nodemailer = require('nodemailer');
+const SibApiV3Sdk = require('sib-api-v3-sdk');
+
+const client = SibApiV3Sdk.ApiClient.instance;
+
+client.authentications['api-key'].apiKey =
+  process.env.BREVO_API_KEY;
+const api = new SibApiV3Sdk.TransactionalEmailsApi();
 
 // ─── Transporter ──────────────────────────────────────────────────────────────
 function createTransporter() {
@@ -283,34 +290,60 @@ function buildShippingHTML(order) {
 </body></html>`;
 }
 
-// ─── Public API ───────────────────────────────────────────────────────────────
+// const api = new SibApiV3Sdk.TransactionalEmailsApi();
+
 async function sendOrderConfirmation(order) {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    console.log('⚠ Email not configured — skipping order confirmation email');
-    return;
-  }
   try {
-    const transporter = createTransporter();
-    transporter.verify(function (error, success) {
-  if (error) {
-    console.log('SMTP ERROR:', error);
-  } else {
-    console.log('SMTP SERVER READY');
-  }
-});
-    await transporter.sendMail({
-      from: process.env.EMAIL_FROM,
-      to:      order.customer.email,
-      cc: "snerastore@gmail.com, rajatpatil32@gmail.com",
-      subject: `Order Confirmed — ${order.orderNumber} | SNERA`,
-      html:    buildOrderConfirmationHTML(order),
+    await api.sendTransacEmail({
+      sender: {
+        email: process.env.EMAIL_FROM,
+        name: 'SNERA',
+      },
+
+      to: [
+        {
+          email: order.customer.email,
+        },
+      ],
+
+      subject: `Order Confirmed — ${order.orderNumber}`,
+
+      htmlContent: buildOrderConfirmationHTML(order),
     });
-    console.log(`✓ Order confirmation email sent to ${order.customer.email}`);
+
+    console.log('EMAIL SENT');
   } catch (err) {
-    console.error('✗ Failed to send order confirmation email:', err);
-    // Non-fatal — order still created
+    console.log(err);
   }
 }
+// ─── Public API ───────────────────────────────────────────────────────────────
+// async function sendOrderConfirmation(order) {
+//   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+//     console.log('⚠ Email not configured — skipping order confirmation email');
+//     return;
+//   }
+//   try {
+//     const transporter = createTransporter();
+//     transporter.verify(function (error, success) {
+//   if (error) {
+//     console.log('SMTP ERROR:', error);
+//   } else {
+//     console.log('SMTP SERVER READY');
+//   }
+// });
+//     await transporter.sendMail({
+//       from: process.env.EMAIL_FROM,
+//       to:      order.customer.email,
+//       cc: "snerastore@gmail.com, rajatpatil32@gmail.com",
+//       subject: `Order Confirmed — ${order.orderNumber} | SNERA`,
+//       html:    buildOrderConfirmationHTML(order),
+//     });
+//     console.log(`✓ Order confirmation email sent to ${order.customer.email}`);
+//   } catch (err) {
+//     console.error('✗ Failed to send order confirmation email:', err);
+//     // Non-fatal — order still created
+//   }
+// }
 
 async function sendShippingNotification(order) {
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
