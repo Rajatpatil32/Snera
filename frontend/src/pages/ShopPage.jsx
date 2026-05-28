@@ -3,12 +3,22 @@ import { useSearchParams } from 'react-router-dom';
 import API from '../utils/api';
 import SEOHead from '../components/SEOHead';
 import useSEO, { itemListSchema } from '../hooks/useseo';
-import useCanonical from '../hooks/useCanonical';
 import ProductCard from '../components/ProductCard';
 import { useReveal } from '../hooks/useReveal';
 
+// CHANGED: removed `import useCanonical from '../hooks/useCanonical'`
+// The useCanonical hook was returning the current window URL including ?category=Tops etc.,
+// which was canonicalising filter pages as separate indexable pages — conflicting with
+// the robots.txt Disallow and the sitemap strategy. Now we set canonical explicitly:
+//   - /shop (no filters active) → canonical = https://snera.in/shop
+//   - /shop?category=X (filter active) → canonical = https://snera.in/shop
+// This tells Google the filtered view is a variant of /shop, not a separate page.
+// If you later add proper path-based category routes (/shop/tops), update canonical there.
+
 const CATEGORIES = ['All', 'Tops', 'Bottoms', 'Outerwear', 'Accessories'];
 const GENDERS    = ['All', 'Men', 'Women', 'Unisex'];
+
+const SITE = 'https://snera.in';
 
 export default function ShopPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -51,7 +61,10 @@ export default function ShopPage() {
   };
 
   // ── SEO ────────────────────────────────────────────────────────────────────
-  const canonicalUrl = useCanonical();
+  // CHANGED: canonical is always /shop regardless of active filters.
+  // Filter combinations (?category=Tops, ?gender=Men) are UI state, not separate pages.
+  const canonicalUrl = `${SITE}/shop`;
+
   const categoryLabel = catParam !== 'All' ? catParam : 'All Products';
   const genderLabel   = genderParam !== 'All' ? ` for ${genderParam}` : '';
   const shopTitle     = `${categoryLabel}${genderLabel} | Shop | SNERA`;
@@ -62,7 +75,7 @@ export default function ShopPage() {
   const shopCrumbs = [
     { name: 'Home', url: '/' },
     { name: 'Shop', url: '/shop' },
-    ...(catParam !== 'All' ? [{ name: catParam, url: `/shop?category=${catParam}` }] : []),
+    ...(catParam !== 'All' ? [{ name: catParam, url: '/shop' }] : []),
   ];
 
   const shopKeywords = [
@@ -75,7 +88,8 @@ export default function ShopPage() {
     type: 'shop',
     products,
     breadcrumbs: shopCrumbs,
-    pageUrl: `/shop${catParam !== 'All' ? `?category=${catParam}` : ''}`,
+    // CHANGED: pageUrl always /shop — consistent with canonical above
+    pageUrl: '/shop',
     pageName: shopTitle,
     pageDescription: shopDesc,
     categoryName: categoryLabel,
@@ -86,9 +100,8 @@ export default function ShopPage() {
       <SEOHead
         title={shopTitle}
         description={shopDesc}
-        canonical={canonicalUrl}
+        url={canonicalUrl}
         schemas={schemas}
-        keywords={shopKeywords}
       />
 
       <div style={{ paddingTop:'var(--nav-h)' }}>

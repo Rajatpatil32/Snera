@@ -2,23 +2,26 @@
  * sitemap.js — Dynamic XML Sitemap for SNERA
  *
  * Endpoints:
- *   GET /api/sitemap.xml        → Sitemap index (references sub-sitemaps)
- *   GET /api/sitemap/pages.xml  → Static pages sitemap
+ *   GET /api/sitemap/          → Sitemap index
+ *   GET /api/sitemap/pages.xml → Static pages sitemap
  *   GET /api/sitemap/products.xml → Product pages + image tags
- *   GET /api/sitemap/categories.xml → Category/filter pages
  *
- * Mounted at /api/sitemap in server.js
- *
- * Image sitemap spec: https://developers.google.com/search/docs/crawling-indexing/sitemaps/image-sitemaps
+ * Changes made:
+ *  1. Removed /api/sitemap/categories.xml entirely.
+ *     Filter URLs like /shop?category=Tops are UI state, not indexable pages.
+ *     They were also conflicting with the ShopPage canonical (always /shop).
+ *     Removed from sitemap index too.
+ *  2. Fixed the .xml redirect — it now points to the correct final URL
+ *     so robots.txt `Sitemap:` line can reference the non-redirect endpoint directly.
  */
 
 const router  = require('express').Router();
 const Product = require('../models/Product');
 
-const BASE = process.env.FRONTEND_URL || 'https://snera.in';
-const API_BASE = process.env.BACKEND_URL || 'https://snera.in';
+const BASE     = process.env.FRONTEND_URL || 'https://snera.in';
+const API_BASE = process.env.BACKEND_URL  || 'https://snera.in';
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function xmlEscape(str) {
   return String(str || '')
     .replace(/&/g, '&amp;')
@@ -35,11 +38,11 @@ function today() {
 function absImageUrl(path) {
   if (!path) return null;
   if (path.startsWith('http')) return path;
-  // Backend-served uploads
   return `${API_BASE}${path}`;
 }
 
 // ── Sitemap Index ─────────────────────────────────────────────────────────────
+// CHANGED: removed categories sitemap entry — filter URLs are not indexable pages
 router.get('/', async (req, res) => {
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -51,19 +54,32 @@ router.get('/', async (req, res) => {
     <loc>${BASE}/api/sitemap/products.xml</loc>
     <lastmod>${today()}</lastmod>
   </sitemap>
+</sitemapindex>`;
+
+  res.header('Content-Type', 'application/xml');
+  res.header('Cache-Control', 'public, max-age=3600');
+  res.send(xml);
+});
+
+// CHANGED: .xml now serves the sitemap index directly instead of redirecting.
+// robots.txt points to /api/sitemap.xml — this makes that URL resolve without a redirect.
+router.get('.xml', async (req, res) => {
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <sitemap>
-    <loc>${BASE}/api/sitemap/categories.xml</loc>
+    <loc>${BASE}/api/sitemap/pages.xml</loc>
+    <lastmod>${today()}</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>${BASE}/api/sitemap/products.xml</loc>
     <lastmod>${today()}</lastmod>
   </sitemap>
 </sitemapindex>`;
 
   res.header('Content-Type', 'application/xml');
-  res.header('Cache-Control', 'public, max-age=3600'); // cache 1 hour
+  res.header('Cache-Control', 'public, max-age=3600');
   res.send(xml);
 });
-
-// ── Also serve sitemap index at /api/sitemap.xml (for robots.txt ref) ────────
-router.get('.xml', async (req, res) => res.redirect(301, `${BASE}/api/sitemap/`));
 
 // ── Static Pages Sitemap ──────────────────────────────────────────────────────
 router.get('/pages.xml', (req, res) => {
@@ -92,7 +108,7 @@ ${urls}
 </urlset>`;
 
   res.header('Content-Type', 'application/xml');
-  res.header('Cache-Control', 'public, max-age=86400'); // 24h
+  res.header('Cache-Control', 'public, max-age=86400');
   res.send(xml);
 });
 
@@ -104,13 +120,12 @@ router.get('/products.xml', async (req, res) => {
       .lean();
 
     const urls = products.map(p => {
-      // Collect all images across colour groups
       const allImages = p.colorGroups?.length
         ? p.colorGroups.flatMap(g => (g.images || []))
         : (p.images || []);
 
       const imageTags = allImages
-        .slice(0, 10) // Google allows up to 1000 but keep it sane
+        .slice(0, 10)
         .map(img => {
           const url = absImageUrl(img);
           if (!url) return '';
@@ -135,59 +150,6 @@ router.get('/products.xml', async (req, res) => {
 <urlset
   xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-${urls}
-</urlset>`;
-
-    res.header('Content-Type', 'application/xml');
-    res.header('Cache-Control', 'public, max-age=3600');
-    res.send(xml);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ── Category / Filter Pages Sitemap ──────────────────────────────────────────
-router.get('/categories.xml', async (req, res) => {
-  try {
-    const CATEGORIES = ['Tops', 'Bottoms', 'Outerwear', 'Accessories'];
-    const GENDERS    = ['Men', 'Women', 'Unisex'];
-
-    const categoryPages = CATEGORIES.map(cat => ({
-      loc:        `/shop?category=${cat}`,
-      priority:   '0.8',
-      changefreq: 'daily',
-    }));
-
-    const genderPages = GENDERS.map(g => ({
-      loc:        `/shop?gender=${g}`,
-      priority:   '0.7',
-      changefreq: 'daily',
-    }));
-
-    // Cross-filtered pages (category + gender)
-    const crossPages = [];
-    for (const cat of CATEGORIES) {
-      for (const g of GENDERS) {
-        crossPages.push({
-          loc:        `/shop?category=${cat}&gender=${g}`,
-          priority:   '0.6',
-          changefreq: 'weekly',
-        });
-      }
-    }
-
-    const allPages = [...categoryPages, ...genderPages, ...crossPages];
-
-    const urls = allPages.map(p => `
-  <url>
-    <loc>${xmlEscape(`${BASE}${p.loc}`)}</loc>
-    <lastmod>${today()}</lastmod>
-    <changefreq>${p.changefreq}</changefreq>
-    <priority>${p.priority}</priority>
-  </url>`).join('');
-
-    const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls}
 </urlset>`;
 

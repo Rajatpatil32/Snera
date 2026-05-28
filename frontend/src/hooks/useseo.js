@@ -1,27 +1,29 @@
 /**
  * useSEO — Central SEO hook for SNERA
  *
- * Centralises all structured-data generation so every page
- * calls one hook rather than hand-rolling JSON-LD inline.
- *
- * Usage:
- *   const schemas = useSEO({ type: 'product', product, breadcrumbs });
- *   // pass `schemas` to <SEOHead schemas={schemas} … />
+ * Changes made:
+ *  1. priceValidUntil is now dynamic (1 year from today) instead of hardcoded '2026-12-31'
+ *  2. aggregateRating added to productSchema (renders star ratings in Google results)
+ *  3. This is the single source of truth for product schema — SEOHead.jsx no longer builds its own
  */
 
-const SITE   = 'https://snera.in';
-const BRAND  = 'SNERA';
-const LOGO   = `${SITE}/images/logo.png`;
-const IG     = 'https://instagram.com/snera.official';
+const SITE  = 'https://snera.in';
+const BRAND = 'SNERA';
+const LOGO  = `${SITE}/images/logo.png`;
+const IG    = 'https://instagram.com/snera.store';
 
 // ─── Image URL helper ─────────────────────────────────────────────────────────
 function absImg(path) {
   if (!path) return `${SITE}/og-image.jpg`;
   if (path.startsWith('http')) return path;
-  // Backend uploads served from /uploads/...
-  return path.startsWith('/uploads')
-    ? `${SITE}${path}`
-    : `${SITE}${path}`;
+  return `${SITE}${path}`;
+}
+
+// ─── Dynamic date helper — 1 year from today ──────────────────────────────────
+function oneYearFromNow() {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() + 1);
+  return d.toISOString().split('T')[0];
 }
 
 // ─── Organisation (emitted on every page) ─────────────────────────────────────
@@ -87,51 +89,55 @@ export function breadcrumbSchema(crumbs = []) {
 export function productSchema(product) {
   if (!product) return null;
 
-  // Collect all images across colour groups
   const allImages = product.colorGroups?.length
     ? product.colorGroups.flatMap(g => g.images || [])
     : product.images || [];
 
   const inStock = product.isActive !== false;
-  const availability = inStock
-    ? 'https://schema.org/InStock'
-    : 'https://schema.org/OutOfStock';
 
-  const schema = {
+  return {
     '@context': 'https://schema.org',
     '@type': 'Product',
     '@id': `${SITE}/product/${product.slug}#product`,
     name: product.name,
     description: product.description || '',
-    sku: product._id || product.slug,
-    // Material / fabric as additionalProperty
-    ...(product.fabric && {
-      material: product.fabric,
-    }),
+    // Use slug as SKU — human-readable and stable. Add a real `sku` field in the
+    // Product model and swap `product.slug` for `product.sku` once available.
+    sku: product.sku || product.slug,
+    ...(product.fabric && { material: product.fabric }),
     brand: {
       '@type': 'Brand',
       name: BRAND,
       '@id': `${SITE}/#organization`,
     },
-    image: allImages.length
-      ? allImages.map(absImg)
-      : [`${SITE}/og-image.jpg`],
+    image: allImages.length ? allImages.map(absImg) : [`${SITE}/og-image.jpg`],
+    // ── aggregateRating: shows star ratings in Google search results ───────────
+    // Requires avgRating (Number 1–5) and reviewCount (Number) on the product.
+    // Add these fields to the Product model and populate them from user reviews.
+    ...(product.reviewCount && product.reviewCount > 0 && {
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: product.avgRating,
+        reviewCount: product.reviewCount,
+        bestRating: 5,
+        worstRating: 1,
+      },
+    }),
     offers: {
       '@type': 'Offer',
       '@id': `${SITE}/product/${product.slug}#offer`,
       priceCurrency: 'INR',
       price: product.price,
-      ...(product.comparePrice && { priceValidUntil: '2026-12-31' }),
-      availability,
+      // Dynamic — always 1 year ahead, never stale
+      ...(product.comparePrice && { priceValidUntil: oneYearFromNow() }),
+      availability: inStock
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/OutOfStock',
       url: `${SITE}/product/${product.slug}`,
       seller: { '@id': `${SITE}/#organization` },
       shippingDetails: {
         '@type': 'OfferShippingDetails',
-        shippingRate: {
-          '@type': 'MonetaryAmount',
-          value: 0,
-          currency: 'INR',
-        },
+        shippingRate: { '@type': 'MonetaryAmount', value: 0, currency: 'INR' },
         deliveryTime: {
           '@type': 'ShippingDeliveryTime',
           handlingTime: { '@type': 'QuantitativeValue', minValue: 0, maxValue: 1, unitCode: 'DAY' },
@@ -147,7 +153,6 @@ export function productSchema(product) {
         returnFees: 'https://schema.org/FreeReturn',
       },
     },
-    // Size variants as SizeSpecification
     ...(product.sizes?.length && {
       additionalProperty: product.sizes.map(sz => ({
         '@type': 'PropertyValue',
@@ -156,8 +161,6 @@ export function productSchema(product) {
       })),
     }),
   };
-
-  return schema;
 }
 
 // ─── FAQ (product detail page) ────────────────────────────────────────────────
@@ -238,7 +241,7 @@ export function webPageSchema({ name, description, url, dateModified }) {
 
 // ─── Main hook ────────────────────────────────────────────────────────────────
 export default function useSEO({
-  type = 'webpage',   // 'home' | 'shop' | 'product' | 'webpage'
+  type = 'webpage',
   product = null,
   products = [],
   breadcrumbs = [],
@@ -264,4 +267,4 @@ export default function useSEO({
   }
 
   return schemas.filter(Boolean);
-}   
+}

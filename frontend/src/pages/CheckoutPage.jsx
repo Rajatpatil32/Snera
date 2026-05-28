@@ -479,11 +479,11 @@ export default function CheckoutPage() {
                         desc: 'UPI, Credit / Debit Card, Net Banking, Wallets via Razorpay. 256-bit SSL encrypted.',
                         sub: ['UPI','Visa','Mastercard','RuPay','Wallets'],
                       },
-                      {
-                        val: 'cod', title: 'Cash on Delivery', badge: null,
-                        desc: 'Pay when your order arrives at your doorstep. Available across India.',
-                        sub: null,
-                      },
+                      // {
+                      //   val: 'cod', title: 'Cash on Delivery', badge: null,
+                      //   desc: 'Pay when your order arrives at your doorstep. Available across India.',
+                      //   sub: null,
+                      // },
                       {
                         val: 'whatsapp', title: 'Order via WhatsApp', badge: 'Chat with us',
                         desc: 'Discuss size, customisation, or bulk queries directly with the SNERA team before paying.',

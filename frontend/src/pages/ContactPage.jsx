@@ -1,5 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import SEOHead from '../components/SEOHead';
+import useSEO from '../hooks/useseo';
+
+// CHANGED: added `useState` import (was missing — original file would throw ReferenceError)
+// CHANGED: added useSEO to emit Organization + WebPage structured data on the contact page.
+// This allows Google to show contact info in rich results and confirms the page is part of the site graph.
 
 export default function ContactPage() {
   useEffect(() => { window.scrollTo(0, 0); }, []);
@@ -13,13 +18,20 @@ export default function ContactPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
     setLoading(true);
-    // Simulate form submission
     setTimeout(() => {
       setLoading(false);
       setSubmitted(true);
       setForm({ name: '', email: '', subject: '', message: '' });
     }, 1200);
   };
+
+  // CHANGED: useSEO call added — emits Organization + WebSite + WebPage JSON-LD
+  const schemas = useSEO({
+    type: 'webpage',
+    pageUrl: '/contact',
+    pageName: 'Contact Us | SNERA',
+    pageDescription: "Get in touch with SNERA's team. We respond within 24–48 hours, Monday–Saturday.",
+  });
 
   const inputStyle = {
     width: '100%',
@@ -49,7 +61,8 @@ export default function ContactPage() {
       <SEOHead
         title="Contact Us | SNERA"
         description="Get in touch with SNERA's team. We respond within 24–48 hours, Monday–Saturday."
-        canonical="https://snera.in/contact"
+        url="https://snera.in/contact"
+        schemas={schemas}
       />
     <div style={{ background: 'var(--white)', minHeight: '100vh', paddingTop: 'var(--nav-h)' }}>
       {/* Header */}

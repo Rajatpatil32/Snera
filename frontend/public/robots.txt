@@ -1,6 +1,5 @@
 # ── SNERA robots.txt ────────────────────────────────────────────────────────
 # https://snera.in/robots.txt
-# Last updated: 2025
 
 # ── Allow all crawlers ───────────────────────────────────────────────────────
 User-agent: *
@@ -21,6 +20,11 @@ Disallow: /checkout
 Disallow: /order-success
 Disallow: /api/
 Disallow: /uploads/
+# CHANGED: also disallow ?category= and ?gender= filter params —
+# canonical for all /shop filter views is /shop (set in ShopPage.jsx),
+# so these URLs should not be indexed as separate pages.
+Disallow: /*?category=*
+Disallow: /*?gender=*
 Disallow: /*?colour=*
 Disallow: /*?q=*
 
@@ -42,4 +46,5 @@ User-agent: BLEXBot
 Disallow: /
 
 # ── Sitemap ───────────────────────────────────────────────────────────────────
+# CHANGED: points to /api/sitemap.xml which now serves the index directly (no redirect)
 Sitemap: https://snera.in/api/sitemap.xml

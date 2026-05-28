@@ -83,7 +83,6 @@ export default function ProductDetailPage() {
       payload: {
         product: {
           ...product,
-          // Use active colour's primary image for cart thumbnail
           images: images.length ? images : product.images,
         },
         size: selSize,
@@ -104,10 +103,18 @@ export default function ProductDetailPage() {
     { name: product.name, url: `/product/${product.slug}` },
   ];
 
-  // Auto-generate meta description from product data
-  const metaDescription = product.description
-    ? `${product.description.slice(0, 120)}. Buy ${product.name} online at SNERA. Free shipping on orders above ₹999.`
-    : `Shop ${product.name} by SNERA — premium Indian fashion. ${product.fabric ? `Made from ${product.fabric}. ` : ''}Available in sizes ${(product.sizes || []).join(', ')}.`;
+  // CHANGED: title now includes "Buy" + "Online" for purchase-intent search queries.
+  // e.g. "Buy Ivory Relaxed Tee Online | Tops | SNERA"
+  // Admin seo.metaTitle override takes priority when set.
+  const seoTitle = product.seo?.metaTitle
+    || `Buy ${product.name} Online | ${product.category} | SNERA`;
+
+  // CHANGED: richer meta description fallback with fabric, sizes, and free-shipping hook.
+  // Admin seo.metaDescription override takes priority when set.
+  const metaDescription = product.seo?.metaDescription
+    || (product.description
+      ? `Buy ${product.name} online at SNERA. ${product.description.slice(0, 100)}. ${product.fabric ? `Made from ${product.fabric}. ` : ''}Free shipping above ₹999.`
+      : `Buy ${product.name} online at SNERA — premium Indian fashion. ${product.fabric ? `Made from ${product.fabric}. ` : ''}Available in ${(product.sizes || []).join(', ')}. Free shipping above ₹999.`);
 
   // Primary image for OG
   const ogImg = (() => {
@@ -115,36 +122,26 @@ export default function ProductDetailPage() {
     return imgs[0] ? (imgs[0].startsWith('http') ? imgs[0] : `https://snera.in${imgs[0]}`) : 'https://snera.in/og-image.jpg';
   })();
 
+  // schemas comes from useSEO — this is the ONLY place product JSON-LD is built.
+  // SEOHead no longer builds its own productSchema.
   const schemas = useSEO({
     type: 'product',
     product,
     breadcrumbs: crumbs,
     pageUrl: `/product/${product.slug}`,
-    pageName: `${product.name} | SNERA`,
+    pageName: seoTitle,
     pageDescription: metaDescription,
   });
-
-  // SEO keywords from product data
-  const keywords = [
-    product.name,
-    product.category,
-    product.gender,
-    product.fabric,
-    'SNERA',
-    'buy online India',
-    'premium fashion',
-  ].filter(Boolean).join(', ');
 
   return (
     <>
       <SEOHead
-        title={`${product.name} | ${product.category} | SNERA`}
+        title={seoTitle}
         description={metaDescription}
-        canonical={`https://snera.in/product/${product.slug}`}
+        url={`https://snera.in/product/${product.slug}`}
         image={ogImg}
+        product={product}
         schemas={schemas}
-        ogType="product"
-        keywords={keywords}
       />
 
       <div style={{ paddingTop:'var(--nav-h)' }}>
@@ -354,7 +351,7 @@ export default function ProductDetailPage() {
               {(product.fabric || product.careInstructions) && (
                 <>
                   <div style={{ height:1, background:'var(--sand)' }}/>
-                  {product.fabric         && <div style={{ fontSize:'.78rem', color:'var(--stone2)' }}><strong style={{ color:'var(--ink)', fontWeight:500 }}>Fabric:</strong> {product.fabric}</div>}
+                  {product.fabric          && <div style={{ fontSize:'.78rem', color:'var(--stone2)' }}><strong style={{ color:'var(--ink)', fontWeight:500 }}>Fabric:</strong> {product.fabric}</div>}
                   {product.careInstructions && <div style={{ fontSize:'.78rem', color:'var(--stone2)' }}><strong style={{ color:'var(--ink)', fontWeight:500 }}>Care:</strong> {product.careInstructions}</div>}
                 </>
               )}
