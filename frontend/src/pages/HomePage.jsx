@@ -259,7 +259,7 @@ export default function HomePage() {
         description="Shop SNERA — premium minimal essentials for men and women. Crafted in India. Free shipping above ₹999. Explore Tops, Bottoms, Outerwear and more."
         canonical="https://snera.in"
         keywords="SNERA, premium fashion India, minimal clothing, essentials, kurta, co-ord set, premium tshirts, Indian fashion, buy clothes online India"
-        schemas={useSEO({ type: 'home', pageUrl: '/', pageName: 'SNERA — Premium Essentials | Minimal Fashion India', pageDescription: 'Shop SNERA — premium minimal essentials for men and women. Crafted in India.' })}
+        schemas={useSEO({ type: 'webpage', pageUrl: '/', pageName: 'SNERA — Premium Essentials | Minimal Fashion India', pageDescription: 'Shop SNERA — premium minimal essentials for men and women. Crafted in India.' })}
       />
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
