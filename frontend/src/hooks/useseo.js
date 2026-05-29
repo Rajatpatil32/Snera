@@ -72,7 +72,11 @@ export function websiteSchema() {
 
 // ─── BreadcrumbList ───────────────────────────────────────────────────────────
 export function breadcrumbSchema(crumbs = []) {
-  if (!crumbs.length) return null;
+   if (!crumbs.length || crumbs.length < 2) return null;
+  
+  // Guard: every item must have name and url
+  const valid = crumbs.every(b => b.name && b.url);
+  if (!valid) return null;
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',

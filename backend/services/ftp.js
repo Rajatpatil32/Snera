@@ -13,10 +13,17 @@
  * Falls back to local storage if FTP is not configured.
  */
 
+const sharp = require('sharp');
 const ftp  = require('basic-ftp');
 const path = require('path');
 const fs   = require('fs');
 const { Readable } = require('stream');
+
+async function toWebP(buffer, quality = 82) {
+  return sharp(buffer)
+    .webp({ quality })
+    .toBuffer();
+}
 
 // ─── Check if FTP is configured ───────────────────────────────────────────────
 function isFTPConfigured() {
@@ -134,4 +141,5 @@ module.exports = {
   deleteFromFTP,
   getPublicUrl,
   isFTPConfigured,
+  toWebP,
 };

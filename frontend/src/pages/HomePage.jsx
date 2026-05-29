@@ -324,7 +324,7 @@ export default function HomePage() {
           }}>
             {/* LCP image — eager + fetchpriority high to boost Largest Contentful Paint */}
             <img
-              src="https://suvidhasetu.netraa.co.in/uploads/hero.png"
+              src="https://suvidhasetu.netraa.co.in/uploads/hero.webp"
               alt="SNERA — Premium minimal fashion collection for men and women"
               loading="eager"
               fetchPriority="high"
@@ -353,7 +353,7 @@ paddingRight:'26%',
             pointerEvents: 'none'
           }}>
             <img
-              src="/images/logo1.png"
+              src="/images/logo1.webp"
               alt="SNERA"
               style={{
                 width: '800px',
@@ -436,13 +436,13 @@ paddingRight:'26%',
       </section>
 
       {/* ── CATEGORY SPLIT ────────────────────────────────────────────────── */}
-      <section style={{
+      {/* <section style={{
         display: 'grid', gridTemplateColumns: '1fr 1fr',
         borderTop: '1px solid var(--sand)', borderBottom: '1px solid var(--sand)'
       }} id="category">
         {[
-          { label: 'Collection', title: 'For\nHim', glyph: 'M', link: '/shop?gender=Men', linkTxt: "Shop Men's", image: 'https://suvidhasetu.netraa.co.in/uploads/men.png' },
-          { label: 'Collection', title: 'For\nHer', glyph: 'W', link: '/shop?gender=Women', linkTxt: "Shop Women's", image: 'https://suvidhasetu.netraa.co.in/uploads/women.png' }
+          { label: 'Collection', title: 'For\nHim', glyph: 'M', link: '/shop?gender=Men', linkTxt: "Shop Men's", image: 'https://suvidhasetu.netraa.co.in/uploads/men.webp' },
+          { label: 'Collection', title: 'For\nHer', glyph: 'W', link: '/shop?gender=Women', linkTxt: "Shop Women's", image: 'https://suvidhasetu.netraa.co.in/uploads/women.webp' }
         ].map((cat, i) => (
           <Link to={cat.link}
             key={i}
@@ -460,7 +460,7 @@ paddingRight:'26%',
               inset: 0,
               overflow: 'hidden'
             }}>
-              {/* Image */}
+              
               <img
                 src={cat.image}
                 alt={`SNERA ${cat.title.replace('\n', ' ')} — ${cat.linkTxt}`}
@@ -473,14 +473,14 @@ paddingRight:'26%',
                 }}
               />
 
-              {/* Overlay */}
+              
               <div style={{
                 position: 'absolute',
                 inset: 0,
                 background: 'rgba(0,0,0,0.18)'
               }} />
 
-              {/* Glyph */}
+              
               <span style={{
                 position: 'absolute',
                 top: '1.5rem',
@@ -520,7 +520,7 @@ paddingRight:'26%',
             </div>
           </Link>
         ))}
-      </section>
+      </section> */}
 
       {/* ── NOSTALGIC ─────────────────────────────────────────────────────── */}
       <section style={{
@@ -530,7 +530,7 @@ paddingRight:'26%',
       }} id="nostalgic">
         {/* 👇 Replace src with your nostalgic image */}
         <img
-          src="https://suvidhasetu.netraa.co.in/uploads/nostalgic.png"
+          src="https://suvidhasetu.netraa.co.in/uploads/nostalgic.webp"
           alt="Nostalgic collection"
           style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
         />

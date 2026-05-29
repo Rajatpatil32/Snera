@@ -9,7 +9,7 @@ const multer = require('multer');
 const path   = require('path');
 const fs     = require('fs');
 const auth   = require('../middleware/auth');
-const { smartUpload, deleteFromFTP, isFTPConfigured } = require('../services/ftp');
+const { smartUpload, deleteFromFTP, isFTPConfigured,toWebP } = require('../services/ftp');
 
 // ─── Local fallback directory ─────────────────────────────────────────────────
 const uploadDir = path.join(__dirname, '../uploads');
@@ -40,23 +40,23 @@ function saveLocally(buffer, filename) {
 
 // ─── Generate safe unique filename ───────────────────────────────────────────
 function makeFilename(originalname) {
-  const ext  = path.extname(originalname).toLowerCase() || '.jpg';
-  return `snera_${Date.now()}_${Math.round(Math.random() * 1e6)}${ext}`;
+  return `snera_${Date.now()}_${Math.round(Math.random() * 1e6)}.webp`;
 }
 
 // ─── Process one uploaded file ────────────────────────────────────────────────
 async function processFile(file) {
+  const webpBuffer = await toWebP(file.buffer);
   const filename = makeFilename(file.originalname);
 
   if (isFTPConfigured()) {
-    const result = await smartUpload(file.buffer, filename, null);
+    const result = await smartUpload(webpBuffer, filename, null);
     // Also save locally as cache/backup
-    try { saveLocally(file.buffer, filename); } catch {}
+    try { saveLocally(webpBuffer, filename); } catch {}
     return result;
   }
 
   // Local only
-  const url = saveLocally(file.buffer, filename);
+  const url = saveLocally(webpBuffer, filename);
   return { url, storage: 'local' };
 }
 
