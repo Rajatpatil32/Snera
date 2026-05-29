@@ -227,7 +227,7 @@ export function itemListSchema(products = [], categoryName = 'All Products') {
 }
 
 // ─── WebPage ──────────────────────────────────────────────────────────────────
-export function webPageSchema({ name, description, url, dateModified }) {
+export function webPageSchema({ name, description, url, dateModified, hasBreadcrumb = false }) {
   return {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
@@ -237,7 +237,8 @@ export function webPageSchema({ name, description, url, dateModified }) {
     description,
     isPartOf: { '@id': `${SITE}/#website` },
     ...(dateModified && { dateModified }),
-    breadcrumb: { '@id': `${SITE}${url}#breadcrumb` },
+    // Only reference breadcrumb if the page actually has one
+    ...(hasBreadcrumb && { breadcrumb: { '@id': `${SITE}${url}#breadcrumb` } }),
     inLanguage: 'en-IN',
     publisher: { '@id': `${SITE}/#organization` },
   };
@@ -259,7 +260,7 @@ export default function useSEO({
   const crumbSchema = breadcrumbSchema(breadcrumbs);
   if (crumbSchema) schemas.push(crumbSchema);
 
-  schemas.push(webPageSchema({ name: pageName, description: pageDescription, url: pageUrl }));
+  schemas.push(webPageSchema({ name: pageName, description: pageDescription, url: pageUrl, hasBreadcrumb: breadcrumbs.length >= 2 }));
 
   if (type === 'product' && product) {
     schemas.push(productSchema(product));
