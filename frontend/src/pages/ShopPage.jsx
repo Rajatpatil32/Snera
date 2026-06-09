@@ -215,7 +215,7 @@ const SHOP_FAQS = [
   { q: 'Does SNERA restock sold-out items?', a: 'Some styles are restocked. Contact us at contact@snera.in or follow @snera.store on Instagram for restock updates.' },
   { q: 'How do I know which size to order?', a: 'Available sizes are shown on each product page. If between sizes, we recommend sizing up. Email contact@snera.in for help.' },
   { q: 'Is free shipping available?', a: 'Yes — free standard shipping on orders above ₹999 across India.' },
-  { q: 'Can I return a product?', a: 'Returns are accepted within 7 days of delivery for eligible, unused items. See our Refund Policy for full details.' },
+  { q: 'Can I return a product?', a: 'Returns are accepted within 2 days of delivery for eligible, unused items. See our Refund Policy for full details.' },
 ];
 
 function ShopFAQ() {

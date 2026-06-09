@@ -277,7 +277,7 @@ export function faqSchema(product) {
     },
     {
       q: 'What is your return policy?',
-      a: 'We accept returns within 7 days of delivery on eligible items. Items must be unused and in original packaging. Refunds are processed within 5–7 business days. Visit our Refund Policy page for full details.',
+      a: 'We accept returns within 2 days of delivery on eligible items. Items must be unused and in original packaging. Refunds are processed within 5–7 business days. Visit our Refund Policy page for full details.',
     },
     {
       q: 'How long does delivery take?',
