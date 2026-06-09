@@ -67,6 +67,18 @@ export default function Footer() {
             <p style={{fontSize:'.78rem',color:'var(--stone2)',lineHeight:1.8,maxWidth:'30ch'}}>
               Premium essentials crafted for those who believe the quietest statement is often the loudest.
             </p>
+            <div style={{marginTop:'1rem',display:'flex',gap:'1rem',alignItems:'center'}}>
+              <a
+                href="https://www.instagram.com/snera.store/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="SNERA on Instagram"
+                style={{fontSize:'.72rem',color:'var(--stone2)',letterSpacing:'.08em',display:'flex',alignItems:'center',gap:'.4rem',transition:'color var(--t)'}}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                @snera.store
+              </a>
+            </div>
           </div>
           {[
             {head:'Shop', links:[['New Arrivals','/shop'],['Men','/shop?gender=Men'],['Women','/shop?gender=Women']]},

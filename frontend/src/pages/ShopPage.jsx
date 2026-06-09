@@ -88,11 +88,11 @@ export default function ShopPage() {
     type: 'shop',
     products,
     breadcrumbs: shopCrumbs,
-    // CHANGED: pageUrl always /shop — consistent with canonical above
     pageUrl: '/shop',
     pageName: shopTitle,
     pageDescription: shopDesc,
     categoryName: categoryLabel,
+    datePublished: '2024-01-01',
   });
 
   return (
@@ -202,6 +202,54 @@ export default function ShopPage() {
           )}
         </div>
       </div>
+
+      {/* ── FAQ ──────────────────────────────────────────────────────────── */}
+      <ShopFAQ />
     </>
+  );
+}
+
+const SHOP_FAQS = [
+  { q: 'What categories does SNERA offer?', a: 'SNERA offers Tops, Bottoms, Outerwear, and Accessories for Men, Women, and Unisex. New drops are added regularly.' },
+  { q: 'How do I filter products by size or category?', a: 'Use the Category and Gender filters at the top of the shop page to narrow down the collection.' },
+  { q: 'Does SNERA restock sold-out items?', a: 'Some styles are restocked. Contact us at contact@snera.in or follow @snera.store on Instagram for restock updates.' },
+  { q: 'How do I know which size to order?', a: 'Available sizes are shown on each product page. If between sizes, we recommend sizing up. Email contact@snera.in for help.' },
+  { q: 'Is free shipping available?', a: 'Yes — free standard shipping on orders above ₹999 across India.' },
+  { q: 'Can I return a product?', a: 'Returns are accepted within 7 days of delivery for eligible, unused items. See our Refund Policy for full details.' },
+];
+
+function ShopFAQ() {
+  const [open, setOpen] = useState(null);
+  return (
+    <section style={{ borderTop: '1px solid var(--sand)', padding: 'clamp(2.5rem,5vw,4rem) 0', background: 'var(--off)' }}>
+      <div className="container" style={{ maxWidth: 760 }}>
+        <span className="label" style={{ marginBottom: '.65rem', display: 'block' }}>FAQs</span>
+        <h2 style={{ fontFamily: 'var(--serif)', fontWeight: 300, fontSize: 'clamp(1.4rem,3vw,2rem)', letterSpacing: '-.01em', marginBottom: '1.75rem' }}>
+          Shopping with SNERA
+        </h2>
+        <div itemScope itemType="https://schema.org/FAQPage">
+          {SHOP_FAQS.map(({ q, a }, i) => (
+            <div key={i} itemScope itemProp="mainEntity" itemType="https://schema.org/Question" style={{ borderBottom: '1px solid var(--sand)' }}>
+              <button
+                type="button"
+                onClick={() => setOpen(open === i ? null : i)}
+                aria-expanded={open === i}
+                style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 0', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', gap: '1rem' }}
+              >
+                <span itemProp="name" style={{ fontSize: '.83rem', fontWeight: 500, color: 'var(--ink)', lineHeight: 1.5 }}>{q}</span>
+                <svg viewBox="0 0 24 24" style={{ width: 15, height: 15, flexShrink: 0, stroke: 'var(--stone)', fill: 'none', strokeWidth: 1.8, transition: 'transform .2s', transform: open === i ? 'rotate(180deg)' : 'none' }} aria-hidden="true">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+              {open === i && (
+                <div itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer" style={{ paddingBottom: '1rem' }}>
+                  <p itemProp="text" style={{ fontSize: '.8rem', color: 'var(--stone2)', lineHeight: 1.8, margin: 0 }}>{a}</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }

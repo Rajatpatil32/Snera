@@ -20,13 +20,13 @@ Disallow: /checkout
 Disallow: /order-success
 Disallow: /api/
 Disallow: /uploads/
-# CHANGED: also disallow ?category= and ?gender= filter params —
-# canonical for all /shop filter views is /shop (set in ShopPage.jsx),
-# so these URLs should not be indexed as separate pages.
+
+# ── Disallow duplicate filter-param URLs (canonical = /shop) ─────────────────
+# NOTE: ?q= is NOT disallowed — it powers the WebSite SearchAction sitelinks
+# search box. Disallowing it would break that rich-result feature.
 Disallow: /*?category=*
 Disallow: /*?gender=*
 Disallow: /*?colour=*
-Disallow: /*?q=*
 
 # ── Crawl-delay for less aggressive bots ──────────────────────────────────────
 User-agent: SemrushBot
@@ -46,5 +46,4 @@ User-agent: BLEXBot
 Disallow: /
 
 # ── Sitemap ───────────────────────────────────────────────────────────────────
-# CHANGED: points to /api/sitemap.xml which now serves the index directly (no redirect)
 Sitemap: https://snera.in/api/sitemap.xml

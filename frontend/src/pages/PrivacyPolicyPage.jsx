@@ -1,15 +1,29 @@
 import React, { useEffect } from 'react';
 import SEOHead from '../components/SEOHead';
+import useSEO from '../hooks/useseo';
 
 export default function PrivacyPolicyPage() {
   useEffect(() => { window.scrollTo(0, 0); }, []);
+
+  const schemas = useSEO({
+    type: 'webpage',
+    pageUrl: '/privacy-policy',
+    pageName: 'Privacy Policy | SNERA',
+    pageDescription: 'Read SNERA\'s Privacy Policy — how we collect, use, and protect your personal information.',
+    datePublished: '2025-05-01',
+    breadcrumbs: [
+      { name: 'Home', url: '/' },
+      { name: 'Privacy Policy', url: '/privacy-policy' },
+    ],
+  });
 
   return (
     <>
       <SEOHead
         title="Privacy Policy | SNERA"
         description="Read SNERA's Privacy Policy — how we collect, use, and protect your personal information."
-        canonical="https://snera.in/privacy-policy"
+        url="https://snera.in/privacy-policy"
+        schemas={schemas}
       />
     <div style={{ background: 'var(--white)', minHeight: '100vh', paddingTop: 'var(--nav-h)' }}>
       {/* Header */}
@@ -85,7 +99,7 @@ export default function PrivacyPolicyPage() {
 
         <PolicySection title="9. Contact Us">
           <p>If you have any questions about this Privacy Policy, please contact us:</p>
-          <p><strong>Email:</strong> support@snera.in</p>
+          <p><strong>Email:</strong> contact@snera.in</p>
           <p><strong>Address:</strong> SNERA, India</p>
         </PolicySection>
       </div>

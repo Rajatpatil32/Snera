@@ -33,6 +33,7 @@ import AdminOrderDetailPage  from './pages/admin/AdminOrderDetailPage';
 import AdminProductsPage     from './pages/admin/AdminProductsPage';
 import AdminProductFormPage  from './pages/admin/AdminProductFormPage';
 import AdminImagesPage       from './pages/admin/AdminImagesPage';
+import NotFoundPage          from './pages/NotFoundPage';
 
 // Storefront wrapper — includes Navbar, Footer, Cart
 function StoreLayout({ children }) {
@@ -104,8 +105,10 @@ export default function App() {
               <Route path="images"                 element={<AdminImagesPage/>}/>
             </Route>
 
-            {/* Fallback */}
-            <Route path="*" element={<Navigate to="/" replace/>}/>
+            {/* Fallback — real 404, not a redirect. Better for SEO crawl budget. */}
+            <Route path="*" element={
+              <StoreLayout><NotFoundPage /></StoreLayout>
+            }/>
           </Routes>
         </BrowserRouter>
       </CartProvider>

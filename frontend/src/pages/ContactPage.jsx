@@ -25,12 +25,16 @@ export default function ContactPage() {
     }, 1200);
   };
 
-  // CHANGED: useSEO call added — emits Organization + WebSite + WebPage JSON-LD
   const schemas = useSEO({
     type: 'webpage',
     pageUrl: '/contact',
     pageName: 'Contact Us | SNERA',
     pageDescription: "Get in touch with SNERA's team. We respond within 24–48 hours, Monday–Saturday.",
+    datePublished: '2025-05-01',
+    breadcrumbs: [
+      { name: 'Home', url: '/' },
+      { name: 'Contact', url: '/contact' },
+    ],
   });
 
   const inputStyle = {
@@ -87,7 +91,7 @@ export default function ContactPage() {
             <div style={{ marginBottom: '2.5rem' }}>
               <span className="label">Email</span>
               <p style={{ fontSize: '.9rem', color: 'var(--ink)' }}>
-                <a href="mailto:support@snera.in" style={{ color: 'var(--accent)' }}>support@snera.in</a>
+                <a href="mailto:contact@snera.in" style={{ color: 'var(--accent)' }}>contact@snera.in</a>
               </p>
               <p style={{ fontSize: '.78rem', color: 'var(--stone2)', marginTop: '.35rem' }}>
                 We respond within 24–48 hours on business days.

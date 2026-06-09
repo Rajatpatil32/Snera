@@ -225,18 +225,73 @@ const WHY = [
     title: 'Delivered in 5 Days',
     body: 'Your order is prepared and delivered within 5 days. Quality is never rushed.'
   },
-  {
-    icon: (
-      <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeWidth="1.5">
-        <path d="M3 12h18" />
-        <path d="M7 8l-4 4 4 4" />
-        <path d="M17 16l4-4-4-4" />
-      </svg>
-    ),
-    title: '2 Day Easy Returns',
-    body: 'Request a return within 2 days of delivery. Simple and hassle free.'
-  }
+  // {
+  //   icon: (
+  //     <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeWidth="1.5">
+  //       <path d="M3 12h18" />
+  //       <path d="M7 8l-4 4 4 4" />
+  //       <path d="M17 16l4-4-4-4" />
+  //     </svg>
+  //   ),
+  //   title: '2 Day Easy Returns',
+  //   body: 'Request a return within 2 days of delivery. Simple and hassle free.'
+  // }
 ];
+
+const HOME_FAQS = [
+  { q: 'What is SNERA?', a: 'SNERA is a premium minimal Indian fashion brand. Every piece is designed with quiet confidence — crafted in India, built to last.' },
+  { q: 'Does SNERA offer free shipping?', a: 'Yes. Free standard shipping on all orders above ₹999 across India. Express delivery (2–3 business days) is available at checkout.' },
+  { q: 'What is the return policy?', a: 'Returns accepted within 7 days of delivery for eligible, unused items in original packaging. Refunds process in 5–7 business days. Sale and custom items are not eligible.' },
+  { q: 'How do I track my order?', a: 'Track your order anytime at snera.in/track-order using your order ID and registered email.' },
+  { q: 'What payment methods are accepted?', a: 'All major credit/debit cards, UPI, net banking, and wallets via Razorpay. Every transaction is SSL-secured.' },
+  { q: 'Does SNERA ship across India?', a: 'Yes — SNERA ships to all major cities and towns across India.' },
+  { q: 'How do I find my size?', a: 'Each product page lists available sizes. When in doubt, size up. Email us at contact@snera.in for help.' },
+  { q: 'How can I contact SNERA?', a: 'Email us at contact@snera.in or use the Contact page. We respond within 24–48 hours, Monday–Saturday.' },
+];
+
+function HomeFAQ() {
+  const [open, setOpen] = useState(null);
+  return (
+    <section style={{ borderTop: '1px solid var(--sand)', padding: 'clamp(3rem,6vw,5rem) 0' }} id="faq">
+      <div className="container">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 'clamp(2rem,5vw,5rem)', alignItems: 'start' }}>
+          <div className="reveal">
+            <span className="label">Got Questions?</span>
+            <h2 style={{ fontFamily: 'var(--serif)', fontWeight: 300, fontSize: 'clamp(1.8rem,4vw,2.8rem)', letterSpacing: '-.01em', lineHeight: 1.15, marginBottom: '1rem' }}>
+              Everything you <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>need to know.</em>
+            </h2>
+            <p style={{ fontSize: '.82rem', color: 'var(--stone2)', lineHeight: 1.8, maxWidth: '32ch' }}>
+              Can\'t find an answer? Write to us at{' '}
+              <a href="mailto:contact@snera.in" style={{ color: 'var(--ink)', textDecoration: 'underline' }}>contact@snera.in</a>
+            </p>
+          </div>
+          <div itemScope itemType="https://schema.org/FAQPage">
+            {HOME_FAQS.map(({ q, a }, i) => (
+              <div key={i} itemScope itemProp="mainEntity" itemType="https://schema.org/Question" style={{ borderBottom: '1px solid var(--sand)' }}>
+                <button
+                  type="button"
+                  onClick={() => setOpen(open === i ? null : i)}
+                  aria-expanded={open === i}
+                  style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.1rem 0', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', gap: '1rem' }}
+                >
+                  <span itemProp="name" style={{ fontSize: '.85rem', fontWeight: 500, color: 'var(--ink)', lineHeight: 1.5 }}>{q}</span>
+                  <svg viewBox="0 0 24 24" style={{ width: 16, height: 16, flexShrink: 0, stroke: 'var(--stone)', fill: 'none', strokeWidth: 1.8, transition: 'transform .2s', transform: open === i ? 'rotate(180deg)' : 'none' }} aria-hidden="true">
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </button>
+                {open === i && (
+                  <div itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer" style={{ paddingBottom: '1.1rem' }}>
+                    <p itemProp="text" style={{ fontSize: '.82rem', color: 'var(--stone2)', lineHeight: 1.8, margin: 0 }}>{a}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default function HomePage() {
   const [products, setProducts] = useState([]);
@@ -257,9 +312,14 @@ export default function HomePage() {
       <SEOHead
         title="SNERA — Premium Essentials | Minimal Fashion India"
         description="Shop SNERA — premium minimal essentials for men and women. Crafted in India. Free shipping above ₹999. Explore Tops, Bottoms, Outerwear and more."
-        canonical="https://snera.in"
-        keywords="SNERA, premium fashion India, minimal clothing, essentials, kurta, co-ord set, premium tshirts, Indian fashion, buy clothes online India"
-        schemas={useSEO({ type: 'webpage', pageUrl: '/', pageName: 'SNERA — Premium Essentials | Minimal Fashion India', pageDescription: 'Shop SNERA — premium minimal essentials for men and women. Crafted in India.' })}
+        url="https://snera.in"
+        schemas={useSEO({
+          type: 'home',
+          pageUrl: '/',
+          pageName: 'SNERA — Premium Essentials | Minimal Fashion India',
+          pageDescription: 'Shop SNERA — premium minimal essentials for men and women. Crafted in India. Free shipping above ₹999.',
+          breadcrumbs: [{ name: 'Home', url: '/' }],
+        })}
       />
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
@@ -591,6 +651,9 @@ paddingRight:'26%',
           </div>
         </div>
       </section>
+
+      {/* ── FAQ ──────────────────────────────────────────────────────────── */}
+      <HomeFAQ />
 
       {/* ── CONCEPT → WHATSAPP ───────────────────────────────────────────── */}
       <ConceptSection />

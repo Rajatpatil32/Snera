@@ -1,15 +1,29 @@
 import React, { useEffect } from 'react';
 import SEOHead from '../components/SEOHead';
+import useSEO from '../hooks/useseo';
 
 export default function RefundPolicyPage() {
   useEffect(() => { window.scrollTo(0, 0); }, []);
+
+  const schemas = useSEO({
+    type: 'webpage',
+    pageUrl: '/refund-policy',
+    pageName: 'Refund & Return Policy | SNERA',
+    pageDescription: 'SNERA accepts returns within 7 days of delivery. Read our full refund and exchange policy.',
+    datePublished: '2025-05-01',
+    breadcrumbs: [
+      { name: 'Home', url: '/' },
+      { name: 'Refund & Return Policy', url: '/refund-policy' },
+    ],
+  });
 
   return (
     <>
       <SEOHead
         title="Refund & Return Policy | SNERA"
         description="SNERA accepts returns within 7 days of delivery. Read our full refund and exchange policy."
-        canonical="https://snera.in/refund-policy"
+        url="https://snera.in/refund-policy"
+        schemas={schemas}
       />
     <div style={{ background: 'var(--white)', minHeight: '100vh', paddingTop: 'var(--nav-h)' }}>
       {/* Header */}
@@ -59,7 +73,7 @@ export default function RefundPolicyPage() {
         <PolicySection title="2. How to Initiate a Return">
           <p>To initiate a return, please follow these steps:</p>
           <ol>
-            <li>Email us at <strong>support@snera.in</strong> with your order number and reason for return</li>
+            <li>Email us at <strong>contact@snera.in</strong> with your order number and reason for return</li>
             <li>Our team will respond within 24–48 hours with return instructions</li>
             <li>Pack the item securely in its original packaging</li>
             <li>Ship the item to the address provided by our team</li>
@@ -79,7 +93,7 @@ export default function RefundPolicyPage() {
         </PolicySection>
 
         <PolicySection title="4. Exchanges">
-          <p>We offer exchanges for a different size or colour of the same product, subject to availability. To request an exchange, contact us at <strong>support@snera.in</strong> within 7 days of delivery.</p>
+          <p>We offer exchanges for a different size or colour of the same product, subject to availability. To request an exchange, contact us at <strong>contact@snera.in</strong> within 7 days of delivery.</p>
           <p>If the item you want is not available, we will issue a full refund instead.</p>
         </PolicySection>
 
@@ -93,7 +107,7 @@ export default function RefundPolicyPage() {
 
         <PolicySection title="7. Contact Us">
           <p>If you have any questions about our Refund Policy, please contact us:</p>
-          <p><strong>Email:</strong> support@snera.in</p>
+          <p><strong>Email:</strong> contact@snera.in</p>
           <p><strong>Response time:</strong> Within 24–48 hours on business days</p>
         </PolicySection>
       </div>

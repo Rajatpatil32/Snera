@@ -1,15 +1,29 @@
 import React, { useEffect } from 'react';
 import SEOHead from '../components/SEOHead';
+import useSEO from '../hooks/useseo';
 
 export default function TermsPage() {
   useEffect(() => { window.scrollTo(0, 0); }, []);
+
+  const schemas = useSEO({
+    type: 'webpage',
+    pageUrl: '/terms',
+    pageName: 'Terms & Conditions | SNERA',
+    pageDescription: 'Read SNERA\'s Terms & Conditions governing your use of our website and purchase of products.',
+    datePublished: '2025-05-01',
+    breadcrumbs: [
+      { name: 'Home', url: '/' },
+      { name: 'Terms & Conditions', url: '/terms' },
+    ],
+  });
 
   return (
     <>
       <SEOHead
         title="Terms & Conditions | SNERA"
         description="Read SNERA's Terms & Conditions governing your use of our website and purchase of products."
-        canonical="https://snera.in/terms"
+        url="https://snera.in/terms"
+        schemas={schemas}
       />
     <div style={{ background: 'var(--white)', minHeight: '100vh', paddingTop: 'var(--nav-h)' }}>
       {/* Header */}
@@ -70,7 +84,7 @@ export default function TermsPage() {
 
         <PolicySection title="8. Contact Us">
           <p>If you have any questions about these Terms and Conditions, please contact us:</p>
-          <p><strong>Email:</strong> support@snera.in</p>
+          <p><strong>Email:</strong> contact@snera.in</p>
           <p><strong>Website:</strong> snera.in</p>
         </PolicySection>
       </div>

@@ -14,7 +14,7 @@ import { Helmet } from 'react-helmet-async';
 export default function SEOHead({
   title = 'SNERA — Premium Essentials',
   description = 'Premium essentials crafted for those who believe the quietest statement is often the loudest. Shop SNERA — minimal, timeless fashion.',
-  image = 'https://snera.in/og-image.jpg',
+  image = 'https://snera.in/images/og-image.webp',
   url = 'https://snera.in',
   product = null,    // kept for og:type + product price meta only (NOT for schema generation)
   schemas = [],      // all JSON-LD comes from useSEO hook, not built here
@@ -57,6 +57,7 @@ export default function SEOHead({
       <meta property="og:image"        content={image} />
       <meta property="og:image:width"  content="1200" />
       <meta property="og:image:height" content="630" />
+      <meta property="og:image:alt"    content={ogTitle} />
       <meta property="og:url"          content={canonical} />
       <meta property="og:site_name"    content="SNERA" />
       <meta property="og:locale"       content="en_IN" />
@@ -68,9 +69,15 @@ export default function SEOHead({
       {/* Twitter Card */}
       <meta name="twitter:card"        content="summary_large_image" />
       <meta name="twitter:site"        content="@snera_official" />
+      <meta name="twitter:creator"     content="@snera_official" />
       <meta name="twitter:title"       content={ogTitle} />
       <meta name="twitter:description" content={ogDescription} />
       <meta name="twitter:image"       content={image} />
+      <meta name="twitter:image:alt"   content={ogTitle} />
+
+      {/* hreflang — per-page, matches canonical */}
+      <link rel="alternate" hreflang="en-IN"    href={canonical} />
+      <link rel="alternate" hreflang="x-default" href={canonical} />
 
       {/* All structured data comes from the useSEO hook via the schemas prop */}
       {schemas.map((s, i) => (

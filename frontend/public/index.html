@@ -18,7 +18,13 @@
     <meta name="keywords" content="SNERA, premium fashion India, minimal clothing, essentials, kurta, co-ord set, premium tshirts, Indian fashion, buy clothes online India" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta name="googlebot" content="index, follow" />
+    <!-- ── Canonical & hreflang ──────────────────────────────────────────── -->
     <link rel="canonical" href="https://snera.in" />
+    <link rel="alternate" hreflang="en-IN" href="https://snera.in" />
+    <link rel="alternate" hreflang="x-default" href="https://snera.in" />
+
+    <!-- ── Performance: LCP hero preload ─────────────────────────────────── -->
+    <link rel="preload" as="image" href="/images/hero.webp" type="image/webp" fetchpriority="high" />
 
     <!-- ── Geo ───────────────────────────────────────────────────────────── -->
     <meta name="geo.region"   content="IN" />
@@ -29,9 +35,10 @@
     <meta property="og:type"        content="website" />
     <meta property="og:title"       content="SNERA — Premium Essentials | Minimal Fashion India" />
     <meta property="og:description" content="Shop SNERA — premium minimal essentials for men and women. Crafted in India. Free shipping above ₹999." />
-    <meta property="og:image"       content="https://snera.in/og-image.jpg" />
+    <meta property="og:image"       content="https://snera.in/images/og-image.webp" />
     <meta property="og:image:width"  content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:type"   content="image/webp" />
     <meta property="og:url"         content="https://snera.in" />
     <meta property="og:site_name"   content="SNERA" />
     <meta property="og:locale"      content="en_IN" />
@@ -41,7 +48,7 @@
     <meta name="twitter:site"        content="@snera_official" />
     <meta name="twitter:title"       content="SNERA — Premium Essentials" />
     <meta name="twitter:description" content="Shop SNERA — premium minimal essentials for men and women. Crafted in India." />
-    <meta name="twitter:image"       content="https://snera.in/og-image.jpg" />
+    <meta name="twitter:image"       content="https://snera.in/images/og-image.webp" />
 
     <!-- ── Performance: DNS prefetch + Preconnect ────────────────────────── -->
     <!-- Reduces connection latency for critical external origins -->
@@ -77,21 +84,45 @@
       "@type": "Organization",
       "@id": "https://snera.in/#organization",
       "name": "SNERA",
+      "legalName": "SNERA",
       "url": "https://snera.in",
       "logo": {
         "@type": "ImageObject",
+        "@id": "https://snera.in/#logo",
         "url": "https://snera.in/images/logo.png",
-        "width": 200,
-        "height": 60
+        "contentUrl": "https://snera.in/images/logo.png",
+        "width": 512,
+        "height": 512,
+        "caption": "SNERA — Premium Essentials"
       },
-      "description": "Premium essentials crafted for those who believe the quietest statement is often the loudest.",
-      "address": { "@type": "PostalAddress", "addressCountry": "IN" },
-      "sameAs": ["https://instagram.com/snera.store"],
-      "contactPoint": {
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://snera.in/images/og-image.webp",
+        "width": 1200,
+        "height": 630
+      },
+      "description": "SNERA is a premium minimal Indian fashion brand offering essentials for men and women. Crafted in India.",
+      "foundingDate": "2024",
+      "address": { "@type": "PostalAddress", "addressCountry": "IN", "addressRegion": "India" },
+      "brand": {
+        "@type": "Brand",
+        "@id": "https://snera.in/#brand",
+        "name": "SNERA",
+        "logo": "https://snera.in/images/logo.png",
+        "description": "Premium minimal Indian fashion brand.",
+        "url": "https://snera.in"
+      },
+      "sameAs": [
+        "https://www.instagram.com/snera.store/",
+        "https://snera.in"
+      ],
+      "contactPoint": [{
         "@type": "ContactPoint",
         "contactType": "customer service",
-        "email": "support@snera.in"
-      }
+        "email": "contact@snera.in",
+        "availableLanguage": ["English", "Hindi"],
+        "areaServed": "IN"
+      }]
     }
     </script>
 
@@ -102,7 +133,10 @@
       "@type": "WebSite",
       "@id": "https://snera.in/#website",
       "name": "SNERA",
+      "alternateName": "SNERA Fashion",
       "url": "https://snera.in",
+      "description": "Official website of SNERA — premium minimal Indian fashion brand.",
+      "inLanguage": "en-IN",
       "publisher": { "@id": "https://snera.in/#organization" },
       "potentialAction": {
         "@type": "SearchAction",
@@ -125,7 +159,7 @@
       <div style="font-family:sans-serif;text-align:center;padding:3rem;">
         <h1>SNERA — Premium Essentials</h1>
         <p>Premium minimal fashion made in India. Please enable JavaScript to browse our collection.</p>
-        <p><a href="mailto:support@snera.in">support@snera.in</a></p>
+        <p><a href="mailto:contact@snera.in">contact@snera.in</a></p>
       </div>
     </noscript>
     <div id="root"></div>

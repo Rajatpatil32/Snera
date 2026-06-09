@@ -24,6 +24,9 @@ export default function ProductDetailPage() {
   const [qty,     setQty]     = useState(1);
   const [added,   setAdded]   = useState(false);
 
+  // FAQ accordion state
+  const [openFaq, setOpenFaq] = useState(null);
+
   useEffect(() => {
     setLoading(true); setNotFound(false); setAdded(false);
     API.get(`/products/${slug}`)
@@ -99,7 +102,7 @@ export default function ProductDetailPage() {
   const crumbs = [
     { name: 'Home', url: '/' },
     { name: 'Shop', url: '/shop' },
-    { name: product.category, url: `/shop?category=${product.category}` },
+    { name: product.category, url: '/shop' },
     { name: product.name, url: `/product/${product.slug}` },
   ];
 
@@ -131,6 +134,8 @@ export default function ProductDetailPage() {
     pageUrl: `/product/${product.slug}`,
     pageName: seoTitle,
     pageDescription: metaDescription,
+    datePublished: product.createdAt ? new Date(product.createdAt).toISOString().split('T')[0] : undefined,
+    dateModified: product.updatedAt ? new Date(product.updatedAt).toISOString().split('T')[0] : undefined,
   });
 
   return (
@@ -359,6 +364,86 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* ── FAQ ──────────────────────────────────────────────────────────── */}
+      <section style={{ borderTop: '1px solid var(--sand)', padding: 'clamp(3rem,6vw,5rem) 0' }}>
+        <div className="container" style={{ maxWidth: 760 }}>
+          <span className="label" style={{ marginBottom: '.75rem', display: 'block' }}>FAQs</span>
+          <h2 style={{ fontFamily: 'var(--serif)', fontWeight: 300, fontSize: 'clamp(1.4rem,3vw,2rem)', letterSpacing: '-.01em', marginBottom: '2rem' }}>
+            Common questions
+          </h2>
+
+          {[
+            {
+              q: `What sizes are available for ${product.name}?`,
+              a: product.sizes?.length
+                ? `${product.name} is available in sizes: ${product.sizes.join(', ')}. If you're between sizes, we recommend sizing up.`
+                : 'Please check the size picker above for available sizes.',
+            },
+            {
+              q: `What is the fabric of ${product.name}?`,
+              a: product.fabric
+                ? `${product.name} is made from ${product.fabric}. We use premium fabrics for lasting comfort.`
+                : 'Fabric details are listed in the product description above.',
+            },
+            {
+              q: 'What is your return policy?',
+              a: 'We accept returns within 7 days of delivery on eligible items in original, unused condition. Refunds are processed within 5–7 business days. Sale and customised items are not eligible.',
+            },
+            {
+              q: 'How long does delivery take?',
+              a: 'Orders are dispatched within 24–48 hours. Standard delivery takes 5–7 business days. Express delivery (2–3 days) is available at checkout.',
+            },
+            {
+              q: 'What payment methods are accepted?',
+              a: 'We accept all major credit/debit cards, UPI, net banking, and wallets via Razorpay. All transactions are secured.',
+            },
+            {
+              q: 'Can I exchange for a different size?',
+              a: 'Yes — exchanges for a different size are accepted within 7 days of delivery. Contact us at contact@snera.in to initiate.',
+            },
+          ].map(({ q, a }, i) => (
+            <div
+              key={i}
+              itemScope
+              itemType="https://schema.org/Question"
+              style={{ borderBottom: '1px solid var(--sand)' }}
+            >
+              <button
+                type="button"
+                onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                aria-expanded={openFaq === i}
+                style={{
+                  width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  padding: '1.1rem 0', background: 'none', border: 'none', cursor: 'pointer',
+                  textAlign: 'left', gap: '1rem',
+                }}
+              >
+                <span itemProp="name" style={{ fontSize: '.85rem', fontWeight: 500, color: 'var(--ink)', lineHeight: 1.5 }}>{q}</span>
+                <svg
+                  viewBox="0 0 24 24"
+                  style={{
+                    width: 16, height: 16, flexShrink: 0, stroke: 'var(--stone)',
+                    fill: 'none', strokeWidth: 1.8, transition: 'transform .2s',
+                    transform: openFaq === i ? 'rotate(180deg)' : 'none',
+                  }}
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+              {openFaq === i && (
+                <div
+                  itemScope
+                  itemType="https://schema.org/Answer"
+                  style={{ paddingBottom: '1.1rem' }}
+                >
+                  <p itemProp="text" style={{ fontSize: '.82rem', color: 'var(--stone2)', lineHeight: 1.8, margin: 0 }}>{a}</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
 
       <style>{`
         @media(max-width:768px){

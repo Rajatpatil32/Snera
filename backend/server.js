@@ -50,10 +50,10 @@ app.use('/api/upload',   require('./routes/upload'));
 // Sitemap — mounted at /api/sitemap
 // Accessible at:
 //   /api/sitemap/          → sitemap index
+//   /api/sitemap.xml       → sitemap index (for robots.txt reference — no redirect)
 //   /api/sitemap/pages.xml
 //   /api/sitemap/products.xml
-//   /api/sitemap/categories.xml
-// robots.txt points to: /api/sitemap.xml → redirects to index
+// robots.txt points to: /api/sitemap.xml (serves index directly)
 app.use('/api/sitemap',  require('./routes/sitemap'));
 
 // Health check
