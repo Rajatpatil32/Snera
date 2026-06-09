@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import FAQ from '../components/FAQ';
+import { useFAQSchema } from '../hooks/useFAQSchema';
 import { Link } from 'react-router-dom';
 import API from '../utils/api';
 import SEOHead from '../components/SEOHead';
@@ -299,6 +301,7 @@ export default function HomePage() {
   const [hovered, setHovered] = useState(null);
 
   useReveal();
+  const { faqSchema, faqs: faqData } = useFAQSchema();
 
   useEffect(() => {
     API.get('/products?featured=true&limit=6')
@@ -310,17 +313,20 @@ export default function HomePage() {
   return (
     <>
       <SEOHead
-        title="SNERA — Premium Essentials | Minimal Fashion India"
-        description="Shop SNERA — premium minimal essentials for men and women. Crafted in India. Free shipping above ₹999. Explore Tops, Bottoms, Outerwear and more."
-        url="https://snera.in"
-        schemas={useSEO({
-          type: 'home',
-          pageUrl: '/',
-          pageName: 'SNERA — Premium Essentials | Minimal Fashion India',
-          pageDescription: 'Shop SNERA — premium minimal essentials for men and women. Crafted in India. Free shipping above ₹999.',
-          breadcrumbs: [{ name: 'Home', url: '/' }],
-        })}
-      />
+  title="Custom T-Shirts & Premium Essentials | SNERA India"
+  description="Design your own customised t-shirts at SNERA. Premium minimal apparel with FAQs on custom orders, sizing, fabrics & delivery. Free shipping ₹999+."
+  image="https://snera.in/images/og-image-custom-tshirt.webp" // If you have a custom t-shirt focused OG image
+  url="https://snera.in"
+  schemas={[
+    ...useSEO({
+      type: 'home',
+      pageName: 'Custom T-Shirts & Premium Essentials | SNERA India',
+      pageDescription: 'Design your own customised t-shirts at SNERA. Premium minimal apparel with FAQs on custom orders, sizing, fabrics & delivery. Free shipping ₹999+.',
+      breadcrumbs: [{ name: 'Home', url: '/' }],
+    }),
+    faqSchema,
+  ]}
+/>
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
       <section id="hero" style={{
@@ -653,7 +659,7 @@ paddingRight:'26%',
       </section>
 
       {/* ── FAQ ──────────────────────────────────────────────────────────── */}
-      <HomeFAQ />
+      <FAQ faqs={faqData} />
 
       {/* ── CONCEPT → WHATSAPP ───────────────────────────────────────────── */}
       <ConceptSection />
