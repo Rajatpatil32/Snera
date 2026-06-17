@@ -86,6 +86,9 @@ router.get('/pages.xml', (req, res) => {
   const pages = [
     { loc: '/',               priority: '1.0', changefreq: 'daily'   },
     { loc: '/shop',           priority: '0.9', changefreq: 'daily'   },
+    { loc: '/about',          priority: '0.8', changefreq: 'monthly' },
+    { loc: '/size-guide',     priority: '0.8', changefreq: 'monthly' },
+    { loc: '/care-guide',     priority: '0.7', changefreq: 'monthly' },
     { loc: '/contact',        priority: '0.7', changefreq: 'monthly' },
     { loc: '/track-order',    priority: '0.5', changefreq: 'monthly' },
     { loc: '/privacy-policy', priority: '0.3', changefreq: 'yearly'  },

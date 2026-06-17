@@ -23,6 +23,9 @@ import RefundPolicyPage   from './pages/RefundPolicyPage';
 import TermsPage          from './pages/TermsPage';
 import ContactPage        from './pages/ContactPage';
 import ShippingPolicyPage from './pages/ShippingPolicyPage';
+import AboutPage          from './pages/AboutPage';
+import SizeGuidePage      from './pages/SizeGuidePage';
+import CareGuidePage      from './pages/CareGuidePage';
 
 // Admin pages
 import AdminLoginPage        from './pages/admin/AdminLoginPage';
@@ -85,6 +88,15 @@ export default function App() {
             }/>
             <Route path="/contact" element={
               <StoreLayout><ContactPage/></StoreLayout>
+            }/>
+            <Route path="/about" element={
+              <StoreLayout><AboutPage/></StoreLayout>
+            }/>
+            <Route path="/size-guide" element={
+              <StoreLayout><SizeGuidePage/></StoreLayout>
+            }/>
+            <Route path="/care-guide" element={
+              <StoreLayout><CareGuidePage/></StoreLayout>
             }/>
             <Route path="/shipping-policy" element={
               <StoreLayout><ShippingPolicyPage/></StoreLayout>

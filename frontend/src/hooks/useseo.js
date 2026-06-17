@@ -39,6 +39,7 @@ export function orgSchema() {
     '@id': `${SITE}/#organization`,
     name: BRAND,
     legalName: 'SNERA',
+    alternateName: ['SNERA Fashion', 'SNERA Brand', 'snera.in'],
     url: SITE,
     logo: {
       '@type': 'ImageObject',
@@ -47,7 +48,7 @@ export function orgSchema() {
       contentUrl: LOGO_PNG,
       width: 512,
       height: 512,
-      caption: 'SNERA — Premium Essentials',
+      caption: 'SNERA — Official Indian Fashion Brand',
     },
     image: {
       '@type': 'ImageObject',
@@ -56,8 +57,9 @@ export function orgSchema() {
       height: 630,
     },
     description:
-      'SNERA is a premium minimal Indian fashion brand offering essentials for men and women. Crafted in India.',
-    foundingDate: '2024',
+      'SNERA is an Indian fashion brand offering premium minimal essentials for men and women. Founded in India, all products are designed and sold exclusively at snera.in.',
+    slogan: 'Wear less. Mean more.',
+    foundingDate: '2026',
     foundingLocation: {
       '@type': 'Place',
       name: 'India',
@@ -68,13 +70,18 @@ export function orgSchema() {
       addressCountry: 'IN',
       addressRegion: 'India',
     },
+    naics: '448120',
+    isicV4: '4771',
+    knowsAbout: ['Indian fashion', 'minimal clothing', 'premium essentials', "men's fashion India", "women's fashion India"],
+    keywords: 'SNERA, SNERA fashion brand, SNERA clothing, snera.in, Indian fashion brand',
     brand: {
       '@type': 'Brand',
       '@id': `${SITE}/#brand`,
       name: BRAND,
       logo: LOGO_PNG,
-      description: 'Premium minimal Indian fashion brand.',
+      description: 'SNERA is a premium minimal Indian fashion brand. Official website: snera.in.',
       url: SITE,
+      slogan: 'Wear less. Mean more.',
     },
     sameAs: [
       IG,
@@ -277,7 +284,7 @@ export function faqSchema(product) {
     },
     {
       q: 'What is your return policy?',
-      a: 'We accept returns within 2 days of delivery on eligible items. Items must be unused and in original packaging. Refunds are processed within 5–7 business days. Visit our Refund Policy page for full details.',
+      a: 'We accept returns within 7 days of delivery on eligible items. Items must be unused and in original packaging. Refunds are processed within 5–7 business days. Visit our Refund Policy page for full details.',
     },
     {
       q: 'How long does delivery take?',
@@ -396,7 +403,19 @@ export function webPageSchema({ name, description, url, dateModified, datePublis
   };
 }
 
-// ─── Main hook ────────────────────────────────────────────────────────────────
+// ─── Speakable schema (voice search / AI assistant) ──────────────────────────
+export function speakableSchema(pageUrl, selectors = ['h1', 'h2', '.speakable']) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    '@id': `${SITE}${pageUrl}#speakable`,
+    speakable: {
+      '@type': 'SpeakableSpecification',
+      cssSelector: selectors,
+    },
+    url: `${SITE}${pageUrl}`,
+  };
+}
 export default function useSEO({
   type = 'webpage',
   product = null,
@@ -436,11 +455,13 @@ export default function useSEO({
   if (type === 'home') {
     schemas.push(clothingStoreSchema());
     schemas.push(genericFaqSchema('home'));
+    schemas.push(speakableSchema('/', ['h1', 'h2', '.speakable', '#hero p']));
   }
 
   if (type === 'product' && product) {
     schemas.push(productSchema(product));
     schemas.push(faqSchema(product));
+    schemas.push(speakableSchema(`/product/${product.slug}`, ['h1', '.product-desc', '.speakable']));
   }
 
   if (type === 'shop' && products.length) {

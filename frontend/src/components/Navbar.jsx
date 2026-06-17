@@ -45,7 +45,7 @@ export default function Navbar() {
 
           {/* Desktop nav */}
           <ul style={{display:'flex',alignItems:'center',gap:'2.5rem'}} className="nav-menu-desktop">
-            {[['New Arrivals','/shop'],['Shop','/shop'],['Track Order','/track-order']].map(([label, to]) => (
+            {[['New Arrivals','/shop'],['Shop','/shop'],['About','/about'],['Track Order','/track-order']].map(([label, to]) => (
               <li key={label}>
                 <NavLink to={to} style={({ isActive }) => ({
                   fontSize:'.66rem',letterSpacing:'.18em',textTransform:'uppercase',
@@ -115,7 +115,7 @@ export default function Navbar() {
           transition:'opacity .3s'
         }}
       >
-        {[['New Arrivals','/shop'],['Shop','/shop'],['Track Order','/track-order']].map(([label, to]) => (
+        {[['New Arrivals','/shop'],['Shop','/shop'],['About','/about'],['Track Order','/track-order']].map(([label, to]) => (
           <Link key={label} to={to} onClick={closeMob} style={{
             fontFamily:'var(--serif)',fontSize:'2rem',fontWeight:300,
             letterSpacing:'.04em',color:'var(--ink)'

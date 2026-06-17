@@ -400,7 +400,7 @@ export default function ProductDetailPage() {
             },
             {
               q: 'Can I exchange for a different size?',
-              a: 'To help ensure the perfect fit and avoid sizing issues, we provide an option at checkout for customers to enter their measurements. As a result, size exchanges are generally not required. If you need assistance, contact us at contact@snera.in.',
+              a: 'Yes — exchanges for a different size are accepted within 7 days of delivery. Contact us at contact@snera.in to initiate.',
             },
           ].map(({ q, a }, i) => (
             <div

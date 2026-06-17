@@ -82,8 +82,9 @@ export default function Footer() {
           </div>
           {[
             {head:'Shop', links:[['New Arrivals','/shop'],['Men','/shop?gender=Men'],['Women','/shop?gender=Women']]},
-            {head:'Help', links:[['Track Order','/track-order'],['Returns & Refunds','/refund-policy'],['Contact Us','/contact']]},
+            {head:'Help', links:[['Track Order','/track-order'],['Returns & Refunds','/refund-policy'],['Contact Us','/contact'],['Size Guide','/size-guide'],['Care Guide','/care-guide']]},
             {head:'Legal', links:[['Privacy Policy','/privacy-policy'],['Terms & Conditions','/terms'],['Shipping Policy','/shipping-policy']]},
+            {head:'Company', links:[['About SNERA','/about'],['Contact','/contact']]},
           ].map(col => (
             <div key={col.head}>
               <span className="label">{col.head}</span>
