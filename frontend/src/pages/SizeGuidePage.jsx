@@ -11,7 +11,7 @@ const TD = { fontSize: '.82rem', color: 'var(--ink)', padding: '.7rem 1rem', bor
 
 const SIZE_FAQS = [
   { q: 'How do SNERA clothes fit — true to size or small?', a: 'SNERA garments are cut with a relaxed, minimal silhouette. They fit true to size. If you are between sizes or prefer a looser drape, size up by one.' },
-  { q: 'What size should I order from SNERA if I am between sizes?', a: 'Always size up when in doubt. SNERA's minimal cut means a larger size drapes cleanly without looking oversized. Sizing down risks a fitted look that doesn't match the minimal aesthetic.' },
+  { q: 'What size should I order from SNERA if I am between sizes?', a: `Always size up when in doubt. SNERA's minimal cut means a larger size drapes cleanly without looking oversized. Sizing down risks a fitted look that doesn't match the minimal aesthetic.` },
   { q: 'Does SNERA offer plus sizes?', a: 'SNERA currently offers sizes XS to XXL. Check individual product pages for exact availability per style.' },
   { q: 'How do I measure my chest for SNERA tops?', a: 'Wrap a measuring tape around the fullest part of your chest, keeping it level. Match this number to the chest column in the SNERA size chart above.' },
   { q: 'How do I measure my waist for SNERA bottoms?', a: 'Measure around your natural waist — the narrowest part of your torso, roughly 2–3 cm above your navel. Match this to the waist column in the chart.' },
