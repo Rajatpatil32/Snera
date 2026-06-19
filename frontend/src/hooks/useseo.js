@@ -11,11 +11,11 @@
  *  - contact:      + ContactPage WebPage subtype
  */
 
-const SITE    = 'https://snera.in';
-const BRAND   = 'SNERA';
-const LOGO    = `${SITE}/images/logo.webp`;
-const LOGO_PNG= `${SITE}/images/logo.png`;
-const IG      = 'https://www.instagram.com/snera.store/';
+const SITE = 'https://snera.in';
+const BRAND = 'SNERA';
+const LOGO = `${SITE}/images/logo.webp`;
+const LOGO_PNG = `${SITE}/images/logo.png`;
+const IG = 'https://www.instagram.com/snera.store/';
 
 // ─── Image URL helper ─────────────────────────────────────────────────────────
 function absImg(path) {
@@ -236,7 +236,18 @@ export function productSchema(product) {
       seller: { '@id': `${SITE}/#organization` },
       shippingDetails: {
         '@type': 'OfferShippingDetails',
-        shippingRate: { '@type': 'MonetaryAmount', value: 0, currency: 'INR' },
+
+        shippingDestination: {
+          '@type': 'DefinedRegion',
+          addressCountry: 'IN'
+        },
+
+        shippingRate: {
+          '@type': 'MonetaryAmount',
+          value: 0,
+          currency: 'INR'
+        },
+
         deliveryTime: {
           '@type': 'ShippingDeliveryTime',
           handlingTime: { '@type': 'QuantitativeValue', minValue: 0, maxValue: 1, unitCode: 'DAY' },
@@ -392,7 +403,7 @@ export function webPageSchema({ name, description, url, dateModified, datePublis
     isPartOf: { '@id': `${SITE}/#website` },
     about: { '@id': `${SITE}/#organization` },
     ...(datePublished && { datePublished }),
-    ...(dateModified  && { dateModified }),
+    ...(dateModified && { dateModified }),
     breadcrumb: breadcrumbId ? { '@id': breadcrumbId } : undefined,
     inLanguage: 'en-IN',
     publisher: { '@id': `${SITE}/#organization` },
@@ -437,8 +448,8 @@ export default function useSEO({
   // Derive breadcrumb @id for cross-reference in WebPage schema
   const normalisedLastUrl = breadcrumbs.length
     ? (breadcrumbs[breadcrumbs.length - 1].url.startsWith('/shop?')
-        ? '/shop'
-        : breadcrumbs[breadcrumbs.length - 1].url)
+      ? '/shop'
+      : breadcrumbs[breadcrumbs.length - 1].url)
     : pageUrl;
   const breadcrumbId = crumbSchema ? `${SITE}${normalisedLastUrl}#breadcrumb` : undefined;
 
