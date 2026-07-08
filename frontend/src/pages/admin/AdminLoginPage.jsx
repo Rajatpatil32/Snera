@@ -85,9 +85,9 @@ export default function AdminLoginPage() {
           </form>
         </div>
 
-        <p style={{textAlign:'center', marginTop:'1.5rem', fontSize:'.68rem', color:'var(--stone)'}}>
+        {/* <p style={{textAlign:'center', marginTop:'1.5rem', fontSize:'.68rem', color:'var(--stone)'}}>
           Default: admin / snera@admin123
-        </p>
+        </p> */}
       </div>
     </div>
   );
