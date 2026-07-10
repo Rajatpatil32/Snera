@@ -387,6 +387,10 @@ export default function ProductDetailPage() {
                 : 'Fabric details are listed in the product description above.',
             },
             {
+              q: 'Can I customize or design my own t-shirt on SNERA?',
+              a: 'Yes — SNERA offers customizable t-shirts. You can upload your own design or artwork, choose placement, size, and premium 220 GSM cotton color, and we print and deliver it across India.',
+            },
+            {
               q: 'What is your return policy?',
               a: 'We accept returns within 7 days of delivery on eligible items in original, unused condition. Refunds are processed within 5–7 business days. Sale and customised items are not eligible.',
             },

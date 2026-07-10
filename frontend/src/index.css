@@ -33,6 +33,13 @@ img {
   will-change: auto;
 }
 
+.hero-img { animation: heroZoom 18s ease-in-out infinite alternate; }
+@keyframes heroZoom { from { transform: scale(1); } to { transform: scale(1.08); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-img, .marquee-track, [style*="animation"] { animation: none !important; }
+}
+
 /* ─── DESIGN TOKENS ──────────────────────────────────────────────────────────── */
 :root {
   --white:  #FFFFFF;
@@ -151,11 +158,24 @@ ul { list-style: none; }
   border: 1px solid var(--accent);
 }
 .btn-accent:hover { background: var(--accent2); border-color: var(--accent2); transform: translateY(-1px); }
+.btn-dark:hover { background: var(--ink2); transform: translateY(-1px); }
+.btn-outline:hover { background: var(--ink); color: var(--white); transform: translateY(-1px); }
 
 /* ─── SECTIONS ───────────────────────────────────────────────────────────────── */
 /* content-visibility: auto skips rendering of off-screen sections entirely
    until they are about to enter the viewport — significant LCP + TTI improvement */
 .sect { padding: clamp(4rem, 9vw, 8rem) 0; content-visibility: auto; contain-intrinsic-size: 0 600px; }
+.sect-head .label {
+  position: relative;
+  padding-left: 1.6rem;
+}
+.sect-head .label::before {
+  content: '';
+  position: absolute; left: 0; top: 50%;
+  width: 1.1rem; height: 1px;
+  background: var(--accent);
+  transform: translateY(-50%);
+}
 .sect-head { margin-bottom: clamp(2.5rem, 5vw, 4.5rem); }
 .sect-head h2 {
   font-family: var(--serif);
@@ -180,6 +200,13 @@ ul { list-style: none; }
   gap: clamp(.9rem, 2.5vw, 2rem);
 }
 .prod-card { cursor: pointer; position: relative; }
+.prod-card {
+  transition: box-shadow .4s var(--ease), border-color .4s var(--ease);
+}
+.prod-card:hover {
+  box-shadow: 0 18px 40px -20px rgba(28,27,24,0.25);
+  border-color: var(--accent);
+}
 .prod-card-img {
   aspect-ratio: 3/4;
   position: relative;

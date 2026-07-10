@@ -57,7 +57,7 @@ export function orgSchema() {
       height: 630,
     },
     description:
-      'SNERA is an Indian fashion brand offering premium minimal essentials for men and women. Founded in India, all products are designed and sold exclusively at snera.in.',
+      'SNERA is an Indian fashion brand offering customizable t-shirts and premium minimal essentials for men and women. Founded in India, all products are designed and sold exclusively at snera.in.',
     slogan: 'Wear less. Mean more.',
     foundingDate: '2026',
     foundingLocation: {
@@ -72,14 +72,14 @@ export function orgSchema() {
     },
     naics: '448120',
     isicV4: '4771',
-    knowsAbout: ['Indian fashion', 'minimal clothing', 'premium essentials', "men's fashion India", "women's fashion India"],
-    keywords: 'SNERA, SNERA fashion brand, SNERA clothing, snera.in, Indian fashion brand',
+    knowsAbout: ['customizable t-shirts', 'custom t-shirt printing India', 'design your own t-shirt', 'Indian fashion', 'minimal clothing', 'premium essentials', "men's fashion India", "women's fashion India"],
+    keywords: 'customizable t-shirt, custom t-shirt India, design your own t-shirt, personalised t-shirt, SNERA, SNERA fashion brand, SNERA clothing, snera.in, Indian fashion brand',
     brand: {
       '@type': 'Brand',
       '@id': `${SITE}/#brand`,
       name: BRAND,
       logo: LOGO_PNG,
-      description: 'SNERA is a premium minimal Indian fashion brand. Official website: snera.in.',
+      description: 'SNERA is a premium minimal Indian fashion brand offering customizable t-shirts. Official website: snera.in.',
       url: SITE,
       slogan: 'Wear less. Mean more.',
     },
@@ -101,6 +101,20 @@ export function orgSchema() {
   };
 }
 
+export function customizationServiceSchema() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    '@id': `${SITE}/#customization-service`,
+    serviceType: 'Clothing Customization',
+    name: 'SNERA Custom Clothing Design',
+    description: 'SNERA offers custom clothing design and printing in India — customize t-shirts and apparel with your own design, uploaded online and delivered nationwide.',
+    provider: { '@id': `${SITE}/#organization` },
+    areaServed: { '@type': 'Country', name: 'India' },
+    audience: { '@type': 'Audience', audienceType: 'Individuals and businesses seeking custom clothing' },
+  };
+}
+
 // ─── ClothingStore / LocalBusiness (home page only) ───────────────────────────
 export function clothingStoreSchema() {
   return {
@@ -112,7 +126,7 @@ export function clothingStoreSchema() {
     logo: LOGO_PNG,
     image: `${SITE}/images/og-image.webp`,
     description:
-      'SNERA — premium minimal Indian fashion brand. Shop essentials for men and women online. Free shipping above ₹999.',
+      'SNERA — order customizable t-shirts and premium minimal essentials online in India. Design your own t-shirt or shop essentials for men and women. Free shipping above ₹999.',
     priceRange: '₹₹',
     currenciesAccepted: 'INR',
     paymentAccepted: 'Credit Card, Debit Card, UPI, Net Banking',
@@ -145,7 +159,7 @@ export function websiteSchema() {
     name: BRAND,
     alternateName: 'SNERA Fashion',
     url: SITE,
-    description: 'Official website of SNERA — premium minimal Indian fashion brand.',
+    description: 'Official website of SNERA — customizable t-shirts and premium minimal Indian fashion brand.',
     inLanguage: 'en-IN',
     publisher: { '@id': `${SITE}/#organization` },
     potentialAction: {
@@ -328,7 +342,11 @@ export function genericFaqSchema(pageId = 'home') {
   const faqs = [
     {
       q: 'What is SNERA?',
-      a: 'SNERA is a premium minimal Indian fashion brand offering essentials for men and women. Every piece is designed with a quiet confidence — crafted in India, built to last.',
+      a: 'SNERA is an Indian fashion brand offering customizable and custom-printed clothing — starting with t-shirts — alongside premium minimal essentials for men and women. Crafted in India, built to last.',
+    },
+    {
+      q: 'Does SNERA offer clothing customization?',
+      a: 'Yes — SNERA offers custom clothing design. You can personalize a t-shirt with your own artwork or text, choose fabric and color, and have it printed and delivered anywhere in India.',
     },
     {
       q: 'Does SNERA offer free shipping?',
@@ -465,6 +483,7 @@ export default function useSEO({
 
   if (type === 'home') {
     schemas.push(clothingStoreSchema());
+    schemas.push(customizationServiceSchema());
     schemas.push(genericFaqSchema('home'));
     schemas.push(speakableSchema('/', ['h1', 'h2', '.speakable', '#hero p']));
   }

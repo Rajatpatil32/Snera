@@ -106,6 +106,8 @@ app.get('/api/test-email', async (req, res) => {
   }
 });
 
+app.use('/api/collections', require('./routes/collection'));
+
 // ─── Keep-Alive (Render free tier) ───────────────────────────────────────────
 // Render spins down free services after ~15 min of inactivity.
 // This self-ping every 14 minutes keeps the server awake.

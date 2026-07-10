@@ -294,30 +294,45 @@ function HomeFAQ() {
 }
 
 export default function HomePage() {
-  const [products, setProducts] = useState([]);
+  // const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hovered, setHovered] = useState(null);
+const [shelves, setShelves] = useState([]); // [{ collection, products }]
+
+useEffect(() => {
+  API.get('/collections').then(async (r) => {
+    const cols = r.data.collections || [];
+    const results = await Promise.all(
+      cols.map(c =>
+        API.get(`/products?category=${encodeURIComponent(c.name)}&limit=6`)
+          .then(res => ({ collection: c, products: res.data.products || [] }))
+          .catch(() => ({ collection: c, products: [] }))
+      )
+    );
+    setShelves(results.filter(s => s.products.length > 0)); // hide empty collections
+  });
+}, []);
 
   useReveal();
 
-  useEffect(() => {
-    API.get('/products?featured=true&limit=6')
-      .then(r => setProducts(r.data.products || []))
-      .catch(() => setProducts([]))
-      .finally(() => setLoading(false));
-  }, []);
+  // useEffect(() => {
+  //   API.get('/products?featured=true&limit=6')
+  //     .then(r => setProducts(r.data.products || []))
+  //     .catch(() => setProducts([]))
+  //     .finally(() => setLoading(false));
+  // }, []);
 
   return (
     <>
       <SEOHead
-        title="SNERA — Premium Essentials | Minimal Fashion India"
-        description="Shop SNERA — premium minimal essentials for men and women. Crafted in India. Free shipping above ₹999. Explore Tops, Bottoms, Outerwear and more."
+        title="Customizable T-Shirts India | Design Your Own Tee — SNERA"
+        description="Design and order customizable t-shirts online with SNERA. Upload your design, choose premium 220 GSM cotton, and get it printed and delivered across India. Free shipping above ₹999."
         url="https://snera.in"
         schemas={useSEO({
           type: 'home',
           pageUrl: '/',
-          pageName: 'SNERA — Premium Essentials | Minimal Fashion India',
-          pageDescription: 'Shop SNERA — premium minimal essentials for men and women. Crafted in India. Free shipping above ₹999.',
+          pageName: 'Customizable T-Shirts India | Design Your Own Tee — SNERA',
+          pageDescription: 'Design and order customizable t-shirts online with SNERA. Upload your design, choose premium 220 GSM cotton, and get it printed and delivered across India.',
           breadcrumbs: [{ name: 'Home', url: '/' }],
         })}
       />
@@ -334,7 +349,7 @@ export default function HomePage() {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '.9rem', marginBottom: '1.75rem', opacity: 0, animation: 'fadeUp .8s var(--ease) .2s forwards' }}>
             <div style={{ width: 26, height: 1, background: 'var(--stone)', flexShrink: 0 }} />
-            <span style={{ fontSize: '.6rem', letterSpacing: '.24em', textTransform: 'uppercase', color: 'var(--stone)', fontWeight: 500 }}>New Collection — SS 2025</span>
+            <span style={{ fontSize: '.6rem', letterSpacing: '.24em', textTransform: 'uppercase', color: 'var(--stone)', fontWeight: 500 }}>Customizable T-Shirts — Design Your Own</span>
           </div>
 
           <div style={{ opacity: 0, animation: 'fadeUp .9s var(--ease) .34s forwards', marginBottom: '1.5rem' }}>
@@ -342,7 +357,7 @@ export default function HomePage() {
               fontFamily: 'var(--serif)', fontWeight: 300,
               fontSize: 'clamp(3rem,6.5vw,6rem)', lineHeight: 1.04, letterSpacing: '-.01em'
             }}>
-              <span style={{ display: 'block', fontSize: 'clamp(.75rem,1.2vw,1rem)', fontFamily: 'var(--sans)', letterSpacing: '.28em', textTransform: 'uppercase', fontWeight: 600, marginBottom: '.6rem', color: 'var(--stone)' }}>SNERA — Indian Fashion Brand</span>
+              <span style={{ display: 'block', fontSize: 'clamp(.75rem,1.2vw,1rem)', fontFamily: 'var(--sans)', letterSpacing: '.28em', textTransform: 'uppercase', fontWeight: 600, marginBottom: '.6rem', color: 'var(--stone)' }}>SNERA — Customizable T-Shirts, Made in India</span>
               Dressed in<br /><em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>simplicity.</em><br />Built to last.
             </h1>
           </div>
@@ -351,12 +366,12 @@ export default function HomePage() {
             fontSize: '.88rem', color: 'var(--stone2)', lineHeight: 1.78, maxWidth: '36ch', marginBottom: '2.5rem',
             opacity: 0, animation: 'fadeUp .9s var(--ease) .48s forwards'
           }}>
-            <span className="speakable">SNERA is an Indian fashion brand. Premium essentials crafted for those who believe the quietest statement is often the loudest.</span> Wear less. Mean more.
+            <span className="speakable">SNERA is an Indian fashion brand offering customizable t-shirts — design your own tee, printed on premium 220 GSM cotton and delivered across India.</span> Wear less. Mean more.
           </p>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap', opacity: 0, animation: 'fadeUp .9s var(--ease) .62s forwards' }}>
-            <Link to="/shop" className="btn btn-dark">Explore Collection</Link>
-            <a href="#why" className="btn btn-ghost">Our Story →</a>
+            <Link to="/shop" className="btn btn-dark">Design Your Own Tee</Link>
+<a href="#collections" className="btn btn-ghost">Browse Collections</a>
           </div>
 
           <div style={{
@@ -390,6 +405,7 @@ export default function HomePage() {
               loading="eager"
               fetchPriority="high"
               decoding="sync"
+              className="hero-img"
               style={{
                 width: '100%',
                 height: '100%',
@@ -455,15 +471,14 @@ paddingRight:'26%',
       {/* ── MARQUEE ───────────────────────────────────────────────────────── */}
       <div className="marquee">
         <div className="marquee-track">
-          {['Premium Cotton', 'Minimal Design', 'Made in India', 'Free Shipping ₹999+', 'Easy Returns', 'SS 2025 Collection',
-            'Premium Cotton', 'Minimal Design', 'Made in India', 'Free Shipping ₹999+', 'Easy Returns', 'SS 2025 Collection'].map((t, i) => (
+          {['Premium Cotton', 'Minimal Design', 'Made in India', 'Free Shipping ₹999+', 'Easy Returns', 'SS 2025 Collection'].map((t, i) => (
               <span key={i} className="marquee-item">{t}</span>
             ))}
         </div>
       </div>
 
       {/* ── FEATURED PRODUCTS ─────────────────────────────────────────────── */}
-      <section className="sect" id="featured">
+      {/* <section className="sect" id="featured">
         <div className="container">
           <div className="sect-head reveal">
             <span className="label">New Arrivals</span>
@@ -494,7 +509,57 @@ paddingRight:'26%',
             <Link to="/shop" className="btn btn-outline">View All Products</Link>
           </div>
         </div>
-      </section>
+      </section> */}
+      {/* ── SHOP BY COLLECTION ───────────────────────────────────────────── */}
+{/* ── SHOP BY COLLECTION ───────────────────────────────────────────── */}
+{shelves.map((shelf, idx) => (
+  <section
+    key={shelf.collection._id}
+    className="sect"
+    style={{
+      borderTop: '1px solid var(--sand)',
+      background: idx % 2 === 0 ? 'var(--off)' : 'transparent',
+      position: 'relative', overflow: 'hidden',
+    }}
+  >
+    {/* watermark */}
+    <span aria-hidden="true" style={{
+      position: 'absolute', top: '-2vw', right: '-1vw',
+      fontFamily: 'var(--serif)', fontWeight: 300,
+      fontSize: 'clamp(6rem,14vw,13rem)', lineHeight: 1,
+      color: 'var(--ink)', opacity: 0.035, userSelect: 'none', pointerEvents: 'none',
+      whiteSpace: 'nowrap',
+    }}>{shelf.collection.name}</span>
+
+    <div className="container" style={{ position: 'relative' }}>
+      <div className="sect-head reveal" style={{
+        display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
+        borderBottom: 'none', flexWrap: 'wrap', gap: '1rem',
+      }}>
+        <div>
+          <span className="label">Collection</span>
+          <h2 style={{ marginBottom: 0 }}>{shelf.collection.name}</h2>
+          {shelf.collection.description && (
+            <p style={{ marginTop: '.5rem', maxWidth: 480 }}>{shelf.collection.description}</p>
+          )}
+        </div>
+        <Link
+          to={`/shop?category=${encodeURIComponent(shelf.collection.name)}`}
+          className="btn btn-outline"
+          style={{ flexShrink: 0 }}
+        >
+          Shop All {shelf.collection.name}
+        </Link>
+      </div>
+
+      <div className="prod-grid" style={{ marginTop: '2.5rem' }}>
+        {shelf.products.map((p, i) => (
+          <ProductCard key={p._id} product={p} index={i} showFlip={true} />
+        ))}
+      </div>
+    </div>
+  </section>
+))}
 
       {/* ── CATEGORY SPLIT ────────────────────────────────────────────────── */}
       {/* <section style={{

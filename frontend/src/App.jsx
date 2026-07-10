@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { CartProvider } from './context/CartContext';
+import AdminCollectionsPage  from './pages/admin/AdminCollectionsPage';
 
 // Layout
 import Navbar      from './components/Navbar';
@@ -114,6 +115,7 @@ export default function App() {
               <Route path="products"               element={<AdminProductsPage/>}/>
               <Route path="products/new"           element={<AdminProductFormPage/>}/>
               <Route path="products/:id/edit"      element={<AdminProductFormPage/>}/>
+              <Route path="collections"            element={<AdminCollectionsPage/>}/>
               <Route path="images"                 element={<AdminImagesPage/>}/>
             </Route>
 
@@ -121,6 +123,7 @@ export default function App() {
             <Route path="*" element={
               <StoreLayout><NotFoundPage /></StoreLayout>
             }/>
+
           </Routes>
         </BrowserRouter>
       </CartProvider>

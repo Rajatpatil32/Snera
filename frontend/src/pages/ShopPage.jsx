@@ -15,7 +15,6 @@ import { useReveal } from '../hooks/useReveal';
 // This tells Google the filtered view is a variant of /shop, not a separate page.
 // If you later add proper path-based category routes (/shop/tops), update canonical there.
 
-const CATEGORIES = ['All', 'Tops', 'Bottoms', 'Outerwear', 'Accessories'];
 const GENDERS    = ['All', 'Men', 'Women', 'Unisex'];
 
 const SITE = 'https://snera.in';
@@ -27,7 +26,11 @@ export default function ShopPage() {
   const [total,    setTotal]    = useState(0);
   const [page,     setPage]     = useState(1);
   const [pages,    setPages]    = useState(1);
-
+  const [categories, setCategories] = useState(['All']);
+  useEffect(() => {
+    API.get('/collections').then(r => setCategories(['All', ...(r.data.collections || []).map(c => c.name)]));
+  }, []);
+  
   const catParam    = searchParams.get('category') || 'All';
   const genderParam = searchParams.get('gender')   || 'All';
   useReveal();
@@ -67,10 +70,10 @@ export default function ShopPage() {
 
   const categoryLabel = catParam !== 'All' ? catParam : 'All Products';
   const genderLabel   = genderParam !== 'All' ? ` for ${genderParam}` : '';
-  const shopTitle     = `${categoryLabel}${genderLabel} | Shop | SNERA`;
+  const shopTitle     = `${categoryLabel}${genderLabel} | Customizable T-Shirts & Shop | SNERA`;
   const shopDesc      = catParam !== 'All'
-    ? `Shop premium ${catParam.toLowerCase()}${genderLabel} at SNERA. Minimal, timeless fashion made in India. Free shipping above ₹999.`
-    : 'Browse the complete SNERA collection — premium essentials for men and women. Minimal, timeless fashion made in India. Free shipping above ₹999.';
+    ? `Shop premium ${catParam.toLowerCase()}${genderLabel} at SNERA, including customizable t-shirts. Minimal, timeless fashion made in India. Free shipping above ₹999.`
+    : 'Browse the complete SNERA collection — customizable t-shirts and premium essentials for men and women. Minimal, timeless fashion made in India. Free shipping above ₹999.';
 
   const shopCrumbs = [
     { name: 'Home', url: '/' },
@@ -79,6 +82,7 @@ export default function ShopPage() {
   ];
 
   const shopKeywords = [
+    'customizable t-shirt', 'custom t-shirt India', 'design your own t-shirt',
     catParam !== 'All' ? `${catParam} online India` : 'premium fashion India',
     genderParam !== 'All' ? `${genderParam.toLowerCase()} clothing` : '',
     'SNERA', 'minimal fashion', 'premium essentials', 'buy clothes India',
@@ -133,7 +137,7 @@ export default function ShopPage() {
                 <div>
                   <span style={{fontSize:'.58rem',letterSpacing:'.2em',textTransform:'uppercase',color:'var(--stone)',display:'block',marginBottom:'.4rem'}}>Category</span>
                   <div style={{display:'flex',gap:'.35rem',flexWrap:'wrap'}}>
-                    {CATEGORIES.map(c => (
+                    {categories.map(c => (
                       <button key={c} onClick={() => setFilter('category', c)} style={{
                         fontSize:'.58rem',letterSpacing:'.14em',textTransform:'uppercase',
                         padding:'.28rem .75rem',border:'1px solid',cursor:'pointer',

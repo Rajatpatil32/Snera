@@ -15,7 +15,7 @@ const colorGroupSchema = new mongoose.Schema({
 const productSchema = new mongoose.Schema({
   name:         { type: String, required: true },
   slug:         { type: String, required: true, unique: true },
-  category:     { type: String, required: true, enum: ['Tops', 'Bottoms', 'Outerwear', 'Accessories'] },
+  category:     { type: String, required: true }, // now free-form — validated against Collection names in the admin UI
   gender:       { type: String, enum: ['Men', 'Women', 'Unisex'], default: 'Unisex' },
   price:        { type: Number, required: true },
   comparePrice: { type: Number },
