@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import API from '../utils/api';
 
 export default function Navbar() {
   const { count, dispatch } = useCart();
-  const [scrolled, setScrolled]   = useState(false);
-  const [mobOpen, setMobOpen]     = useState(false);
+  const [scrolled, setScrolled]       = useState(false);
+  const [mobOpen, setMobOpen]         = useState(false);
+  const [collections, setCollections] = useState([]);
+  const [colOpen, setColOpen]         = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -13,14 +16,27 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Lock body scroll when mobile menu open
   useEffect(() => {
     document.body.style.overflow = mobOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [mobOpen]);
 
-  const openCart  = () => dispatch({ type: 'OPEN' });
-  const closeMob  = () => setMobOpen(false);
+  useEffect(() => {
+    API.get('/collections')
+      .then(r => setCollections(r.data))
+      .catch(() => {});
+  }, []);
+
+  const openCart = () => dispatch({ type: 'OPEN' });
+  const closeMob = () => { setMobOpen(false); setColOpen(false); };
+
+  const NAV_LINKS = [
+    ['New Arrivals', '/shop'],
+    ['Shop', '/shop'],
+    ['About', '/about'],
+    ['Blog', '/blog'],
+    ['Track Order', '/track-order'],
+  ];
 
   return (
     <>
@@ -45,7 +61,7 @@ export default function Navbar() {
 
           {/* Desktop nav */}
           <ul style={{display:'flex',alignItems:'center',gap:'2.5rem'}} className="nav-menu-desktop">
-            {[['New Arrivals','/shop'],['Shop','/shop'],['About','/about'],['Track Order','/track-order']].map(([label, to]) => (
+            {NAV_LINKS.map(([label, to]) => (
               <li key={label}>
                 <NavLink to={to} style={({ isActive }) => ({
                   fontSize:'.66rem',letterSpacing:'.18em',textTransform:'uppercase',
@@ -56,10 +72,47 @@ export default function Navbar() {
                 })}>{label}</NavLink>
               </li>
             ))}
+
+            {/* Collections dropdown */}
+            {collections.length > 0 && (
+              <li style={{position:'relative'}}
+                onMouseEnter={() => setColOpen(true)}
+                onMouseLeave={() => setColOpen(false)}
+              >
+                <button style={{
+                  fontSize:'.66rem',letterSpacing:'.18em',textTransform:'uppercase',
+                  fontWeight:400,color:'var(--stone2)',background:'none',border:'none',
+                  cursor:'pointer',paddingBottom:'2px',fontFamily:'var(--sans)',
+                  borderBottom:'1px solid transparent',transition:'color var(--t)'
+                }}>Collections ▾</button>
+
+                {colOpen && (
+                  <ul style={{
+                    position:'absolute',top:'100%',left:0,
+                    background:'var(--white)',border:'1px solid var(--sand)',
+                    minWidth:180,padding:'.5rem 0',listStyle:'none',
+                    boxShadow:'0 8px 24px rgba(0,0,0,.08)',zIndex:10
+                  }}>
+                    {collections.map(col => (
+                      <li key={col._id}>
+                        <Link to={`/collection/${col.slug}`} style={{
+                          display:'flex',alignItems:'center',gap:'.5rem',
+                          padding:'.5rem 1rem',
+                          fontSize:'.66rem',letterSpacing:'.12em',textTransform:'uppercase',
+                          color:'var(--ink)',transition:'background var(--t)'
+                        }}>
+                          {col.icon && <span>{col.icon}</span>}
+                          {col.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            )}
           </ul>
 
           <div style={{display:'flex',alignItems:'center',gap:'1.25rem'}}>
-            {/* Cart icon */}
             <button
               onClick={openCart}
               aria-label="Open cart"
@@ -84,7 +137,6 @@ export default function Navbar() {
               )}
             </button>
 
-            {/* Hamburger */}
             <button
               className="nav-ham"
               aria-label="Menu"
@@ -110,17 +162,33 @@ export default function Navbar() {
           position:'fixed',top:'var(--nav-h)',left:0,right:0,bottom:0,
           background:'var(--white)',zIndex:850,
           flexDirection:'column',alignItems:'center',justifyContent:'center',
-          gap:'2.5rem',
-          opacity: mobOpen ? 1 : 0,
-          transition:'opacity .3s'
+          gap:'2rem', overflowY:'auto', padding:'2rem 0'
         }}
       >
-        {[['New Arrivals','/shop'],['Shop','/shop'],['About','/about'],['Track Order','/track-order']].map(([label, to]) => (
+        {NAV_LINKS.map(([label, to]) => (
           <Link key={label} to={to} onClick={closeMob} style={{
             fontFamily:'var(--serif)',fontSize:'2rem',fontWeight:300,
             letterSpacing:'.04em',color:'var(--ink)'
           }}>{label}</Link>
         ))}
+
+        {collections.length > 0 && (
+          <div style={{textAlign:'center'}}>
+            <p style={{
+              fontSize:'.66rem',letterSpacing:'.18em',textTransform:'uppercase',
+              color:'var(--stone2)',marginBottom:'.75rem'
+            }}>Collections</p>
+            {collections.map(col => (
+              <Link key={col._id} to={`/collection/${col.slug}`} onClick={closeMob} style={{
+                display:'block',padding:'.4rem',
+                fontFamily:'var(--serif)',fontSize:'1.4rem',fontWeight:300,color:'var(--ink)'
+              }}>
+                {col.icon && <span style={{marginRight:'.4rem'}}>{col.icon}</span>}
+                {col.name}
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
 
       <style>{`

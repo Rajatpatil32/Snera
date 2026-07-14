@@ -86,3 +86,37 @@ router.delete('/:id', auth, async (req, res) => {
 });
 
 module.exports = router;
+
+// POST /api/products/admin/bulk-import — bulk create from CSV
+router.post('/admin/bulk-import', auth, async (req, res) => {
+  try {
+    const { products } = req.body;
+    if (!Array.isArray(products) || !products.length)
+      return res.status(400).json({ error: 'products array required' });
+
+    const results = [];
+    for (const p of products) {
+      try {
+        const base = slugify(p.name, { lower: true, strict: true });
+        let slug = base; let n = 1;
+        while (await Product.findOne({ slug })) slug = `${base}-${n++}`;
+        const created = await Product.create({
+          ...p,
+          slug,
+          price: Number(p.price) || 0,
+          comparePrice: p.comparePrice ? Number(p.comparePrice) : undefined,
+          sizes: p.sizes ? String(p.sizes).split(',').map(s => s.trim()).filter(Boolean) : ['S','M','L','XL'],
+          tags:  p.tags  ? String(p.tags).split(',').map(t => t.trim()).filter(Boolean) : [],
+          isActive: true,
+          isFeatured: false,
+          images: [],
+          colorGroups: [],
+        });
+        results.push({ status: 'ok', name: p.name, id: created._id });
+      } catch (err) {
+        results.push({ status: 'error', name: p.name, error: err.message });
+      }
+    }
+    res.json({ results });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});

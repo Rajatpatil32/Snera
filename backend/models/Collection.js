@@ -1,18 +1,34 @@
 const mongoose = require('mongoose');
-const slugify  = require('slugify');
 
 const collectionSchema = new mongoose.Schema({
-  name:        { type: String, required: true, unique: true }, // "T-Shirts", "Hoodies"
-  slug:        { type: String, required: true, unique: true },
-  description: { type: String },
-  image:       { type: String },   // thumbnail shown in shop filter / admin
-  isActive:    { type: Boolean, default: true },
-  sortOrder:   { type: Number, default: 0 },
+  name:         { type: String, required: true },
+  slug:         { type: String, unique: true },
+  description:  String,
+  image:        String,
+  icon:         String,
+  products:     [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
+  isActive:     { type: Boolean, default: true },
+  isFeatured:   { type: Boolean, default: false },
+  displayOrder: { type: Number, default: 0 },
+  seo: {
+    metaTitle:       String,
+    metaDescription: String,
+    keywords:        [String],
+    ogTitle:         String,
+    ogDescription:   String,
+    ogImage:         String,
+    canonicalUrl:    String,
+  },
 }, { timestamps: true });
 
-collectionSchema.pre('validate', function (next) {
-  if (this.isModified('name')) {
-    this.slug = slugify(this.name, { lower: true, strict: true });
+collectionSchema.pre('save', function(next) {
+  if (this.isModified('name') && !this.slug) {
+    this.slug = this.name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim();
   }
   next();
 });

@@ -39,6 +39,15 @@ import AdminProductFormPage  from './pages/admin/AdminProductFormPage';
 import AdminImagesPage       from './pages/admin/AdminImagesPage';
 import NotFoundPage          from './pages/NotFoundPage';
 
+import BlogListPage          from './pages/Bloglistpage';
+import BlogDetailPage        from './pages/Blogdetailpage';
+import CollectionDetailPage  from './pages/Collectiondetailpage';
+import AdminBlogPage         from './pages/admin/Adminblogpage';
+import AdminBlogFormPage     from './pages/admin/Adminblogformpage';
+import AdminCollectionFormPage from './pages/admin/Admincollectionsformpage';
+import AdminProductImportPage  from './pages/admin/Adminproductimportpage';
+ 
+
 // Storefront wrapper — includes Navbar, Footer, Cart
 function StoreLayout({ children }) {
   return (
@@ -103,6 +112,10 @@ export default function App() {
               <StoreLayout><ShippingPolicyPage/></StoreLayout>
             }/>
 
+            <Route path="/blog" element={<StoreLayout><BlogListPage/></StoreLayout>}/>
+            <Route path="/blog/:slug" element={<StoreLayout><BlogDetailPage/></StoreLayout>}/>
+            <Route path="/collection/:slug" element={<StoreLayout><CollectionDetailPage/></StoreLayout>}/>
+
             {/* ── Admin ── */}
             <Route path="/admin/login" element={<AdminLoginPage/>}/>
 
@@ -117,6 +130,14 @@ export default function App() {
               <Route path="products/:id/edit"      element={<AdminProductFormPage/>}/>
               <Route path="collections"            element={<AdminCollectionsPage/>}/>
               <Route path="images"                 element={<AdminImagesPage/>}/>
+
+              <Route path="blog"               element={<AdminBlogPage/>}/>
+              <Route path="blog/new"           element={<AdminBlogFormPage/>}/>
+              <Route path="blog/:id/edit"      element={<AdminBlogFormPage/>}/>
+              <Route path="collections"        element={<AdminCollectionsPage/>}/>
+              <Route path="collections/new"    element={<AdminCollectionFormPage/>}/>
+              <Route path="collections/:id/edit" element={<AdminCollectionFormPage/>}/>
+              <Route path="products/import"     element={<AdminProductImportPage/>}/>
             </Route>
 
             {/* Fallback — real 404, not a redirect. Better for SEO crawl budget. */}

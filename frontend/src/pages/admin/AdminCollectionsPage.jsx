@@ -1,121 +1,118 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import API from '../../utils/api';
 
 export default function AdminCollectionsPage() {
   const [collections, setCollections] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [editingId, setEditingId] = useState(null);
-  const [saving, setSaving] = useState(false);
+  const [loading, setLoading]         = useState(true);
+  const [search, setSearch]           = useState('');
 
-  const load = () => {
-    setLoading(true);
+  useEffect(() => {
     API.get('/collections/admin/all')
-      .then(r => setCollections(r.data.collections || []))
+      .then(r => setCollections(r.data))
+      .catch(console.error)
       .finally(() => setLoading(false));
+  }, []);
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this collection?')) return;
+    await API.delete(`/collections/admin/${id}`);
+    setCollections(collections.filter(c => c._id !== id));
   };
 
-  useEffect(() => { load(); }, []);
-
-  const resetForm = () => { setName(''); setDescription(''); setEditingId(null); };
-
-  const submit = async (e) => {
-    e.preventDefault();
-    if (!name.trim()) return;
-    setSaving(true);
-    try {
-      if (editingId) {
-        await API.put(`/collections/${editingId}`, { name, description });
-      } else {
-        await API.post('/collections', { name, description });
-      }
-      resetForm();
-      load();
-    } catch (err) {
-      alert(err.response?.data?.error || 'Failed to save collection');
-    } finally {
-      setSaving(false);
-    }
+  const handleToggleActive = async (col) => {
+    const r = await API.put(`/collections/admin/${col._id}`, { ...col, isActive: !col.isActive });
+    setCollections(collections.map(c => c._id === col._id ? r.data : c));
   };
 
-  const edit = (c) => { setEditingId(c._id); setName(c.name); setDescription(c.description || ''); };
+  const filtered = collections.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
 
-  const toggleActive = async (c) => {
-    await API.put(`/collections/${c._id}`, { isActive: !c.isActive });
-    load();
-  };
-
-  const remove = async (c) => {
-    if (!window.confirm(`Delete "${c.name}"? This can't be undone.`)) return;
-    try {
-      await API.delete(`/collections/${c._id}`);
-      load();
-    } catch (err) {
-      alert(err.response?.data?.error || 'Failed to delete collection');
-    }
-  };
+  const TH = { fontSize: '.6rem', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--stone2,#999)', padding: '.75rem 1rem', textAlign: 'left', borderBottom: '1px solid var(--sand,#e8e3db)', fontWeight: 400 };
+  const TD = { padding: '.75rem 1rem', fontSize: '.8rem', verticalAlign: 'middle', borderBottom: '1px solid var(--sand,#e8e3db)' };
 
   return (
-    <>
-      <div className="admin-header">
-        <h1 className="admin-title">
-          Collections{' '}
-          <span style={{ fontSize: '1rem', color: 'var(--stone)', fontFamily: 'var(--sans)', fontWeight: 300 }}>
-            ({collections.length})
-          </span>
-        </h1>
+    <div style={{ padding: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
+        <div>
+          <h1 style={{ fontFamily: 'var(--serif)', fontWeight: 400, fontSize: '1.6rem' }}>Collections</h1>
+          <p style={{ color: 'var(--stone2,#999)', fontSize: '.8rem', marginTop: '.25rem' }}>Organise products into curated collections</p>
+        </div>
+        <Link to="/admin/collections/new" style={{
+          display: 'inline-block', padding: '.6rem 1.25rem',
+          background: 'var(--ink,#1a1a1a)', color: '#fff',
+          fontSize: '.66rem', letterSpacing: '.14em', textTransform: 'uppercase', textDecoration: 'none'
+        }}>+ New Collection</Link>
       </div>
 
-      <div className="admin-card" style={{ marginBottom: '1.5rem' }}>
-        <form onSubmit={submit} style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-          <div className="form-group" style={{ flex: '1 1 220px' }}>
-            <label className="form-label">Collection Name *</label>
-            <input className="form-input" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Hoodies" required />
-          </div>
-          <div className="form-group" style={{ flex: '2 1 300px' }}>
-            <label className="form-label">Description</label>
-            <input className="form-input" value={description} onChange={e => setDescription(e.target.value)} placeholder="Optional short description" />
-          </div>
-          <button type="submit" className="btn btn-dark" disabled={saving} style={{ fontSize: '.62rem' }}>
-            {editingId ? 'Update Collection' : '+ Add Collection'}
-          </button>
-          {editingId && (
-            <button type="button" className="btn btn-ghost" onClick={resetForm} style={{ fontSize: '.62rem' }}>Cancel</button>
-          )}
-        </form>
+      <div style={{ marginBottom: '1.5rem' }}>
+        <input
+          value={search} onChange={e => setSearch(e.target.value)}
+          placeholder="Search collections…"
+          style={{ padding: '.5rem .75rem', border: '1px solid var(--sand,#e8e3db)', fontSize: '.8rem', minWidth: 200, outline: 'none' }}
+        />
       </div>
 
-      <div className="admin-card" style={{ padding: 0 }}>
-        {loading ? (
-          <div className="page-loader" style={{ minHeight: 200 }}><div className="loader-ring" /></div>
-        ) : (
-          <table className="admin-table">
-            <thead>
-              <tr><th>Name</th><th>Slug</th><th>Status</th><th>Actions</th></tr>
-            </thead>
-            <tbody>
-              {collections.length === 0 ? (
-                <tr><td colSpan={4} style={{ textAlign: 'center', color: 'var(--stone)', padding: '3rem' }}>No collections yet.</td></tr>
-              ) : collections.map(c => (
-                <tr key={c._id}>
-                  <td>{c.name}</td>
-                  <td>{c.slug}</td>
-                  <td>
-                    <button onClick={() => toggleActive(c)} className="btn btn-ghost" style={{ fontSize: '.6rem' }}>
-                      {c.isActive ? 'Active' : 'Hidden'}
-                    </button>
-                  </td>
-                  <td style={{ display: 'flex', gap: '.5rem' }}>
-                    <button onClick={() => edit(c)} className="btn btn-ghost" style={{ fontSize: '.6rem' }}>Edit</button>
-                    <button onClick={() => remove(c)} className="btn btn-ghost" style={{ fontSize: '.6rem', color: '#b3261e' }}>Delete</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-    </>
+      {loading ? <p style={{ color: 'var(--stone2,#999)' }}>Loading…</p> : filtered.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--stone2,#999)' }}>
+          <p>No collections yet.</p>
+          <Link to="/admin/collections/new" style={{ display: 'inline-block', marginTop: '1rem', fontSize: '.66rem', letterSpacing: '.14em', textTransform: 'uppercase', borderBottom: '1px solid var(--ink)', color: 'var(--ink)' }}>Create your first</Link>
+        </div>
+      ) : (
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr>
+              <th style={TH}>Collection</th>
+              <th style={TH}>Products</th>
+              <th style={TH}>Featured</th>
+              <th style={TH}>Status</th>
+              <th style={TH}>Order</th>
+              <th style={TH}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map(col => (
+              <tr key={col._id}>
+                <td style={TD}>
+                  <strong style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
+                    {col.icon && <span style={{ fontSize: '1.2rem' }}>{col.icon}</span>}
+                    {col.name}
+                  </strong>
+                  {col.description && <span style={{ fontSize: '.72rem', color: 'var(--stone2,#999)' }}>{col.description.slice(0,50)}…</span>}
+                </td>
+                <td style={{ ...TD, color: 'var(--stone2,#999)' }}>{col.products?.length || 0}</td>
+                <td style={TD}>
+                  <span style={{
+                    fontSize: '.62rem', letterSpacing: '.1em', textTransform: 'uppercase',
+                    padding: '.2rem .5rem',
+                    background: col.isFeatured ? '#e6f4ea' : 'transparent',
+                    color: col.isFeatured ? '#2d7a3a' : 'var(--stone2,#999)',
+                    border: `1px solid ${col.isFeatured ? '#2d7a3a' : 'var(--sand,#e8e3db)'}`
+                  }}>{col.isFeatured ? 'Yes' : 'No'}</span>
+                </td>
+                <td style={TD}>
+                  <button onClick={() => handleToggleActive(col)}
+                    style={{
+                      padding: '.25rem .75rem', fontSize: '.62rem', letterSpacing: '.1em', textTransform: 'uppercase',
+                      border: 'none', cursor: 'pointer',
+                      background: col.isActive ? '#e6f4ea' : '#fef3cd',
+                      color: col.isActive ? '#2d7a3a' : '#856404'
+                    }}>
+                    {col.isActive ? 'Active' : 'Inactive'}
+                  </button>
+                </td>
+                <td style={{ ...TD, color: 'var(--stone2,#999)' }}>{col.displayOrder}</td>
+                <td style={TD}>
+                  <div style={{ display: 'flex', gap: '.5rem' }}>
+                    <Link to={`/admin/collections/${col._id}/edit`} style={{ fontSize: '.66rem', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--ink)', borderBottom: '1px solid var(--ink)' }}>Edit</Link>
+                    <Link to={`/collection/${col.slug}`} target="_blank" style={{ fontSize: '.66rem', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--stone2,#999)', borderBottom: '1px solid var(--stone2,#999)' }}>View</Link>
+                    <button onClick={() => handleDelete(col._id)} style={{ fontSize: '.66rem', letterSpacing: '.1em', textTransform: 'uppercase', color: '#c0392b', background: 'none', border: 'none', cursor: 'pointer', borderBottom: '1px solid #c0392b' }}>Delete</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
   );
 }

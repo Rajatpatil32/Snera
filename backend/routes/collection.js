@@ -62,4 +62,101 @@ router.delete('/:id', auth, async (req, res) => {
   }
 });
 
+// PUBLIC: all active collections
+router.get('/', async (req, res) => {
+  try {
+    const cols = await Collection.find({ isActive: true })
+      .populate('products', 'name slug price images')
+      .sort({ displayOrder: 1 });
+    res.json(cols);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// PUBLIC: single collection by slug
+router.get('/slug/:slug', async (req, res) => {
+  try {
+    const col = await Collection.findOne({ slug: req.params.slug, isActive: true })
+      .populate('products', 'name slug price images category');
+    if (!col) return res.status(404).json({ error: 'Not found' });
+    res.json(col);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// PUBLIC: featured collections
+router.get('/featured/list', async (req, res) => {
+  try {
+    const cols = await Collection.find({ isActive: true, isFeatured: true })
+      .populate('products', 'name slug price images')
+      .sort({ displayOrder: 1 })
+      .limit(6);
+    res.json(cols);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ADMIN: all collections
+router.get('/admin/all', auth, async (req, res) => {
+  try {
+    const cols = await Collection.find()
+      .populate('products', 'name slug')
+      .sort({ displayOrder: 1 });
+    res.json(cols);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ADMIN: create collection
+router.post('/admin', auth, async (req, res) => {
+  try {
+    const col    = new Collection(req.body);
+    const saved  = await col.save();
+    const result = await saved.populate('products', 'name slug');
+    res.status(201).json(result);
+  } catch (err) { res.status(400).json({ error: err.message }); }
+});
+
+// ADMIN: update collection
+router.put('/admin/:id', auth, async (req, res) => {
+  try {
+    const col = await Collection.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
+      .populate('products', 'name slug');
+    if (!col) return res.status(404).json({ error: 'Not found' });
+    res.json(col);
+  } catch (err) { res.status(400).json({ error: err.message }); }
+});
+
+// ADMIN: add products to collection
+router.post('/admin/:id/add-products', auth, async (req, res) => {
+  try {
+    const { productIds } = req.body;
+    const col = await Collection.findByIdAndUpdate(
+      req.params.id,
+      { $addToSet: { products: { $each: productIds } } },
+      { new: true }
+    ).populate('products', 'name slug price');
+    if (!col) return res.status(404).json({ error: 'Not found' });
+    res.json(col);
+  } catch (err) { res.status(400).json({ error: err.message }); }
+});
+
+// ADMIN: remove product from collection
+router.delete('/admin/:id/products/:productId', auth, async (req, res) => {
+  try {
+    const col = await Collection.findByIdAndUpdate(
+      req.params.id,
+      { $pull: { products: req.params.productId } },
+      { new: true }
+    ).populate('products', 'name slug');
+    if (!col) return res.status(404).json({ error: 'Not found' });
+    res.json(col);
+  } catch (err) { res.status(400).json({ error: err.message }); }
+});
+
+// ADMIN: delete collection
+router.delete('/admin/:id', auth, async (req, res) => {
+  try {
+    const col = await Collection.findByIdAndDelete(req.params.id);
+    if (!col) return res.status(404).json({ error: 'Not found' });
+    res.json({ message: 'Deleted' });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 module.exports = router;

@@ -56,6 +56,9 @@ app.use('/api/upload',   require('./routes/upload'));
 // robots.txt points to: /api/sitemap.xml (serves index directly)
 app.use('/api/sitemap',  require('./routes/sitemap'));
 
+app.use('/api/blog',        require('./routes/blog'));
+app.use('/api/collections', require('./routes/collection'));
+
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', brand: 'SNERA' }));
 
