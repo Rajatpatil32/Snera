@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "snera-merchant-api",
+  "private_key_id": "1be615e477c4b316d7d03328b6d53a50ade14161",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDT6d3RS8afskgq\nr0EMUZCepdJmkTUJYCIAwE0G6lHC8+BLJJ2p8t727wPco4arm1RNJsOhSeVVrDhm\nqfcw88T7gvkvNuet1iQJcjVCbnhADqZY9j5cve3k+B7S6HahSP/2TpkpmVEyH2W4\nHsYP9R3HL/O8FWWstVoXBa0e+Ewb0e2EXsr+sPsFDT1Ks4IdaFOLfsABmwjn+A+h\ndlvnV/3mHt2z9C9lrhifQN5dvidwh+aDXlgQr6p9n0gTWx7a2ug9kz9iKKTWd7xx\nOl9paGUsCQSB40oV79vo03mVARWqpxu2fzl1bMecD55Rcgg4hCG8hONLwnsAnBsl\nlgmYfp2dAgMBAAECggEAEB6p3C4ks4irAy42J0L8GolYHiu9ClPI+mAma9h+tDL7\ndJPaN2+NZODNHSdGSv8DlGPWvUni+1egqbSTpGJisVQm8t+9E2Tm9F3+7aj8FjlX\nD4zZtRHQixqRs67xuTaVm+2iKn8qZULsqKsUm2mkpH6CDqRdCdx4uCgbIXA3T+VO\nZcDL0989g5N6YSH0ETDnHEvDJ5/rdNvfVWyFT8ReRdoUak0BJPzdSP5nUYRCfHWU\npNTJKoUXf3Y33d7fYTB8bAkuljpI0JXJ6xUsW94BipVaOYrFHFMASmj9yPeo66+M\nlpTZd2fUan6mUn/qEXCwq6/l7m7v5QUeP+fo1DIHsQKBgQD47t+6ZTkhVeeoKOZc\n21s49LLb2GCl1j62gvW1PlL2S7cDsuabVp7vfxZTq1jaYxTJTt+JFbDCBBM+qu4A\nTG9+Yx4lgLhyxeGFdZq5QkAa9T0/kqKxSFSAulYpo2saMqFkNpNrrsGTBN0OWPy7\nI01Ymj+Fvm1pPBYvkyD00vYRUQKBgQDZ7fPBx3Z4PcamFc54bVrY7Qw8uPUByEmP\nEwhwHDRi9X947iWgYjJi97EHM9/dL1aVQautURLBKZgwr+8J4lj/jf1eae/nj3vb\nw3qaGJsuQuud9tb8Fh9MRL+sjudrLdi+l6LHj/BE/lv5UsKvLzxnKVqbJN1NB4yL\nJUaibqDUjQKBgADT+paKI6iCuqSKjkmcyS7lUXr9u0SR899zjBGwRWJgWhl/DNlT\nbm/pgk+A8Gi5j6YjxwaTteTPUqkQtH33wx8ugTkqtnJbSibBf2RCXig4zJ1bhYMF\ndJKBDCxTSNXreTH2JINlL2unxnx3u098DJPQ34k4WvDQrFo4KRHnab4hAoGAGSpx\nS59M/vWjSuqZvS5jn0lAcIKrSFlopSz9fHTFV+ghoEVf8vVj/Cm+N6a140TkKrg6\nqvkBwWycNoMah3mr7VboO07gdU0McIRSVBkjUmRH8SXgDZxAYP5PZA3ci3Pv45J/\nKaxlgpIc7N2xvakmwIL2A5RuOcb1Y9waHAfKasECgYA99dmjnSVveQ48JDtlTjsx\nO1jPZsm/olKCSxVHihJ9qIzqVeKGB0F6DT8cTzp05GwDPf2oUJqpoHisCKifN5Yf\nJtkCHwdKlykZ/1dTRExWhIT/B1rDUj0tbCdUKH3ttdBNTYIFvAjQZ+FeotgeFAFI\nF1E6dg7knnhD2yZTcDk9ew==\n-----END PRIVATE KEY-----\n",
+  "client_email": "merchant-sync@snera-merchant-api.iam.gserviceaccount.com",
+  "client_id": "108915016754916218482",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/merchant-sync%40snera-merchant-api.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

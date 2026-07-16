@@ -691,6 +691,8 @@ paddingRight:'26%',
         </div>
       </section>
 
+            {/* ── CONCEPT → WHATSAPP ───────────────────────────────────────────── */}
+            <ConceptSection />
       {/* ── WHY SNERA ─────────────────────────────────────────────────────── */}
       <section className="sect why-sect" id="why">
         <div className="container">
@@ -721,8 +723,6 @@ paddingRight:'26%',
       {/* ── FAQ ──────────────────────────────────────────────────────────── */}
       <HomeFAQ />
 
-      {/* ── CONCEPT → WHATSAPP ───────────────────────────────────────────── */}
-      <ConceptSection />
 
       <style>{`
         @keyframes fadeUp {

@@ -58,6 +58,7 @@ app.use('/api/sitemap',  require('./routes/sitemap'));
 
 app.use('/api/blog',        require('./routes/blog'));
 app.use('/api/collections', require('./routes/collection'));
+app.use('/api/google-merchant',  require('./routes/googleMerchant'));
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', brand: 'SNERA' }));

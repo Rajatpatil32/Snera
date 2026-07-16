@@ -9,7 +9,7 @@ export default function AdminCollectionsPage() {
 
   useEffect(() => {
     API.get('/collections/admin/all')
-      .then(r => setCollections(r.data))
+      .then(r => setCollections(r.data.collections || r.data))
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
@@ -22,7 +22,8 @@ export default function AdminCollectionsPage() {
 
   const handleToggleActive = async (col) => {
     const r = await API.put(`/collections/admin/${col._id}`, { ...col, isActive: !col.isActive });
-    setCollections(collections.map(c => c._id === col._id ? r.data : c));
+    const updated = r.data.collection || r.data;
+    setCollections(collections.map(c => c._id === col._id ? updated : c));
   };
 
   const filtered = collections.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
