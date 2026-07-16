@@ -80,3 +80,6 @@ pids/
 # Optional
 .vercel/
 .netlify/
+
+# backend/.gitignore
+config/google-service-account.json
