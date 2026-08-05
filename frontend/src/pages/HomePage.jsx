@@ -8,7 +8,57 @@ import { useReveal } from '../hooks/useReveal';
 
 const WA_NUMBER = '919826992021';
 
-const CATEGORIES = ['Dress', 'Kurta / Set', 'Co-ord Set', 'Jacket', 'Top', 'Trousers / Skirt', 'Saree / Drape', 'Other'];
+const CATEGORIES = ['Custom Oversized Tee', 'Classic Fit Tee', 'Polo T-Shirt', 'Custom Hoodie', 'Drop Shoulder Tee', 'Custom Tank Top', 'Other Custom Wear'];
+
+function HowItWorksSection() {
+  const steps = [
+    {
+      icon: '🎨',
+      step: '01',
+      title: 'Share Your Idea',
+      desc: 'Describe your artwork, phrase, logo, or aesthetic. A few words or a detailed vision — we turn it into reality.'
+    },
+    {
+      icon: '👕',
+      step: '02',
+      title: 'Choose Fabric & Fit',
+      desc: 'Pick from 220 GSM heavyweight cotton, relaxed oversized cuts, or classic fits across 12 rich colorways.'
+    },
+    {
+      icon: '📦',
+      step: '03',
+      title: 'Printed & Delivered',
+      desc: 'Handcrafted and screen/DTG printed in India. Delivered to your doorstep in 5 business days.'
+    }
+  ];
+
+  return (
+    <section className="sect fabric-bg" style={{ background: 'var(--off)', borderTop: '1px solid var(--sand)', borderBottom: '1px solid var(--sand)' }}>
+      <div className="container">
+        <div className="sect-head reveal" style={{ textAlign: 'center', margin: '0 auto clamp(2.5rem,5vw,4rem)', maxWidth: '600px' }}>
+          <span className="label" style={{ paddingLeft: 0 }}>Simple 3-Step Process</span>
+          <h2 style={{ fontSize: 'clamp(2.2rem, 4.5vw, 3.4rem)' }}>
+            How Your <em className="gradient-text">Custom Tee</em> Is Made
+          </h2>
+          <p style={{ margin: '.8rem auto 0', maxWidth: '48ch' }}>
+            From your raw concept to a high-density printed, heavyweight 220 GSM t-shirt ready to wear.
+          </p>
+        </div>
+
+        <div className="hiw-grid reveal reveal-d1">
+          {steps.map((s, i) => (
+            <div key={i} className="hiw-card">
+              <span className="hiw-step">{s.step}</span>
+              <div className="hiw-icon">{s.icon}</div>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '.6rem' }}>{s.title}</h3>
+              <p style={{ fontSize: '.84rem', color: 'var(--stone2)', lineHeight: 1.7 }}>{s.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
 
 function ConceptSection() {
   const [category, setCategory] = useState('');
@@ -18,16 +68,16 @@ function ConceptSection() {
   const [error, setError] = useState('');
 
   const handleSubmit = async () => {
-    if (!text.trim()) { setError('Please describe your concept first.'); return; }
+    if (!text.trim()) { setError('Please describe your design concept first.'); return; }
     setError('');
     setLoading(true);
     setGuidance(null);
     const catLine = category ? `Category: ${category}\n` : '';
-    const prompt = `You are a creative fashion consultant for SNERA, a premium Indian clothing brand — refined, minimal, editorial.
-A customer has shared their concept:
+    const prompt = `You are a creative t-shirt design consultant for SNERA, a custom t-shirt brand in India.
+A customer shared their t-shirt concept:
 ${catLine}Concept: "${text.trim()}"
-Respond ONLY with a JSON object, no markdown, no preamble:
-{"silhouette":"short label e.g. Fluid A-line with gathered waist","palette":"2 sentences naming specific tones","fabric":"2 sentences naming specific materials","detail":"one specific finishing detail"}`;
+Respond ONLY with a JSON object, no markdown:
+{"silhouette":"t-shirt fit recommendation e.g. Boxy Oversized Fit","palette":"2-3 color combinations for print and shirt base","fabric":"specific cotton GSM recommendation","detail":"one specific print technique e.g. Puff Print on Chest"}`;
     try {
       const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
@@ -43,10 +93,10 @@ Respond ONLY with a JSON object, no markdown, no preamble:
       setGuidance(JSON.parse(raw));
     } catch {
       setGuidance({
-        silhouette: 'Relaxed structured silhouette',
-        palette: 'Dusty rose, warm ivory, and deep terracotta — tones that feel quiet and considered.',
-        fabric: 'Handloom cotton or linen — honours the relaxed spirit while keeping it refined.',
-        detail: 'Hand-rolled hems for a handcrafted finish.'
+        silhouette: 'Heavyweight Boxy Oversized Tee',
+        palette: 'Deep Cobalt Blue artwork on Cream 220 GSM Cotton base',
+        fabric: '100% Super-Combed 220 GSM Premium Cotton',
+        detail: 'High-density Screen Print on Chest & Back'
       });
     } finally {
       setLoading(false);
@@ -55,47 +105,47 @@ Respond ONLY with a JSON object, no markdown, no preamble:
 
   const openWA = () => {
     const g = guidance;
-    const catLine = category ? `*Category:* ${category}\n` : '';
-    const msg = `Hello SNERA 👋\n\nI have a custom design concept I'd love to discuss.\n\n*My idea:*\n"${text.trim()}"\n\n${catLine}*Creative direction:*\n• *Silhouette:* ${g.silhouette}\n• *Palette:* ${g.palette}\n• *Fabric:* ${g.fabric}\n• *Detail:* ${g.detail}\n\nWould love to explore this further!`;
+    const catLine = category ? `*Type:* ${category}\n` : '';
+    const msg = `Hello SNERA 👋\n\nI want to design a custom t-shirt!\n\n*My Concept:*\n"${text.trim()}"\n\n${catLine}*Design Specs:*\n• *Fit:* ${g.silhouette}\n• *Colorway:* ${g.palette}\n• *Fabric:* ${g.fabric}\n• *Print Detail:* ${g.detail}\n\nLet's get this printed!`;
     window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
   return (
-    <section className="sect" id="concept" style={{ borderTop: '1px solid var(--sand)', background: 'var(--off)' }}>
+    <section className="sect" id="concept" style={{ borderTop: '1px solid var(--sand)', background: 'var(--white)' }}>
       <div className="container">
         <div style={{
           display: 'grid', gridTemplateColumns: '1fr 1fr',
-          gap: 'clamp(2rem,5vw,5rem)', alignItems: 'start'
+          gap: 'clamp(2rem,5vw,5rem)', alignItems: 'center'
         }} id="concept-section">
 
           {/* Left: copy */}
           <div className="reveal">
-            <span className="label">Custom Design</span>
+            <span className="label">Custom Design Studio</span>
             <h2 style={{
-              fontFamily: 'var(--serif)', fontWeight: 300,
-              fontSize: 'clamp(1.8rem,4vw,3rem)', letterSpacing: '-.01em', lineHeight: 1.15,
-              marginBottom: '1rem'
+              fontFamily: 'var(--sans)', fontWeight: 700,
+              fontSize: 'clamp(2rem,4.5vw,3.5rem)', letterSpacing: '-.02em', lineHeight: 1.12,
+              marginBottom: '1.25rem'
             }}>
-              Have a vision?<br /><em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>Let's craft it.</em>
+              Have a Tee Idea?<br /><span className="gradient-text">We'll Print It Perfectly.</span>
             </h2>
-            <p style={{ fontSize: '.85rem', color: 'var(--stone2)', lineHeight: 1.8, maxWidth: '38ch' }}>
-              Describe your concept — an occasion, a feeling, a silhouette. Our team will take it from there and connect with you personally on WhatsApp.
+            <p style={{ fontSize: '.9rem', color: 'var(--stone2)', lineHeight: 1.8, maxWidth: '42ch', marginBottom: '2rem' }}>
+              Describe your custom t-shirt idea — an occasion, a graphic concept, or a custom text layout. Get instant AI design guidance and connect directly with our production team on WhatsApp.
             </p>
-            <div style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '.65rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {[
-                ['Share your idea', 'A few words or sentences — however it comes to you.'],
-                ['Get instant direction', 'Silhouette, palette, and fabric suggestions tailored to your concept.'],
-                ['Talk to our team', 'Continue the conversation directly on WhatsApp.'],
+                ['🎨 Unlimited Print Possibilities', 'Front, back, sleeve prints, puff print, DTG, or high-density screen printing.'],
+                ['👕 220 GSM Heavyweight Cotton', 'Pre-shrunk, bio-washed fabric engineered for durability and ultimate comfort.'],
+                ['⚡ Fast 5-Day Delivery', 'Custom orders prepared, printed, and shipped anywhere in India in 5 business days.'],
               ].map(([title, body], i) => (
                 <div key={i} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
                   <div style={{
-                    flexShrink: 0, width: 22, height: 22, border: '1px solid var(--sand2)',
+                    flexShrink: 0, width: 28, height: 28, borderRadius: '50%', background: 'var(--gradient-subtle)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '.62rem', fontWeight: 500, color: 'var(--stone)', marginTop: 2
+                    fontSize: '.75rem', fontWeight: 700, color: 'var(--accent)', marginTop: 2
                   }}>{i + 1}</div>
                   <div>
-                    <div style={{ fontSize: '.78rem', fontWeight: 500, color: 'var(--ink)', marginBottom: '.15rem' }}>{title}</div>
-                    <div style={{ fontSize: '.75rem', color: 'var(--stone2)', lineHeight: 1.7 }}>{body}</div>
+                    <div style={{ fontSize: '.88rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '.15rem' }}>{title}</div>
+                    <div style={{ fontSize: '.8rem', color: 'var(--stone2)', lineHeight: 1.6 }}>{body}</div>
                   </div>
                 </div>
               ))}
@@ -104,82 +154,87 @@ Respond ONLY with a JSON object, no markdown, no preamble:
 
           {/* Right: form + result */}
           <div className="reveal reveal-d2">
-            <div style={{ background: 'var(--white)', border: '1px solid var(--sand)', padding: 'clamp(1.5rem,3vw,2.25rem)' }}>
+            <div style={{
+              background: 'var(--white)', border: '1px solid rgba(108,92,231,.15)',
+              borderRadius: 'var(--radius-lg)', padding: 'clamp(1.5rem,3vw,2.5rem)',
+              boxShadow: '0 20px 50px rgba(108,92,231,.08)'
+            }}>
 
               {/* Category chips */}
-              <div style={{ fontSize: '.62rem', letterSpacing: '.2em', textTransform: 'uppercase', fontWeight: 500, color: 'var(--stone)', marginBottom: '.6rem' }}>
-                What are you designing?
+              <div style={{ fontSize: '.68rem', letterSpacing: '.16em', textTransform: 'uppercase', fontWeight: 600, color: 'var(--accent)', marginBottom: '.75rem' }}>
+                Select Apparel Type
               </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '1.4rem' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '1.5rem' }}>
                 {CATEGORIES.map(c => (
                   <button key={c} onClick={() => setCategory(cat => cat === c ? '' : c)} style={{
-                    fontSize: '.7rem', padding: '5px 12px',
-                    border: `1px solid ${category === c ? 'var(--ink)' : 'var(--sand)'}`,
-                    background: category === c ? 'var(--ink)' : 'transparent',
+                    fontSize: '.72rem', padding: '6px 14px', borderRadius: 'var(--radius-sm)',
+                    border: `1px solid ${category === c ? 'var(--accent)' : 'var(--sand)'}`,
+                    background: category === c ? 'var(--gradient)' : 'transparent',
                     color: category === c ? 'var(--white)' : 'var(--stone2)',
-                    cursor: 'pointer', transition: 'all .15s', fontFamily: 'var(--sans)', fontWeight: 300
+                    cursor: 'pointer', transition: 'all .2s', fontFamily: 'var(--sans)', fontWeight: 500
                   }}>{c}</button>
                 ))}
               </div>
 
               {/* Textarea */}
-              <div style={{ fontSize: '.62rem', letterSpacing: '.2em', textTransform: 'uppercase', fontWeight: 500, color: 'var(--stone)', marginBottom: '.6rem' }}>
-                Describe your concept
+              <div style={{ fontSize: '.68rem', letterSpacing: '.16em', textTransform: 'uppercase', fontWeight: 600, color: 'var(--accent)', marginBottom: '.75rem' }}>
+                Describe Your T-Shirt Design
               </div>
               <textarea
                 value={text}
                 onChange={e => { setText(e.target.value); setError(''); }}
-                placeholder="e.g. A flowy linen dress for a beach wedding — earthy tones, relaxed but elegant..."
+                placeholder="e.g. A minimal vintage typography design on the chest reading 'TOKYO 1984' in vibrant neon blue on a black oversized tee..."
                 rows={4}
                 style={{
-                  width: '100%', border: '1px solid var(--sand)', borderBottom: guidance ? '1px solid var(--sand)' : '1px solid var(--sand)',
-                  padding: '.85rem 1rem', fontFamily: 'var(--sans)', fontSize: '.82rem',
-                  fontWeight: 300, background: 'var(--white)', color: 'var(--ink)',
+                  width: '100%', border: '1px solid var(--sand)',
+                  borderRadius: 'var(--radius-sm)',
+                  padding: '.9rem 1.1rem', fontFamily: 'var(--sans)', fontSize: '.88rem',
+                  fontWeight: 400, background: 'var(--off)', color: 'var(--ink)',
                   resize: 'none', lineHeight: 1.75, outline: 'none',
-                  transition: 'border-color var(--t)', boxSizing: 'border-box'
+                  transition: 'all var(--t)', boxSizing: 'border-box'
                 }}
-                onFocus={e => e.target.style.borderColor = 'var(--stone2)'}
+                onFocus={e => e.target.style.borderColor = 'var(--accent)'}
                 onBlur={e => e.target.style.borderColor = 'var(--sand)'}
               />
-              {error && <p style={{ fontSize: '.72rem', color: 'var(--error)', margin: '.4rem 0 0' }}>{error}</p>}
+              {error && <p style={{ fontSize: '.75rem', color: 'var(--error)', margin: '.4rem 0 0', fontWeight: 500 }}>{error}</p>}
 
               {/* Get guidance button */}
               {!guidance && (
                 <button
                   onClick={handleSubmit}
                   disabled={loading}
-                  className="btn btn-dark"
-                  style={{ marginTop: '1rem', width: '100%', justifyContent: 'center', opacity: loading ? .7 : 1 }}
+                  className="btn btn-gradient btn-pulse"
+                  style={{ marginTop: '1.25rem', width: '100%', justifyContent: 'center', opacity: loading ? .7 : 1, padding: '1rem' }}
                 >
-                  {loading ? 'Getting your guidance…' : 'Get creative guidance →'}
+                  {loading ? 'Analyzing your concept…' : '✨ Get AI Design Preview →'}
                 </button>
               )}
 
               {/* Guidance result */}
               {guidance && (
-                <div style={{ marginTop: '1.25rem', borderTop: '1px solid var(--sand)', paddingTop: '1.25rem', animation: 'fadeUp .4s var(--ease) forwards' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: 'var(--sand)', border: '1px solid var(--sand)', marginBottom: '1rem' }}>
+                <div style={{ marginTop: '1.5rem', borderTop: '1px solid var(--sand)', paddingTop: '1.5rem', animation: 'fadeUp .4s var(--ease) forwards' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '1.25rem' }}>
                     {[
-                      ['Silhouette', guidance.silhouette],
-                      ['Palette', guidance.palette],
-                      ['Fabric', guidance.fabric],
-                      ['Detail', guidance.detail],
+                      ['Recommended Fit', guidance.silhouette],
+                      ['Colorway Spec', guidance.palette],
+                      ['Fabric Spec', guidance.fabric],
+                      ['Print Technique', guidance.detail],
                     ].map(([label, val]) => (
-                      <div key={label} style={{ background: 'var(--white)', padding: '.9rem 1rem' }}>
-                        <div style={{ fontSize: '.58rem', letterSpacing: '.2em', textTransform: 'uppercase', fontWeight: 500, color: 'var(--stone)', marginBottom: '.35rem' }}>{label}</div>
-                        <div style={{ fontSize: '.78rem', color: 'var(--stone2)', lineHeight: 1.7 }}>{val}</div>
+                      <div key={label} style={{ background: 'var(--off)', padding: '1rem', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(108,92,231,.08)' }}>
+                        <div style={{ fontSize: '.62rem', letterSpacing: '.14em', textTransform: 'uppercase', fontWeight: 700, color: 'var(--accent)', marginBottom: '.3rem' }}>{label}</div>
+                        <div style={{ fontSize: '.8rem', color: 'var(--ink)', lineHeight: 1.6, fontWeight: 500 }}>{val}</div>
                       </div>
                     ))}
                   </div>
 
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button onClick={openWA} className="btn btn-dark" style={{ flex: 1, justifyContent: 'center', background: '#25D366', borderColor: '#25D366' }}>
-                      <svg viewBox="0 0 24 24" style={{ width: 15, height: 15, fill: 'currentColor', flexShrink: 0 }} aria-hidden="true">
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button onClick={openWA} className="btn" style={{ flex: 1, justifyContent: 'center', background: '#25D366', color: '#fff', padding: '.9rem', borderRadius: 'var(--radius-sm)', fontWeight: 600 }}>
+                      <svg viewBox="0 0 24 24" style={{ width: 16, height: 16, fill: 'currentColor', flexShrink: 0 }} aria-hidden="true">
                         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                       </svg>
-                      Continue on WhatsApp
+                      Order via WhatsApp
                     </button>
-                    <button onClick={() => { setGuidance(null); }} className="btn btn-outline" style={{ whiteSpace: 'nowrap', fontSize: '.72rem' }}>
+                    <button onClick={() => { setGuidance(null); }} className="btn btn-outline" style={{ whiteSpace: 'nowrap', fontSize: '.75rem', padding: '.9rem 1.2rem' }}>
                       Edit
                     </button>
                   </div>
@@ -195,74 +250,45 @@ Respond ONLY with a JSON object, no markdown, no preamble:
 
 const WHY = [
   {
-    icon: (
-      <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeWidth="1.5">
-        <rect x="3" y="4" width="18" height="16" rx="2" />
-        <path d="M3 10h18" />
-      </svg>
-    ),
-    title: 'Order First',
-    body: 'Every piece begins only after your order is placed. No mass production. No excess stock.'
+    icon: '👕',
+    title: '220 GSM Heavyweight Cotton',
+    body: 'We exclusively use super-combed 220 GSM heavyweight 100% cotton. Soft on skin, built to last 100+ washes.'
   },
   {
-    icon: (
-      <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeWidth="1.5">
-        <path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z" />
-      </svg>
-    ),
-    title: 'Made With Care',
-    body: 'Each garment is carefully crafted using premium 220 GSM cotton for lasting quality.'
+    icon: '✨',
+    title: 'High-Density Print Quality',
+    body: 'From vibrant DTG to tactile puff prints — our prints don\'t fade, crack, or peel after washing.'
   },
   {
-    icon: (
-      <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeWidth="1.5">
-        <rect x="1" y="3" width="15" height="13" />
-        <path d="M16 8h4l3 3v5h-7z" />
-        <circle cx="5.5" cy="18.5" r="1.5" />
-        <circle cx="18.5" cy="18.5" r="1.5" />
-      </svg>
-    ),
-    title: 'Delivered in 5 Days',
-    body: 'Your order is prepared and delivered within 5 days. Quality is never rushed.'
+    icon: '🚀',
+    title: '5-Day Fast Delivery Across India',
+    body: 'Every custom order is printed on-demand and delivered directly to your home within 5 business days.'
   },
-  // {
-  //   icon: (
-  //     <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeWidth="1.5">
-  //       <path d="M3 12h18" />
-  //       <path d="M7 8l-4 4 4 4" />
-  //       <path d="M17 16l4-4-4-4" />
-  //     </svg>
-  //   ),
-  //   title: '2 Day Easy Returns',
-  //   body: 'Request a return within 2 days of delivery. Simple and hassle free.'
-  // }
 ];
 
 const HOME_FAQS = [
-  { q: 'What is SNERA?', a: 'SNERA is a premium minimal Indian fashion brand. Every piece is designed with quiet confidence — crafted in India, built to last.' },
-  { q: 'Does SNERA offer free shipping?', a: 'Yes. Free standard shipping on all orders above ₹999 across India. Express delivery (2–3 business days) is available at checkout.' },
-  { q: 'What is the return policy?', a: 'Returns accepted within 7 days of delivery for eligible, unused items in original packaging. Refunds process in 5–7 business days. Sale and custom items are not eligible.' },
-  { q: 'How do I track my order?', a: 'Track your order anytime at snera.in/track-order using your order ID and registered email.' },
-  { q: 'What payment methods are accepted?', a: 'All major credit/debit cards, UPI, net banking, and wallets via Razorpay. Every transaction is SSL-secured.' },
-  { q: 'Does SNERA ship across India?', a: 'Yes — SNERA ships to all major cities and towns across India.' },
-  { q: 'How do I find my size?', a: 'Each product page lists available sizes. When in doubt, size up. Email us at contact@snera.in for help.' },
-  { q: 'How can I contact SNERA?', a: 'Email us at contact@snera.in or use the Contact page. We respond within 24–48 hours, Monday–Saturday.' },
+  { q: 'How do I order a custom t-shirt on SNERA?', a: 'You can browse our shop collection or submit your custom design idea in the Design Studio above. Our team will review your specs and send you a digital preview via WhatsApp before printing.' },
+  { q: 'What fabric quality does SNERA use?', a: 'All SNERA t-shirts are crafted from 220 GSM super-combed 100% heavyweight cotton — pre-shrunk, bio-washed, and ultra-durable.' },
+  { q: 'Is there a minimum order quantity (MOQ) for custom tees?', a: 'No! We print single custom t-shirts as well as bulk orders for events, brands, and groups.' },
+  { q: 'Does SNERA offer free shipping?', a: 'Yes! Free shipping on all orders above ₹999 across India.' },
+  { q: 'What printing techniques do you use?', a: 'We offer Direct-to-Garment (DTG), Screen Printing, Puff Printing, and Embroidery depending on your design requirements.' },
+  { q: 'How long does custom t-shirt delivery take?', a: 'Your order is printed and dispatched within 24–48 hours, reaching you in 5 business days anywhere in India.' },
 ];
 
 function HomeFAQ() {
   const [open, setOpen] = useState(null);
   return (
-    <section style={{ borderTop: '1px solid var(--sand)', padding: 'clamp(3rem,6vw,5rem) 0' }} id="faq">
+    <section style={{ borderTop: '1px solid var(--sand)', padding: 'clamp(3rem,6vw,5rem) 0', background: 'var(--off)' }} id="faq">
       <div className="container">
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 'clamp(2rem,5vw,5rem)', alignItems: 'start' }}>
           <div className="reveal">
-            <span className="label">Got Questions?</span>
-            <h2 style={{ fontFamily: 'var(--serif)', fontWeight: 300, fontSize: 'clamp(1.8rem,4vw,2.8rem)', letterSpacing: '-.01em', lineHeight: 1.15, marginBottom: '1rem' }}>
-              Everything you <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>need to know.</em>
+            <span className="label">Custom Tee Questions</span>
+            <h2 style={{ fontFamily: 'var(--sans)', fontWeight: 700, fontSize: 'clamp(1.8rem,4vw,2.8rem)', letterSpacing: '-.02em', lineHeight: 1.15, marginBottom: '1rem' }}>
+              Everything you <em className="gradient-text">need to know.</em>
             </h2>
-            <p style={{ fontSize: '.82rem', color: 'var(--stone2)', lineHeight: 1.8, maxWidth: '32ch' }}>
-              Can\'t find an answer? Write to us at{' '}
-              <a href="mailto:contact@snera.in" style={{ color: 'var(--ink)', textDecoration: 'underline' }}>contact@snera.in</a>
+            <p style={{ fontSize: '.88rem', color: 'var(--stone2)', lineHeight: 1.8, maxWidth: '32ch' }}>
+              Got a specific custom print request? Write to us at{' '}
+              <a href="mailto:contact@snera.in" style={{ color: 'var(--accent)', fontWeight: 600 }}>contact@snera.in</a>
             </p>
           </div>
           <div itemScope itemType="https://schema.org/FAQPage">
@@ -272,16 +298,16 @@ function HomeFAQ() {
                   type="button"
                   onClick={() => setOpen(open === i ? null : i)}
                   aria-expanded={open === i}
-                  style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.1rem 0', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', gap: '1rem' }}
+                  style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 0', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', gap: '1rem' }}
                 >
-                  <span itemProp="name" style={{ fontSize: '.85rem', fontWeight: 500, color: 'var(--ink)', lineHeight: 1.5 }}>{q}</span>
-                  <svg viewBox="0 0 24 24" style={{ width: 16, height: 16, flexShrink: 0, stroke: 'var(--stone)', fill: 'none', strokeWidth: 1.8, transition: 'transform .2s', transform: open === i ? 'rotate(180deg)' : 'none' }} aria-hidden="true">
+                  <span itemProp="name" style={{ fontSize: '.9rem', fontWeight: 600, color: 'var(--ink)', lineHeight: 1.5 }}>{q}</span>
+                  <svg viewBox="0 0 24 24" style={{ width: 18, height: 18, flexShrink: 0, stroke: 'var(--accent)', fill: 'none', strokeWidth: 2, transition: 'transform .2s', transform: open === i ? 'rotate(180deg)' : 'none' }} aria-hidden="true">
                     <polyline points="6 9 12 15 18 9" />
                   </svg>
                 </button>
                 {open === i && (
-                  <div itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer" style={{ paddingBottom: '1.1rem' }}>
-                    <p itemProp="text" style={{ fontSize: '.82rem', color: 'var(--stone2)', lineHeight: 1.8, margin: 0 }}>{a}</p>
+                  <div itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer" style={{ paddingBottom: '1.25rem' }}>
+                    <p itemProp="text" style={{ fontSize: '.85rem', color: 'var(--stone2)', lineHeight: 1.8, margin: 0 }}>{a}</p>
                   </div>
                 )}
               </div>
@@ -294,45 +320,35 @@ function HomeFAQ() {
 }
 
 export default function HomePage() {
-  // const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [hovered, setHovered] = useState(null);
-const [shelves, setShelves] = useState([]); // [{ collection, products }]
+  const [shelves, setShelves] = useState([]);
 
-useEffect(() => {
-  API.get('/collections').then(async (r) => {
-    const cols = r.data.collections || [];
-    const results = await Promise.all(
-      cols.map(c =>
-        API.get(`/products?category=${encodeURIComponent(c.name)}&limit=6`)
-          .then(res => ({ collection: c, products: res.data.products || [] }))
-          .catch(() => ({ collection: c, products: [] }))
-      )
-    );
-    setShelves(results.filter(s => s.products.length > 0)); // hide empty collections
-  });
-}, []);
+  useEffect(() => {
+    API.get('/collections').then(async (r) => {
+      const cols = r.data.collections || r.data || [];
+      const results = await Promise.all(
+        cols.map(c =>
+          API.get(`/products?category=${encodeURIComponent(c.name)}&limit=6`)
+            .then(res => ({ collection: c, products: res.data.products || [] }))
+            .catch(() => ({ collection: c, products: [] }))
+        )
+      );
+      setShelves(results.filter(s => s.products.length > 0));
+    });
+  }, []);
 
   useReveal();
-
-  // useEffect(() => {
-  //   API.get('/products?featured=true&limit=6')
-  //     .then(r => setProducts(r.data.products || []))
-  //     .catch(() => setProducts([]))
-  //     .finally(() => setLoading(false));
-  // }, []);
 
   return (
     <>
       <SEOHead
         title="Customizable T-Shirts India | Design Your Own Tee — SNERA"
-        description="Design and order customizable t-shirts online with SNERA. Upload your design, choose premium 220 GSM cotton, and get it printed and delivered across India. Free shipping above ₹999."
+        description="Design and order custom t-shirts online with SNERA. Upload your design, choose premium 220 GSM cotton, and get it printed and delivered across India. Free shipping above ₹999."
         url="https://snera.in"
         schemas={useSEO({
           type: 'home',
           pageUrl: '/',
           pageName: 'Customizable T-Shirts India | Design Your Own Tee — SNERA',
-          pageDescription: 'Design and order customizable t-shirts online with SNERA. Upload your design, choose premium 220 GSM cotton, and get it printed and delivered across India.',
+          pageDescription: 'Design and order custom t-shirts online with SNERA. Upload your design, choose premium 220 GSM cotton, and get it printed and delivered across India.',
           breadcrumbs: [{ name: 'Home', url: '/' }],
         })}
       />
@@ -340,380 +356,194 @@ useEffect(() => {
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
       <section id="hero" style={{
         minHeight: '100svh', paddingTop: 'var(--nav-h)',
-        display: 'grid', gridTemplateColumns: '1fr 1fr'
+        display: 'grid', gridTemplateColumns: '1.1fr 0.9fr',
+        background: 'var(--gradient-hero)',
+        color: 'var(--white)', position: 'relative', overflow: 'hidden'
       }}>
-        {/* Left */}
+        {/* Glow backdrop */}
+        <div style={{
+          position: 'absolute', top: '-20%', left: '-10%', width: '60vw', height: '60vw',
+          background: 'radial-gradient(circle, rgba(108,92,231,.25) 0%, transparent 70%)',
+          pointerEvents: 'none', zIndex: 0
+        }} />
+        <div style={{
+          position: 'absolute', bottom: '-10%', right: '-5%', width: '50vw', height: '50vw',
+          background: 'radial-gradient(circle, rgba(232,67,147,.2) 0%, transparent 70%)',
+          pointerEvents: 'none', zIndex: 0
+        }} />
+
+        {/* Left Copy */}
         <div style={{
           display: 'flex', flexDirection: 'column', justifyContent: 'center',
-          padding: 'clamp(3rem,7vw,6rem) clamp(1.25rem,4vw,3rem) clamp(3rem,7vw,6rem) clamp(1.25rem,6vw,6rem)'
+          padding: 'clamp(3rem,7vw,6rem) clamp(1.25rem,4vw,3rem) clamp(3rem,7vw,6rem) clamp(1.25rem,6vw,6rem)',
+          position: 'relative', zIndex: 1
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '.9rem', marginBottom: '1.75rem', opacity: 0, animation: 'fadeUp .8s var(--ease) .2s forwards' }}>
-            <div style={{ width: 26, height: 1, background: 'var(--stone)', flexShrink: 0 }} />
-            <span style={{ fontSize: '.6rem', letterSpacing: '.24em', textTransform: 'uppercase', color: 'var(--stone)', fontWeight: 500 }}>Customizable T-Shirts — Design Your Own</span>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '.6rem', padding: '.4rem .9rem', background: 'rgba(255,255,255,.08)', backdropFilter: 'blur(10px)', borderRadius: '30px', border: '1px solid rgba(255,255,255,.15)', marginBottom: '1.75rem', width: 'fit-content', opacity: 0, animation: 'fadeUp .8s var(--ease) .2s forwards' }}>
+            <span style={{ fontSize: '.7rem' }}>✨</span>
+            <span style={{ fontSize: '.68rem', letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--accent-soft)', fontWeight: 700 }}>Custom T-Shirts · Printed in India</span>
           </div>
 
           <div style={{ opacity: 0, animation: 'fadeUp .9s var(--ease) .34s forwards', marginBottom: '1.5rem' }}>
             <h1 style={{
-              fontFamily: 'var(--serif)', fontWeight: 300,
-              fontSize: 'clamp(3rem,6.5vw,6rem)', lineHeight: 1.04, letterSpacing: '-.01em'
+              fontFamily: 'var(--sans)', fontWeight: 700,
+              fontSize: 'clamp(2.8rem,6.2vw,5.5rem)', lineHeight: 1.05, letterSpacing: '-.03em'
             }}>
-              <span style={{ display: 'block', fontSize: 'clamp(.75rem,1.2vw,1rem)', fontFamily: 'var(--sans)', letterSpacing: '.28em', textTransform: 'uppercase', fontWeight: 600, marginBottom: '.6rem', color: 'var(--stone)' }}>SNERA — Customizable T-Shirts, Made in India</span>
-              Dressed in<br /><em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>simplicity.</em><br />Built to last.
+              DESIGN.<br />
+              <span className="gradient-text">PRINT. WEAR.</span><br />
+              YOUR WAY.
             </h1>
           </div>
 
           <p style={{
-            fontSize: '.88rem', color: 'var(--stone2)', lineHeight: 1.78, maxWidth: '36ch', marginBottom: '2.5rem',
+            fontSize: '1rem', color: 'rgba(255,255,255,.75)', lineHeight: 1.75, maxWidth: '40ch', marginBottom: '2.5rem',
             opacity: 0, animation: 'fadeUp .9s var(--ease) .48s forwards'
           }}>
-            <span className="speakable">SNERA is an Indian fashion brand offering customizable t-shirts — design your own tee, printed on premium 220 GSM cotton and delivered across India.</span> Wear less. Mean more.
+            SNERA lets you design your own custom t-shirts — printed on 220 GSM heavyweight cotton and delivered across India in 5 days.
           </p>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap', opacity: 0, animation: 'fadeUp .9s var(--ease) .62s forwards' }}>
-            <Link to="/shop" className="btn btn-dark">Design Your Own Tee</Link>
-<a href="#collections" className="btn btn-ghost">Browse Collections</a>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem', flexWrap: 'wrap', opacity: 0, animation: 'fadeUp .9s var(--ease) .62s forwards' }}>
+            <a href="#concept" className="btn btn-gradient btn-pulse" style={{ padding: '1rem 2.2rem', fontSize: '.78rem' }}>
+              ✨ Design Your Tee Now
+            </a>
+            <Link to="/shop" className="btn" style={{ border: '1px solid rgba(255,255,255,.3)', color: 'var(--white)', padding: '.95rem 2rem', fontSize: '.75rem' }}>
+              Browse Collection
+            </Link>
           </div>
 
+          {/* Stats Bar */}
           <div style={{
-            display: 'flex', alignItems: 'center', gap: '.75rem',
-            marginTop: '3.5rem', paddingTop: '2rem', borderTop: '1px solid var(--sand)',
+            display: 'flex', alignItems: 'center', gap: '1.5rem',
+            marginTop: '3.5rem', paddingTop: '2rem', borderTop: '1px solid rgba(255,255,255,.12)',
             opacity: 0, animation: 'fadeUp .9s var(--ease) .78s forwards'
           }}>
-            {[['220', 'GSM Cotton'], ['12', 'Colorways'], ['4.9', 'Avg. Rating']].map(([n, l], i) => (
+            {[
+              ['220 GSM', 'Heavy Cotton'],
+              ['12+', 'Colorways'],
+              ['5-Day', 'Fast Delivery'],
+              ['4.9★', 'Customer Rating']
+            ].map(([n, l], i) => (
               <React.Fragment key={l}>
-                {i > 0 && <div style={{ width: 1, height: 28, background: 'var(--sand)', flexShrink: 0 }} />}
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontFamily: 'var(--serif)', fontSize: '1.5rem', fontWeight: 400 }}>{n}</div>
-                  <div style={{ fontSize: '.56rem', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--stone)', marginTop: '.1rem' }}>{l}</div>
+                {i > 0 && <div style={{ width: 1, height: 28, background: 'rgba(255,255,255,.15)', flexShrink: 0 }} />}
+                <div>
+                  <div style={{ fontFamily: 'var(--sans)', fontSize: '1.4rem', fontWeight: 700, color: 'var(--white)' }}>{n}</div>
+                  <div style={{ fontSize: '.6rem', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--accent-soft)', marginTop: '.1rem', fontWeight: 600 }}>{l}</div>
                 </div>
               </React.Fragment>
             ))}
           </div>
         </div>
 
-        {/* Right */}
-        <div style={{ position: 'relative', overflow: 'hidden', background: 'var(--off)' }}>
+        {/* Right Graphic Mockup */}
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', zIndex: 1 }}>
           <div style={{
-            position: 'absolute',
-            inset: 0,
-            overflow: 'hidden'
+            position: 'relative', width: '100%', maxWidth: '480px', aspectRatio: '4/5',
+            borderRadius: 'var(--radius-lg)', overflow: 'hidden',
+            boxShadow: '0 30px 80px rgba(0,0,0,.5)',
+            border: '1px solid rgba(255,255,255,.15)'
           }}>
-            {/* LCP image — eager + fetchpriority high to boost Largest Contentful Paint */}
             <img
               src="https://suvidhasetu.netraa.co.in/uploads/hero.webp"
-              alt="SNERA — Premium minimal fashion collection for men and women"
+              alt="SNERA Custom T-Shirts"
               loading="eager"
               fetchPriority="high"
-              decoding="sync"
-              className="hero-img"
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover'
-              }}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
-
-            {/* Overlay (important for readability) */}
+            {/* T-Shirt Badge Floating Overlay */}
             <div style={{
-              position: 'absolute',
-              inset: 0,
-              background: 'rgba(0,0,0,0.25)'
-            }} />
-          </div>
-          <div style={{
-            position: 'absolute',
-            inset: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent:'flex-start',
-paddingRight:'26%',
-            pointerEvents: 'none'
-          }}>
-            <img
-              src="/images/logo1.webp"
-              alt="SNERA"
-              style={{
-                width: '800px',
-                opacity: 0.5,
-                objectFit: 'contain'
-              }}
-            />
-            {/* <span style={{
-              fontFamily: 'var(--serif)',
-              fontSize: 'clamp(5rem,11vw,9rem)',
-              fontWeight: 300, letterSpacing: '.12em',
-              color: 'rgba(28,27,24,.07)', userSelect: 'none'
-            }}>SNERA</span> */}
-          </div>
-          {/* <div style={{
-            position: 'absolute', bottom: '2rem', left: '2rem',
-            background: 'var(--white)', border: '1px solid var(--sand)',
-            padding: '.7rem 1.2rem'
-          }}>
-           
-          </div> */}
-          <div style={{
-            position: 'absolute', bottom: '2.5rem', right: '2.5rem',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '.65rem'
-          }}>
-            <span style={{ fontSize: '.52rem', letterSpacing: '.22em', textTransform: 'uppercase', color: 'var(--stone)', writingMode: 'vertical-rl' }}>Scroll</span>
-            <div style={{ width: 1, height: 38, background: 'var(--stone)', position: 'relative', overflow: 'hidden' }}>
-              <div style={{
-                position: 'absolute', top: '-100%', width: '100%', height: '100%',
-                background: 'var(--ink)', animation: 'scrlAnim 1.6s ease infinite'
-              }} />
+              position: 'absolute', bottom: '1.5rem', left: '1.5rem', right: '1.5rem',
+              background: 'rgba(15,14,26,.85)', backdropFilter: 'blur(16px)',
+              border: '1px solid rgba(255,255,255,.15)', borderRadius: 'var(--radius)',
+              padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+            }}>
+              <div>
+                <div style={{ fontSize: '.65rem', letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--accent-soft)', fontWeight: 700 }}>Custom Print Ready</div>
+                <div style={{ fontSize: '.9rem', fontWeight: 600, color: 'var(--white)' }}>220 GSM Heavyweight Oversized Tee</div>
+              </div>
+              <span style={{ fontSize: '1.5rem' }}>👕</span>
             </div>
           </div>
-
         </div>
       </section>
 
       {/* ── MARQUEE ───────────────────────────────────────────────────────── */}
       <div className="marquee">
         <div className="marquee-track">
-          {['Premium Cotton', 'Minimal Design', 'Made in India', 'Free Shipping ₹999+', 'Easy Returns', 'SS 2025 Collection'].map((t, i) => (
-              <span key={i} className="marquee-item">{t}</span>
-            ))}
+          {['Custom T-Shirts', '220 GSM Heavyweight Cotton', 'Design Your Own Tee', 'Free Shipping ₹999+', 'Screen & DTG Printing', 'Delivered in 5 Days', 'Made in India'].map((t, i) => (
+            <span key={i} className="marquee-item">{t}</span>
+          ))}
         </div>
       </div>
 
-      {/* ── FEATURED PRODUCTS ─────────────────────────────────────────────── */}
-      {/* <section className="sect" id="featured">
-        <div className="container">
-          <div className="sect-head reveal">
-            <span className="label">New Arrivals</span>
-            <h2>The essentials, <em>refined.</em></h2>
-            <p>Each piece designed to move through your life quietly and confidently. Timeless cuts, elevated fabric.</p>
-          </div>
+      {/* ── HOW IT WORKS ──────────────────────────────────────────────────── */}
+      <HowItWorksSection />
 
-          {loading ? (
-            <div className="page-loader"><div className="loader-ring" /></div>
-          ) : products.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--stone)' }}>
-              <p style={{ fontSize: '.85rem' }}>New collection coming soon.</p>
-            </div>
-          ) : (
-            <div className="prod-grid">
-              {products.map((p, i) => (
-              <ProductCard
-                key={p._id}
-                product={p}
-                index={i}
-                showFlip={true}
-              />
-            ))}
-            </div>
-          )}
-
-          <div style={{ textAlign: 'center', marginTop: '3.5rem' }} className="reveal">
-            <Link to="/shop" className="btn btn-outline">View All Products</Link>
-          </div>
-        </div>
-      </section> */}
       {/* ── SHOP BY COLLECTION ───────────────────────────────────────────── */}
-{/* ── SHOP BY COLLECTION ───────────────────────────────────────────── */}
-{shelves.map((shelf, idx) => (
-  <section
-    key={shelf.collection._id}
-    className="sect"
-    style={{
-      borderTop: '1px solid var(--sand)',
-      background: idx % 2 === 0 ? 'var(--off)' : 'transparent',
-      position: 'relative', overflow: 'hidden',
-    }}
-  >
-    {/* watermark */}
-    <span aria-hidden="true" style={{
-      position: 'absolute', top: '-2vw', right: '-1vw',
-      fontFamily: 'var(--serif)', fontWeight: 300,
-      fontSize: 'clamp(6rem,14vw,13rem)', lineHeight: 1,
-      color: 'var(--ink)', opacity: 0.035, userSelect: 'none', pointerEvents: 'none',
-      whiteSpace: 'nowrap',
-    }}>{shelf.collection.name}</span>
-
-    <div className="container" style={{ position: 'relative' }}>
-      <div className="sect-head reveal" style={{
-        display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
-        borderBottom: 'none', flexWrap: 'wrap', gap: '1rem',
-      }}>
-        <div>
-          <span className="label">Collection</span>
-          <h2 style={{ marginBottom: 0 }}>{shelf.collection.name}</h2>
-          {shelf.collection.description && (
-            <p style={{ marginTop: '.5rem', maxWidth: 480 }}>{shelf.collection.description}</p>
-          )}
-        </div>
-        <Link
-          to={`/shop?category=${encodeURIComponent(shelf.collection.name)}`}
-          className="btn btn-outline"
-          style={{ flexShrink: 0 }}
+      {shelves.map((shelf, idx) => (
+        <section
+          key={shelf.collection._id}
+          className="sect"
+          style={{
+            borderTop: '1px solid var(--sand)',
+            background: idx % 2 === 0 ? 'var(--off)' : 'var(--white)',
+            position: 'relative', overflow: 'hidden',
+          }}
         >
-          Shop All {shelf.collection.name}
-        </Link>
-      </div>
+          {/* Watermark */}
+          <span aria-hidden="true" style={{
+            position: 'absolute', top: '-1vw', right: '-1vw',
+            fontFamily: 'var(--sans)', fontWeight: 800,
+            fontSize: 'clamp(5rem,13vw,12rem)', lineHeight: 1,
+            color: 'var(--accent)', opacity: 0.03, userSelect: 'none', pointerEvents: 'none',
+            whiteSpace: 'nowrap',
+          }}>{shelf.collection.name}</span>
 
-      <div className="prod-grid" style={{ marginTop: '2.5rem' }}>
-        {shelf.products.map((p, i) => (
-          <ProductCard key={p._id} product={p} index={i} showFlip={true} />
-        ))}
-      </div>
-    </div>
-  </section>
-))}
-
-      {/* ── CATEGORY SPLIT ────────────────────────────────────────────────── */}
-      {/* <section style={{
-        display: 'grid', gridTemplateColumns: '1fr 1fr',
-        borderTop: '1px solid var(--sand)', borderBottom: '1px solid var(--sand)'
-      }} id="category">
-        {[
-          { label: 'Collection', title: 'For\nHim', glyph: 'M', link: '/shop?gender=Men', linkTxt: "Shop Men's", image: 'https://suvidhasetu.netraa.co.in/uploads/men.webp' },
-          { label: 'Collection', title: 'For\nHer', glyph: 'W', link: '/shop?gender=Women', linkTxt: "Shop Women's", image: 'https://suvidhasetu.netraa.co.in/uploads/women.webp' }
-        ].map((cat, i) => (
-          <Link to={cat.link}
-            key={i}
-            onMouseEnter={() => setHovered(i)}
-            onMouseLeave={() => setHovered(null)} style={{
-              position: 'relative', overflow: 'hidden',
-              aspectRatio: '3/4', cursor: 'pointer',
-              display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
-              padding: 'clamp(1.5rem,4vw,3rem)',
-              borderRight: i === 0 ? '1px solid var(--sand)' : 'none',
-              textDecoration: 'none'
+          <div className="container" style={{ position: 'relative' }}>
+            <div className="sect-head reveal" style={{
+              display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
+              borderBottom: 'none', flexWrap: 'wrap', gap: '1rem',
             }}>
-            <div style={{
-              position: 'absolute',
-              inset: 0,
-              overflow: 'hidden'
-            }}>
-              
-              <img
-                src={cat.image}
-                alt={`SNERA ${cat.title.replace('\n', ' ')} — ${cat.linkTxt}`}
-                loading="lazy"
-                decoding="async"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover'
-                }}
-              />
-
-              
-              <div style={{
-                position: 'absolute',
-                inset: 0,
-                background: 'rgba(0,0,0,0.18)'
-              }} />
-
-              
-              <span style={{
-                position: 'absolute',
-                top: '1.5rem',
-                left: '1.5rem',
-                zIndex: 4,
-                fontFamily: 'var(--serif)',
-                fontSize: 'clamp(4.5rem,5vw,4rem)',
-                fontWeight: 300,
-                color: 'rgba(255,255,255,0.45)',
-                letterSpacing: '0.05em',
-                userSelect: 'none',
-
-
-                opacity: hovered === i ? 1 : 0,
-                transition: 'opacity 0.4s ease'
-              }}>
-                {cat.glyph}
-              </span>
+              <div>
+                <span className="label">Featured Collection</span>
+                <h2 style={{ marginBottom: 0 }}>{shelf.collection.name}</h2>
+                {shelf.collection.description && (
+                  <p style={{ marginTop: '.5rem', maxWidth: 480 }}>{shelf.collection.description}</p>
+                )}
+              </div>
+              <Link
+                to={`/shop?category=${encodeURIComponent(shelf.collection.name)}`}
+                className="btn btn-outline"
+                style={{ flexShrink: 0 }}
+              >
+                Shop All {shelf.collection.name} →
+              </Link>
             </div>
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              <div style={{ fontSize: '.58rem', letterSpacing: '.24em', textTransform: 'uppercase', color: 'var(--stone)', marginBottom: '.45rem' }}>{cat.label}</div>
-              <h3 style={{
-                fontFamily: 'var(--serif)', fontSize: 'clamp(2rem,4vw,3.5rem)',
-                fontWeight: 300, letterSpacing: '-.01em', marginBottom: '1.1rem', color: '#fff',
-                whiteSpace: 'pre-line'
-              }}>{cat.title}</h3>
-              <span style={{
-                display: 'inline-flex', alignItems: 'center', gap: '.45rem',
-                fontSize: '.63rem', letterSpacing: '.18em', textTransform: 'uppercase', fontWeight: 500,
-                color: '#fff', borderBottom: '1px solid var(--ink)', paddingBottom: 2
-              }}>
-                {cat.linkTxt}
-                <svg viewBox="0 0 24 24" style={{ width: 13, height: 13, stroke: 'currentColor', fill: 'none', strokeWidth: 1.8 }}>
-                  <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
-                </svg>
-              </span>
+
+            <div className="prod-grid" style={{ marginTop: '2.5rem' }}>
+              {shelf.products.map((p, i) => (
+                <ProductCard key={p._id} product={p} index={i} showFlip={true} />
+              ))}
             </div>
-          </Link>
-        ))}
-      </section> */}
+          </div>
+        </section>
+      ))}
 
-      {/* ── NOSTALGIC ─────────────────────────────────────────────────────── */}
-      <section style={{
-        position: 'relative', overflow: 'hidden',
-        borderTop: '1px solid var(--sand)', borderBottom: '1px solid var(--sand)',
-        aspectRatio: '16/7'
-      }} id="nostalgic">
-        {/* 👇 Replace src with your nostalgic image */}
-        <img
-          src="https://suvidhasetu.netraa.co.in/uploads/nostalgic.webp"
-          alt="Nostalgic collection"
-          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-        />
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(28,24,18,.32)' }} />
+      {/* ── DESIGN STUDIO / CONCEPT SECTION ───────────────────────────────── */}
+      <ConceptSection />
 
-        {/* Overlay text */}
-        <div style={{
-          position: 'absolute', inset: 0,
-          display: 'flex', flexDirection: 'column',
-          justifyContent: 'flex-end',
-          padding: 'clamp(1.5rem,4vw,3rem)'
-        }}>
-          <span className="label" style={{ color: 'rgba(248,247,244,.6)', marginBottom: '.5rem' }}>Nostalgic Edit</span>
-          <h2 style={{
-            fontFamily: 'var(--serif)', fontWeight: 300,
-            fontSize: 'clamp(2rem,5vw,4rem)', letterSpacing: '-.01em',
-            color: '#F8F7F4', lineHeight: 1.1, marginBottom: '1.25rem'
-          }}>
-            Dressed in <em style={{ fontStyle: 'italic' }}>memory.</em>
-          </h2>
-          <Link to="/shop?collection=Unisex" style={{ 
-            display: 'inline-flex', alignItems: 'center', gap: '.45rem',
-            fontSize: '.63rem', letterSpacing: '.18em', textTransform: 'uppercase', fontWeight: 500,
-            color: '#F8F7F4', borderBottom: '1px solid rgba(248,247,244,.5)',
-            paddingBottom: 2, textDecoration: 'none', alignSelf: 'flex-start'
-          }}>
-            Explore the Edit
-            <svg viewBox="0 0 24 24" style={{ width: 13, height: 13, stroke: 'currentColor', fill: 'none', strokeWidth: 1.8 }}>
-              <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
-            </svg>
-          </Link>
-        </div>
-      </section>
-
-            {/* ── CONCEPT → WHATSAPP ───────────────────────────────────────────── */}
-            <ConceptSection />
       {/* ── WHY SNERA ─────────────────────────────────────────────────────── */}
-      <section className="sect why-sect" id="why">
+      <section className="sect why-sect" id="why" style={{ background: 'var(--off)', borderTop: '1px solid var(--sand)' }}>
         <div className="container">
-          <div className="sect-head reveal">
-            <span className="label">The SNERA Promise</span>
-            <h2>Why we're <em>different.</em></h2>
-            <p>We don't chase trends. We build wardrobe pillars.</p>
+          <div className="sect-head reveal" style={{ textAlign: 'center', margin: '0 auto clamp(2.5rem,5vw,4rem)' }}>
+            <span className="label" style={{ paddingLeft: 0 }}>The SNERA Guarantee</span>
+            <h2>Why Choose <em className="gradient-text">SNERA Custom Tees?</em></h2>
+            <p style={{ margin: '.5rem auto 0' }}>We engineered the ideal t-shirt canvas so your custom prints look and feel premium.</p>
           </div>
           <div className="why-grid">
             {WHY.map((w, i) => (
               <div key={i} className={`why-card reveal reveal-d${i + 1}`}>
-                <div className="why-icon" style={{
-                  width: 38, height: 38, marginBottom: '0.6rem',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center'
-                }}>
-                  <div style={{ width: 22, height: 22, stroke: 'var(--accent)', fill: 'none', strokeWidth: 1.5 }}>
-                    {w.icon}
-                  </div>
-                </div>
-                <div style={{ fontSize: '.8rem', fontWeight: 500, letterSpacing: '.07em', marginBottom: '.5rem', color: 'var(--ink)' }}>{w.title}</div>
-                <div style={{ fontSize: '.8rem', color: 'var(--stone2)', lineHeight: 1.75 }}>{w.body}</div>
+                <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>{w.icon}</div>
+                <div style={{ fontSize: '1.05rem', fontWeight: 600, marginBottom: '.5rem', color: 'var(--ink)' }}>{w.title}</div>
+                <div style={{ fontSize: '.85rem', color: 'var(--stone2)', lineHeight: 1.75 }}>{w.body}</div>
               </div>
             ))}
           </div>
@@ -723,25 +553,10 @@ paddingRight:'26%',
       {/* ── FAQ ──────────────────────────────────────────────────────────── */}
       <HomeFAQ />
 
-
-      <style>{`
-        @keyframes fadeUp {
-          from { opacity:0; transform:translateY(18px); }
-          to   { opacity:1; transform:none; }
-        }
-        @keyframes scrlAnim {
-          0%   { top:-100%; }
-          100% { top: 200%; }
-        }
-        @media(max-width:768px) {
-          #hero { grid-template-columns: 1fr !important; min-height: auto !important; }
-          #hero > div:last-child { min-height: 55vw; }
-          #category { grid-template-columns: 1fr !important; }
-          #category > a:first-child { border-right: none !important; border-bottom: 1px solid var(--sand); }
-          #nostalgic { aspect-ratio: 9/5 !important; }
-          #concept-section { grid-template-columns: 1fr !important; }
-        }
-      `}</style>
+      {/* ── FLOATING MOBILE CTA ───────────────────────────────────────────── */}
+      <a href="#concept" className="floating-cta btn-pulse">
+        ✨ Design Your Custom Tee
+      </a>
     </>
   );
 }

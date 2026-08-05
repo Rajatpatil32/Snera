@@ -4,7 +4,6 @@ import { fmt, getImageUrl, BKGS } from '../utils/api';
 
 export default function ProductCard({ product, index = 0, showFlip = false }) {
   const navigate = useNavigate();
-  const bg = BKGS[index % BKGS.length];
 
   // ── Colour state ────────────────────────────────────────────────────────────
   const hasGroups = product.colorGroups?.length > 0;
@@ -23,7 +22,7 @@ export default function ProductCard({ product, index = 0, showFlip = false }) {
     : product.images || [];
 
   const primaryImage = images[imgIdx] || images[0] || null;
-  const secondaryImage = images[1] || null; // back / hover image
+  const secondaryImage = images[1] || null;
 
   const switchColour = useCallback((e, i) => {
     e.stopPropagation();
@@ -50,7 +49,6 @@ export default function ProductCard({ product, index = 0, showFlip = false }) {
       onTouchStart={() => {
         if (showFlip && secondaryImage) setFlipped(true);
       }}
-
       onTouchEnd={() => {
         if (showFlip) setFlipped(false);
       }}
@@ -60,17 +58,14 @@ export default function ProductCard({ product, index = 0, showFlip = false }) {
     >
       {/* ── Image area ── */}
       <div
-  className="prod-card-img"
-  style={{
-   background: `
-  radial-gradient(circle at top, rgba(255,255,255,0.45), transparent 60%),
-  linear-gradient(145deg, #ffffff 0%, #ffffff 100%)
-`,
-    perspective: '1000px',
-    overflow: 'hidden',
-  }}
->
-
+        className="prod-card-img"
+        style={{
+          background: 'linear-gradient(135deg, rgba(108,92,231,.05) 0%, rgba(232,67,147,.03) 100%)',
+          perspective: '1000px',
+          overflow: 'hidden',
+          position: 'relative',
+        }}
+      >
         {/* Flip wrapper — only mounted when showFlip + secondaryImage exist */}
         {showFlip && secondaryImage ? (
           <div
@@ -93,8 +88,8 @@ export default function ProductCard({ product, index = 0, showFlip = false }) {
                 width: '100%',
                 height: '100%',
                 objectFit: 'cover',
-                transition: 'all .7s ease-in-out',
-                filter: flipped ? 'brightness(.92)' : 'brightness(1)',
+                transition: 'all .6s var(--ease)',
+                filter: flipped ? 'brightness(.94)' : 'brightness(1)',
                 opacity: flipped ? 0 : 1,
                 transform: flipped ? 'scale(1.08)' : 'scale(1)',
               }}
@@ -112,15 +107,14 @@ export default function ProductCard({ product, index = 0, showFlip = false }) {
                 width: '100%',
                 height: '100%',
                 objectFit: 'cover',
-                transition: 'all .7s ease-in-out',
-                filter: flipped ? 'brightness(1.08)' : 'brightness(.95)',
+                transition: 'all .6s var(--ease)',
+                filter: flipped ? 'brightness(1.04)' : 'brightness(.94)',
                 opacity: flipped ? 1 : 0,
                 transform: flipped ? 'scale(1.08)' : 'scale(1)',
               }}
             />
           </div>
         ) : (
-          /* Normal (no flip) rendering — used on detail page & cards with no secondary image */
           primaryImage ? (
             <img
               src={getImageUrl(primaryImage)}
@@ -131,34 +125,40 @@ export default function ProductCard({ product, index = 0, showFlip = false }) {
             />
           ) : (
             <div className="prod-card-inner">
-              <span className="prod-glyph">{product.glyph || '◈'}</span>
+              <span className="prod-glyph">👕</span>
             </div>
           )
         )}
 
         {/* Badge */}
-        {product.badge && (
+        {product.badge ? (
           <span className={`prod-badge prod-badge-${product.badge.toLowerCase()}`}>
             {product.badge}
+          </span>
+        ) : (
+          <span className="prod-badge" style={{ background: 'var(--gradient)', color: '#fff' }}>
+            220 GSM
           </span>
         )}
 
         {/* Quick view overlay */}
         <div className="prod-overlay">
-          <button className="qv-btn" onClick={e => { e.stopPropagation(); go(); }}>Quick View</button>
+          <button className="qv-btn" onClick={e => { e.stopPropagation(); go(); }}>
+            Customise & View
+          </button>
         </div>
       </div>
 
       {/* ── Info row ── */}
-      <div style={{ paddingTop: '.65rem' }}>
-        <div className="prod-cat">{product.category}</div>
+      <div style={{ paddingTop: '.75rem' }}>
+        <div className="prod-cat">{product.category || 'Custom Tee'}</div>
         <div className="prod-name">{product.name}</div>
 
-        {/* Colour swatches — only shown if product has multiple colour groups */}
+        {/* Colour swatches */}
         {hasGroups && product.colorGroups.length > 1 && (
           <div
-            style={{ display: 'flex', gap: '.38rem', alignItems: 'center', marginBottom: '.42rem', flexWrap: 'wrap' }}
-            onClick={e => e.stopPropagation()} // prevent card nav when clicking swatch
+            style={{ display: 'flex', gap: '.4rem', alignItems: 'center', marginBottom: '.45rem', flexWrap: 'wrap' }}
+            onClick={e => e.stopPropagation()}
           >
             {product.colorGroups.map((g, i) => (
               <button
@@ -168,31 +168,30 @@ export default function ProductCard({ product, index = 0, showFlip = false }) {
                 title={g.name}
                 aria-label={`${g.name}${activeColour === i ? ' (selected)' : ''}`}
                 style={{
-                  width: 16,
-                  height: 16,
+                  width: 18,
+                  height: 18,
                   borderRadius: '50%',
                   background: g.hex,
                   border: activeColour === i
-                    ? '2px solid var(--ink)'
-                    : '1.5px solid rgba(0,0,0,.18)',
+                    ? '2px solid var(--accent)'
+                    : '1.5px solid rgba(0,0,0,.15)',
+                  boxShadow: activeColour === i ? '0 0 0 2px rgba(108,92,231,.25)' : 'none',
                   cursor: 'pointer',
-                  transition: 'transform .15s, border-color .15s',
-                  transform: activeColour === i ? 'scale(1.22)' : 'scale(1)',
+                  transition: 'transform .2s var(--ease-spring), border-color .15s',
+                  transform: activeColour === i ? 'scale(1.25)' : 'scale(1)',
                   padding: 0,
                   flexShrink: 0,
                 }}
               />
             ))}
-            {/* Active colour name */}
-            <span style={{ fontSize: '.58rem', color: 'var(--stone)', letterSpacing: '.06em', marginLeft: '.1rem' }}>
+            <span style={{ fontSize: '.6rem', color: 'var(--stone)', letterSpacing: '.04em', marginLeft: '.2rem', fontWeight: 500 }}>
               {product.colorGroups[activeColour]?.name}
             </span>
           </div>
         )}
 
-        {/* Single colour name label */}
         {hasGroups && product.colorGroups.length === 1 && (
-          <div style={{ fontSize: '.6rem', color: 'var(--stone)', letterSpacing: '.08em', marginBottom: '.35rem' }}>
+          <div style={{ fontSize: '.62rem', color: 'var(--stone)', letterSpacing: '.06em', marginBottom: '.35rem', fontWeight: 500 }}>
             {product.colorGroups[0].name}
           </div>
         )}

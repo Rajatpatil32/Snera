@@ -13,9 +13,9 @@ export default function Footer() {
   };
 
   return (
-    <footer style={{background:'var(--off)',borderTop:'1px solid var(--sand)'}}>
+    <footer style={{background:'var(--gradient-dark)',color:'var(--white)',borderTop:'1px solid rgba(108,92,231,.2)'}}>
       {/* Newsletter */}
-      <div style={{borderBottom:'1px solid var(--sand)',padding:'clamp(2.5rem,5vw,4rem) 0'}}>
+      <div style={{borderBottom:'1px solid rgba(255,255,255,.1)',padding:'clamp(2.5rem,5vw,4rem) 0'}}>
         <div className="container">
           <div style={{
             display:'grid',
@@ -24,12 +24,12 @@ export default function Footer() {
             alignItems:'center'
           }}>
             <div>
-              <span className="label">The Inner Circle</span>
-              <h3 style={{fontFamily:'var(--serif)',fontWeight:300,fontSize:'clamp(1.5rem,3vw,2.2rem)',letterSpacing:'-.01em'}}>
-                Dress code: <em style={{fontStyle:'italic',color:'var(--accent)'}}>early.</em>
+              <span className="label" style={{color:'var(--accent-soft)'}}>Join The Club</span>
+              <h3 style={{fontFamily:'var(--sans)',fontWeight:700,fontSize:'clamp(1.5rem,3vw,2.2rem)',letterSpacing:'-.02em'}}>
+                Get Exclusive Custom Drops & <span className="gradient-text">10% Off First Tee.</span>
               </h3>
-              <p style={{fontSize:'.83rem',color:'var(--stone2)',marginTop:'.65rem',lineHeight:1.75}}>
-                New drops, exclusive offers, and style dispatches — before anyone else.
+              <p style={{fontSize:'.88rem',color:'rgba(255,255,255,.7)',marginTop:'.65rem',lineHeight:1.75}}>
+                New custom apparel releases, design inspiration, and VIP discounts directly to your inbox.
               </p>
             </div>
             <form onSubmit={handleNL} style={{display:'flex',gap:0}}>
@@ -37,17 +37,17 @@ export default function Footer() {
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="your@email.com"
+                placeholder="Enter your email address..."
                 required
                 style={{
-                  flex:1,border:'1px solid var(--sand)',borderRight:'none',
-                  padding:'.82rem 1.1rem',
-                  fontFamily:'var(--sans)',fontSize:'.8rem',fontWeight:300,
-                  background:'var(--white)',color:'var(--ink)',outline:'none'
+                  flex:1,border:'1px solid rgba(255,255,255,.2)',borderRight:'none',
+                  padding:'.9rem 1.2rem',borderRadius:'var(--radius-sm) 0 0 var(--radius-sm)',
+                  fontFamily:'var(--sans)',fontSize:'.85rem',fontWeight:400,
+                  background:'rgba(255,255,255,.05)',color:'var(--white)',outline:'none'
                 }}
               />
-              <button type="submit" className="btn btn-dark" style={{whiteSpace:'nowrap'}}>
-                {submitted ? '✓ Joined' : 'Join'}
+              <button type="submit" className="btn btn-gradient" style={{whiteSpace:'nowrap',borderRadius:'0 var(--radius-sm) var(--radius-sm) 0',padding:'.9rem 1.8rem'}}>
+                {submitted ? '✓ Subscribed' : 'Subscribe'}
               </button>
             </form>
           </div>
@@ -63,35 +63,39 @@ export default function Footer() {
           marginBottom:'2.5rem'
         }}>
           <div>
-            <div style={{fontFamily:'var(--serif)',fontSize:'1.4rem',fontWeight:500,letterSpacing:'.18em',marginBottom:'1rem'}}>SNERA</div>
-            <p style={{fontSize:'.78rem',color:'var(--stone2)',lineHeight:1.8,maxWidth:'30ch'}}>
-              Premium essentials crafted for those who believe the quietest statement is often the loudest.
+            <div style={{display:'flex',alignItems:'center',gap:'.5rem',fontFamily:'var(--sans)',fontSize:'1.4rem',fontWeight:700,letterSpacing:'.18em',marginBottom:'1rem',color:'var(--white)'}}>
+              <svg viewBox="0 0 24 24" style={{width:22,height:22,fill:'none',stroke:'var(--accent-soft)',strokeWidth:2}}>
+                <path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10a2 2 0 002 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z"/>
+              </svg>
+              <span>SNERA</span>
+            </div>
+            <p style={{fontSize:'.82rem',color:'rgba(255,255,255,.65)',lineHeight:1.8,maxWidth:'32ch'}}>
+              India's premium customizable t-shirt brand. Engineered with 220 GSM super-combed cotton for uncompromised quality.
             </p>
-            <div style={{marginTop:'1rem',display:'flex',gap:'1rem',alignItems:'center'}}>
+            <div style={{marginTop:'1.2rem',display:'flex',gap:'1rem',alignItems:'center'}}>
               <a
                 href="https://www.instagram.com/snera.store/"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="SNERA on Instagram"
-                style={{fontSize:'.72rem',color:'var(--stone2)',letterSpacing:'.08em',display:'flex',alignItems:'center',gap:'.4rem',transition:'color var(--t)'}}
+                style={{fontSize:'.78rem',color:'var(--accent-soft)',fontWeight:600,letterSpacing:'.08em',display:'flex',alignItems:'center',gap:'.4rem',transition:'color var(--t)'}}
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
                 @snera.store
               </a>
             </div>
           </div>
           {[
-            {head:'Shop', links:[['New Arrivals','/shop'],['Men','/shop?gender=Men'],['Women','/shop?gender=Women']]},
-            {head:'Help', links:[['Track Order','/track-order'],['Returns & Refunds','/refund-policy'],['Contact Us','/contact'],['Size Guide','/size-guide'],['Care Guide','/care-guide']]},
-            {head:'Legal', links:[['Privacy Policy','/privacy-policy'],['Terms & Conditions','/terms'],['Shipping Policy','/shipping-policy']]},
-            {head:'Company', links:[['About SNERA','/about'],['Contact','/contact']]},
+            {head:'Shop Apparel', links:[['New Arrivals','/shop'],['Men\'s Tees','/shop?gender=Men'],['Women\'s Tees','/shop?gender=Women'],['Unisex Collection','/shop?gender=Unisex']]},
+            {head:'Customer Care', links:[['Track Order','/track-order'],['Returns & Refunds','/refund-policy'],['Contact Us','/contact'],['Size Guide','/size-guide'],['Care Guide','/care-guide']]},
+            {head:'Legal & Policy', links:[['Privacy Policy','/privacy-policy'],['Terms & Conditions','/terms'],['Shipping Policy','/shipping-policy']]},
           ].map(col => (
             <div key={col.head}>
-              <span className="label">{col.head}</span>
-              <ul style={{display:'flex',flexDirection:'column',gap:'.55rem'}}>
+              <span className="label" style={{color:'var(--accent-soft)',marginBottom:'.8rem'}}>{col.head}</span>
+              <ul style={{display:'flex',flexDirection:'column',gap:'.6rem'}}>
                 {col.links.map(([label, to]) => (
                   <li key={label}>
-                    <Link to={to} style={{fontSize:'.78rem',color:'var(--stone2)',transition:'color var(--t)'}}>
+                    <Link to={to} style={{fontSize:'.82rem',color:'rgba(255,255,255,.65)',transition:'color var(--t)'}}>
                       {label}
                     </Link>
                   </li>
@@ -102,15 +106,15 @@ export default function Footer() {
         </div>
 
         <div style={{
-          paddingTop:'1.5rem',borderTop:'1px solid var(--sand)',
+          paddingTop:'1.75rem',borderTop:'1px solid rgba(255,255,255,.1)',
           display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'1rem'
         }}>
-          <p style={{fontSize:'.65rem',color:'var(--stone)',letterSpacing:'.08em'}}>
-            © {new Date().getFullYear()} SNERA. All rights reserved. Made in India.
+          <p style={{fontSize:'.72rem',color:'rgba(255,255,255,.5)',letterSpacing:'.06em'}}>
+            © {new Date().getFullYear()} SNERA. All rights reserved. Made with ❤️ in India.
           </p>
           <div style={{display:'flex',gap:'1.5rem'}}>
             {[['Privacy','/privacy-policy'],['Terms','/terms'],['Shipping','/shipping-policy']].map(([label, to]) => (
-              <Link key={label} to={to} style={{fontSize:'.65rem',color:'var(--stone)',letterSpacing:'.08em',transition:'color var(--t)'}}>{label}</Link>
+              <Link key={label} to={to} style={{fontSize:'.72rem',color:'rgba(255,255,255,.5)',letterSpacing:'.06em',transition:'color var(--t)'}}>{label}</Link>
             ))}
           </div>
         </div>
@@ -124,6 +128,8 @@ export default function Footer() {
         @media(max-width:480px){
           footer .container > div:nth-child(2) > div { grid-template-columns: 1fr !important; }
           footer form { flex-direction: column; }
+          footer form input { border-radius: var(--radius-sm) !important; border-right: 1px solid rgba(255,255,255,.2) !important; margin-bottom: .5rem; }
+          footer form button { border-radius: var(--radius-sm) !important; width: 100%; justify-content: center; }
         }
       `}</style>
     </footer>

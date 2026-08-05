@@ -34,14 +34,12 @@ export default function ProductDetailPage() {
         const p = r.data;
         setProduct(p);
 
-        // Pre-select colour from URL param (passed from ProductCard)
         const colourParam = parseInt(searchParams.get('colour') || '0', 10);
         const hasGroups   = p.colorGroups?.length > 0;
         const initColour  = hasGroups ? Math.min(colourParam, p.colorGroups.length - 1) : 0;
         setActiveColour(initColour);
         setActiveImg(0);
 
-        // Pre-select first available size in that colour
         const group     = hasGroups ? p.colorGroups[initColour] : null;
         const soldSizes = group?.soldSizes || p.soldSizes || [];
         const first     = (p.sizes || []).find(s => !soldSizes.includes(s));
@@ -51,7 +49,6 @@ export default function ProductDetailPage() {
       .finally(() => setLoading(false));
   }, [slug, searchParams]);
 
-  // When colour changes → reset image + recompute first available size
   const handleColourSwitch = (i) => {
     setActiveColour(i);
     setActiveImg(0);
@@ -65,12 +62,11 @@ export default function ProductDetailPage() {
   if (loading) return <div style={{ paddingTop:'var(--nav-h)' }}><div className="page-loader"><div className="loader-ring"/></div></div>;
   if (notFound || !product) return (
     <div style={{ paddingTop:'var(--nav-h)', textAlign:'center', padding:'8rem 2rem' }}>
-      <h1 style={{ fontFamily:'var(--serif)', fontSize:'2rem', fontWeight:300, marginBottom:'1rem' }}>Product not found</h1>
-      <Link to="/shop" className="btn btn-dark">Back to Shop</Link>
+      <h1 style={{ fontFamily:'var(--sans)', fontSize:'2rem', fontWeight:600, marginBottom:'1rem' }}>Product not found</h1>
+      <Link to="/shop" className="btn btn-gradient">Back to Shop</Link>
     </div>
   );
 
-  // ── Derive active images & sold-out sizes ──────────────────────────────────
   const hasGroups   = product.colorGroups?.length > 0;
   const activeGroup = hasGroups ? product.colorGroups[activeColour] : null;
   const images      = activeGroup?.images?.length ? activeGroup.images : product.images || [];
@@ -78,7 +74,6 @@ export default function ProductDetailPage() {
 
   const isSold = (sz) => soldSizes.includes(sz);
 
-  // ── Add to cart ────────────────────────────────────────────────────────────
   const addToCart = () => {
     if (!selSize) return;
     dispatch({
@@ -98,7 +93,6 @@ export default function ProductDetailPage() {
     setTimeout(() => setAdded(false), 2000);
   };
 
-  // ── SEO ────────────────────────────────────────────────────────────────────
   const crumbs = [
     { name: 'Home', url: '/' },
     { name: 'Shop', url: '/shop' },
@@ -106,27 +100,14 @@ export default function ProductDetailPage() {
     { name: product.name, url: `/product/${product.slug}` },
   ];
 
-  // CHANGED: title now includes "Buy" + "Online" for purchase-intent search queries.
-  // e.g. "Buy Ivory Relaxed Tee Online | Tops | SNERA"
-  // Admin seo.metaTitle override takes priority when set.
-  const seoTitle = product.seo?.metaTitle
-    || `Buy ${product.name} Online | ${product.category} | SNERA`;
+  const seoTitle = product.seo?.metaTitle || `Buy ${product.name} Custom T-Shirt Online | SNERA`;
+  const metaDescription = product.seo?.metaDescription || `Customizable ${product.name} printed on premium 220 GSM heavyweight cotton. Free shipping above ₹999.`;
 
-  // CHANGED: richer meta description fallback with fabric, sizes, and free-shipping hook.
-  // Admin seo.metaDescription override takes priority when set.
-  const metaDescription = product.seo?.metaDescription
-    || (product.description
-      ? `Buy ${product.name} online at SNERA. ${product.description.slice(0, 100)}. ${product.fabric ? `Made from ${product.fabric}. ` : ''}Free shipping above ₹999.`
-      : `Buy ${product.name} online at SNERA — premium Indian fashion. ${product.fabric ? `Made from ${product.fabric}. ` : ''}Available in ${(product.sizes || []).join(', ')}. Free shipping above ₹999.`);
-
-  // Primary image for OG
   const ogImg = (() => {
     const imgs = (product.colorGroups?.find(g => g.isDefault) || product.colorGroups?.[0])?.images || product.images || [];
     return imgs[0] ? (imgs[0].startsWith('http') ? imgs[0] : `https://snera.in${imgs[0]}`) : 'https://snera.in/og-image.jpg';
   })();
 
-  // schemas comes from useSEO — this is the ONLY place product JSON-LD is built.
-  // SEOHead no longer builds its own productSchema.
   const schemas = useSEO({
     type: 'product',
     product,
@@ -149,23 +130,27 @@ export default function ProductDetailPage() {
         schemas={schemas}
       />
 
-      <div style={{ paddingTop:'var(--nav-h)' }}>
+      <div style={{ paddingTop:'var(--nav-h)', background: 'var(--white)' }}>
         <div className="container" style={{ paddingTop:'.75rem' }}>
           <div className="breadcrumb">
             <Link to="/">Home</Link><span>/</span>
             <Link to="/shop">Shop</Link><span>/</span>
             <Link to={`/shop?category=${product.category}`}>{product.category}</Link><span>/</span>
-            <span style={{ color:'var(--ink)' }}>{product.name}</span>
+            <span style={{ color:'var(--ink)', fontWeight:600 }}>{product.name}</span>
           </div>
         </div>
 
         <div className="container" style={{ paddingBottom:'5rem' }}>
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'clamp(2rem,5vw,5rem)', alignItems:'start' }}>
+          <div style={{ display:'grid', gridTemplateColumns:'1.1fr 0.9fr', gap:'clamp(2rem,5vw,4rem)', alignItems:'start' }}>
 
             {/* ── LEFT: images ── */}
             <div>
-              {/* Main image */}
-              <div style={{ aspectRatio:'3/4', background:'var(--off)', overflow:'hidden', marginBottom:'.65rem', display:'flex', alignItems:'center', justifyContent:'center', position:'relative' }}>
+              <div style={{
+                aspectRatio:'3/4', background:'var(--gradient-card)', overflow:'hidden',
+                borderRadius:'var(--radius-lg)', marginBottom:'.85rem',
+                display:'flex', alignItems:'center', justifyContent:'center', position:'relative',
+                border: '1px solid rgba(108,92,231,.1)'
+              }}>
                 {images[activeImg] ? (
                   <img
                     src={getImageUrl(images[activeImg])}
@@ -173,92 +158,89 @@ export default function ProductDetailPage() {
                     style={{ width:'100%', height:'100%', objectFit:'cover' }}
                   />
                 ) : (
-                  <span style={{ fontFamily:'var(--serif)', fontSize:'8rem', fontWeight:300, color:'rgba(28,27,24,.08)' }}>
-                    {product.glyph || '◈'}
-                  </span>
+                  <span style={{ fontSize:'6rem' }}>👕</span>
                 )}
-                {product.badge && (
-                  <span className={`prod-badge prod-badge-${product.badge.toLowerCase()}`} style={{ position:'absolute', top:'1rem', left:'1rem' }}>
-                    {product.badge}
-                  </span>
-                )}
+                
+                {/* 220 GSM Badge */}
+                <span className="prod-badge" style={{ position:'absolute', top:'1.2rem', left:'1.2rem', background:'var(--gradient)', color:'#fff' }}>
+                  220 GSM COTTON
+                </span>
 
                 {/* Colour name label overlay */}
                 {activeGroup && (
-                  <div style={{ position:'absolute', bottom:'1rem', right:'1rem', display:'flex', alignItems:'center', gap:'.45rem', background:'rgba(255,255,255,.92)', padding:'.35rem .65rem', backdropFilter:'blur(4px)' }}>
-                    <span style={{ width:12, height:12, borderRadius:'50%', background:activeGroup.hex, border:'1px solid rgba(0,0,0,.18)', flexShrink:0 }}/>
-                    <span style={{ fontSize:'.62rem', letterSpacing:'.1em', color:'var(--ink)', textTransform:'uppercase' }}>{activeGroup.name}</span>
+                  <div style={{ position:'absolute', bottom:'1.2rem', right:'1.2rem', display:'flex', alignItems:'center', gap:'.5rem', background:'rgba(255,255,255,.9)', padding:'.4rem .8rem', borderRadius:'20px', backdropFilter:'blur(8px)', boxShadow:'0 4px 15px rgba(0,0,0,.08)' }}>
+                    <span style={{ width:12, height:12, borderRadius:'50%', background:activeGroup.hex, border:'1px solid rgba(0,0,0,.15)', flexShrink:0 }}/>
+                    <span style={{ fontSize:'.68rem', letterSpacing:'.08em', color:'var(--ink)', textTransform:'uppercase', fontWeight:600 }}>{activeGroup.name}</span>
                   </div>
                 )}
               </div>
 
-              {/* Thumbnails for active colour */}
+              {/* Thumbnails */}
               {images.length > 1 && (
-                <div style={{ display:'flex', gap:'.5rem', flexWrap:'wrap', marginBottom:'.65rem' }}>
+                <div style={{ display:'flex', gap:'.6rem', flexWrap:'wrap', marginBottom:'.65rem' }}>
                   {images.map((img, i) => (
                     <button
                       key={i}
                       type="button"
                       onClick={() => setActiveImg(i)}
                       style={{
-                        width:64, height:86, overflow:'hidden', padding:0,
-                        border: `1px solid ${i===activeImg ? 'var(--ink)' : 'var(--sand)'}`,
-                        cursor:'pointer', background:'none', transition:'border-color var(--t)',
+                        width:70, height:90, overflow:'hidden', padding:0,
+                        borderRadius:'var(--radius-sm)',
+                        border: `2px solid ${i===activeImg ? 'var(--accent)' : 'var(--sand)'}`,
+                        cursor:'pointer', background:'none', transition:'all var(--t)',
                       }}
                     >
-                      <img src={getImageUrl(img)} alt={`${product.name}${activeGroup ? ` ${activeGroup.name}` : ''} — view ${i + 1}`} loading="lazy" decoding="async" style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
+                      <img src={getImageUrl(img)} alt={`${product.name} view ${i + 1}`} loading="lazy" decoding="async" style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
                     </button>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* ── RIGHT: info ── */}
-            <div style={{ display:'flex', flexDirection:'column', gap:'1.15rem', paddingTop:'1rem' }}>
-              <div style={{ fontSize:'.58rem', letterSpacing:'.22em', textTransform:'uppercase', color:'var(--stone)' }}>
-                {product.category} · {product.gender}
+            {/* ── RIGHT: details & actions ── */}
+            <div style={{ display:'flex', flexDirection:'column', gap:'1.25rem' }}>
+              <div>
+                <div style={{ fontSize:'.68rem', letterSpacing:'.16em', textTransform:'uppercase', color:'var(--accent)', fontWeight:700, marginBottom:'.3rem' }}>
+                  {product.category || 'Custom Apparel'} · 220 GSM Cotton
+                </div>
+                <h1 style={{ fontFamily:'var(--sans)', fontWeight:700, fontSize:'clamp(1.8rem,3vw,2.5rem)', lineHeight:1.15, letterSpacing:'-.02em' }}>
+                  {product.name}
+                </h1>
               </div>
 
-              <h1 style={{ fontFamily:'var(--serif)', fontWeight:300, fontSize:'clamp(1.5rem,3vw,2.5rem)', lineHeight:1.15, letterSpacing:'-.01em' }}>
-                {product.name}
-              </h1>
-
               {/* Price */}
-              <div style={{ display:'flex', alignItems:'center', gap:'.9rem' }}>
-                <span style={{ fontSize:'1.2rem', fontWeight:500 }}>{fmt(product.price)}</span>
+              <div style={{ display:'flex', alignItems:'center', gap: '1rem' }}>
+                <span style={{ fontSize:'1.4rem', fontWeight:700, color:'var(--ink)' }}>{fmt(product.price)}</span>
                 {product.comparePrice && (
-                  <span style={{ fontSize:'.9rem', color:'var(--stone)', textDecoration:'line-through' }}>{fmt(product.comparePrice)}</span>
+                  <span style={{ fontSize:'1rem', color:'var(--stone)', textDecoration:'line-through' }}>{fmt(product.comparePrice)}</span>
                 )}
                 {product.comparePrice && (
-                  <span style={{ fontSize:'.58rem', letterSpacing:'.14em', textTransform:'uppercase', fontWeight:600, padding:'.2rem .55rem', background:'var(--accent)', color:'var(--white)' }}>
-                    {Math.round((1-product.price/product.comparePrice)*100)}% off
+                  <span style={{ fontSize:'.62rem', letterSpacing:'.1em', textTransform:'uppercase', fontWeight:700, padding:'.25rem .65rem', borderRadius:'6px', background:'var(--gradient)', color:'var(--white)' }}>
+                    {Math.round((1-product.price/product.comparePrice)*100)}% OFF
                   </span>
                 )}
               </div>
 
-              <div style={{ height:1, background:'var(--sand)' }}/>
-
-              <p style={{ fontSize:'.85rem', color:'var(--stone2)', lineHeight:1.8 }}>{product.description}</p>
+              <p style={{ fontSize:'.88rem', color:'var(--stone2)', lineHeight:1.8 }}>{product.description}</p>
 
               {/* ── Colour picker ── */}
               {hasGroups && product.colorGroups.length > 0 && (
                 <div>
                   <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'.65rem' }}>
-                    <span style={{ fontSize:'.6rem', letterSpacing:'.18em', textTransform:'uppercase', color:'var(--stone)' }}>
-                      Colour
+                    <span style={{ fontSize:'.65rem', letterSpacing:'.14em', textTransform:'uppercase', color:'var(--accent)', fontWeight:700 }}>
+                      Colorway
                     </span>
-                    <span style={{ fontSize:'.78rem', fontWeight:500, color:'var(--ink)' }}>
+                    <span style={{ fontSize:'.82rem', fontWeight:600, color:'var(--ink)' }}>
                       {activeGroup?.name || ''}
                     </span>
                   </div>
-                  <div style={{ display:'flex', gap:'.6rem', flexWrap:'wrap' }}>
+                  <div style={{ display:'flex', gap:'.65rem', flexWrap:'wrap' }}>
                     {product.colorGroups.map((g, i) => (
                       <button
                         key={i}
                         type="button"
                         onClick={() => handleColourSwitch(i)}
                         title={g.name}
-                        aria-label={`${g.name}${i===activeColour?' (selected)':''}`}
                         style={{
                           display:'flex', flexDirection:'column', alignItems:'center', gap:'.35rem',
                           background:'transparent', border:'none', cursor:'pointer', padding:'.35rem',
@@ -266,13 +248,13 @@ export default function ProductDetailPage() {
                       >
                         <span style={{
                           display:'block',
-                          width:28, height:28, borderRadius:'50%', background:g.hex,
-                          border: i===activeColour ? '2.5px solid var(--ink)' : '1.5px solid rgba(0,0,0,.2)',
-                          boxShadow: i===activeColour ? '0 0 0 2px var(--white),0 0 0 3.5px var(--ink)' : 'none',
-                          transition:'box-shadow .18s, border .18s, transform .18s',
-                          transform: i===activeColour ? 'scale(1.12)' : 'scale(1)',
+                          width:30, height:30, borderRadius:'50%', background:g.hex,
+                          border: i===activeColour ? '2.5px solid var(--accent)' : '1.5px solid rgba(0,0,0,.15)',
+                          boxShadow: i===activeColour ? '0 0 0 3px rgba(108,92,231,.25)' : 'none',
+                          transition:'all .2s var(--ease-spring)',
+                          transform: i===activeColour ? 'scale(1.15)' : 'scale(1)',
                         }}/>
-                        <span style={{ fontSize:'.56rem', color: i===activeColour ? 'var(--ink)' : 'var(--stone)', letterSpacing:'.06em', whiteSpace:'nowrap' }}>
+                        <span style={{ fontSize:'.6rem', color: i===activeColour ? 'var(--ink)' : 'var(--stone)', fontWeight: 600, letterSpacing:'.04em' }}>
                           {g.name}
                         </span>
                       </button>
@@ -283,51 +265,53 @@ export default function ProductDetailPage() {
 
               {/* ── Size picker ── */}
               <div>
-                <div style={{ fontSize:'.6rem', letterSpacing:'.18em', textTransform:'uppercase', color:'var(--stone)', marginBottom:'.6rem' }}>Size</div>
-                <div style={{ display:'flex', gap:'.45rem', flexWrap:'wrap' }}>
-                  {(product.sizes || []).map(sz => (
+                <div style={{ fontSize:'.65rem', letterSpacing:'.14em', textTransform:'uppercase', color:'var(--accent)', fontWeight:700, marginBottom:'.65rem' }}>Select Size</div>
+                <div style={{ display:'flex', gap:'.5rem', flexWrap:'wrap' }}>
+                  {(product.sizes || ['S', 'M', 'L', 'XL', 'XXL']).map(sz => (
                     <button
                       key={sz}
                       type="button"
                       onClick={() => !isSold(sz) && setSelSize(sz)}
                       disabled={isSold(sz)}
                       style={{
-                        width:42, height:42, border:'1px solid',
-                        fontSize:'.7rem', fontWeight:500, letterSpacing:'.04em',
+                        width:46, height:46, borderRadius:'var(--radius-sm)',
+                        border:'1px solid',
+                        fontSize:'.75rem', fontWeight:700, letterSpacing:'.04em',
                         display:'flex', alignItems:'center', justifyContent:'center',
                         cursor: isSold(sz) ? 'not-allowed' : 'pointer',
                         fontFamily:'var(--sans)',
-                        background:  selSize===sz ? 'var(--ink)' : 'transparent',
-                        color:       selSize===sz ? 'var(--white)' : isSold(sz) ? 'var(--sand2)' : 'var(--stone2)',
-                        borderColor: selSize===sz ? 'var(--ink)' : 'var(--sand)',
+                        background:  selSize===sz ? 'var(--gradient)' : 'transparent',
+                        color:       selSize===sz ? 'var(--white)' : isSold(sz) ? 'var(--sand2)' : 'var(--ink)',
+                        borderColor: selSize===sz ? 'transparent' : 'var(--sand)',
                         opacity:     isSold(sz) ? .4 : 1,
                         textDecoration: isSold(sz) ? 'line-through' : 'none',
                         transition:'all var(--t)',
+                        boxShadow: selSize===sz ? '0 4px 15px rgba(108,92,231,.3)' : 'none'
                       }}
                     >{sz}</button>
                   ))}
                 </div>
-                {!selSize && <p style={{ fontSize:'.68rem', color:'var(--accent)', marginTop:'.4rem' }}>Please select a size</p>}
               </div>
 
               {/* ── Qty + Add to cart ── */}
-              <div style={{ display:'flex', alignItems:'center', gap:'1rem' }}>
-                <div style={{ display:'flex', alignItems:'center', border:'1px solid var(--sand)' }}>
-                  <button type="button" onClick={() => qty>1 && setQty(q=>q-1)} style={{ width:36, height:36, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1rem', color:'var(--stone2)', background:'none', border:'none', cursor:'pointer' }}>−</button>
-                  <span style={{ width:42, textAlign:'center', fontSize:'.83rem', fontWeight:500, height:36, display:'flex', alignItems:'center', justifyContent:'center', borderLeft:'1px solid var(--sand)', borderRight:'1px solid var(--sand)' }}>{qty}</span>
-                  <button type="button" onClick={() => qty<10 && setQty(q=>q+1)} style={{ width:36, height:36, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1rem', color:'var(--stone2)', background:'none', border:'none', cursor:'pointer' }}>+</button>
+              <div style={{ display:'flex', alignItems:'center', gap:'1rem', marginTop:'.5rem' }}>
+                <div style={{ display:'flex', alignItems:'center', border:'1px solid var(--sand)', borderRadius:'var(--radius-sm)' }}>
+                  <button type="button" onClick={() => qty>1 && setQty(q=>q-1)} style={{ width:40, height:44, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1.1rem', color:'var(--stone2)', background:'none', border:'none', cursor:'pointer' }}>−</button>
+                  <span style={{ width:44, textAlign:'center', fontSize:'.9rem', fontWeight:600, height:44, display:'flex', alignItems:'center', justifyContent:'center', borderLeft:'1px solid var(--sand)', borderRight:'1px solid var(--sand)' }}>{qty}</span>
+                  <button type="button" onClick={() => qty<10 && setQty(q=>q+1)} style={{ width:40, height:44, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1.1rem', color:'var(--stone2)', background:'none', border:'none', cursor:'pointer' }}>+</button>
                 </div>
 
                 <button
                   type="button"
                   onClick={addToCart}
                   disabled={!selSize}
+                  className={selSize && !added ? 'btn-gradient btn-pulse' : ''}
                   style={{
-                    flex:1, padding:'.95rem',
-                    background: added ? 'var(--success)' : selSize ? 'var(--ink)' : 'var(--sand)',
+                    flex:1, padding:'1rem',
+                    background: added ? 'var(--success)' : !selSize ? 'var(--sand)' : undefined,
                     color:'var(--white)',
-                    fontFamily:'var(--sans)', fontSize:'.68rem', fontWeight:500, letterSpacing:'.2em', textTransform:'uppercase',
-                    border:`1px solid ${added ? 'var(--success)' : selSize ? 'var(--ink)' : 'var(--sand)'}`,
+                    fontFamily:'var(--sans)', fontSize:'.75rem', fontWeight:700, letterSpacing:'.14em', textTransform:'uppercase',
+                    borderRadius:'var(--radius-sm)', border:'none',
                     display:'flex', alignItems:'center', justifyContent:'center', gap:'.6rem',
                     cursor: selSize ? 'pointer' : 'not-allowed',
                     transition:'all var(--t)',
@@ -337,123 +321,37 @@ export default function ProductDetailPage() {
                 </button>
               </div>
 
-              {/* Meta */}
-              <div style={{ height:1, background:'var(--sand)' }}/>
-              <div style={{ display:'flex', gap:'1.75rem', flexWrap:'wrap' }}>
+              {/* Custom Design Box */}
+              <div style={{
+                background: 'var(--gradient-subtle)', border: '1px solid rgba(108,92,231,.15)',
+                borderRadius: 'var(--radius)', padding: '1.25rem', display: 'flex', gap: '1rem', alignItems: 'center'
+              }}>
+                <span style={{ fontSize: '2rem' }}>✨</span>
+                <div>
+                  <div style={{ fontSize: '.85rem', fontWeight: 700, color: 'var(--ink)' }}>Want Custom Artwork Printed On This?</div>
+                  <div style={{ fontSize: '.78rem', color: 'var(--stone2)', marginTop: '.2rem' }}>We print custom text, graphics & logos on all our 220 GSM t-shirts.</div>
+                  <a href="/#concept" style={{ fontSize: '.72rem', color: 'var(--accent)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em', marginTop: '.4rem', display: 'inline-block' }}>
+                    Go to Custom Design Studio →
+                  </a>
+                </div>
+              </div>
+
+              {/* Guarantees */}
+              <div style={{ display:'flex', gap:'1.5rem', flexWrap:'wrap', paddingTop:'.5rem' }}>
                 {[
-                  { i:<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>, t:'Ships in 24 hrs' },
-                  { i:<><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></>, t:'2-day return' },
-                  { i:<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>, t:'Secure checkout' },
+                  { i:'🚚', t:'Free Ship ₹999+' },
+                  { i:'✨', t:'220 GSM Cotton' },
+                  { i:'🛡️', t:'Fast 5-Day Delivery' },
                 ].map(({ i, t }) => (
-                  <div key={t} style={{ fontSize:'.7rem', color:'var(--stone2)', display:'flex', alignItems:'center', gap:'.38rem' }}>
-                    <svg viewBox="0 0 24 24" style={{ width:13, height:13, stroke:'currentColor', fill:'none', strokeWidth:1.5, flexShrink:0 }}>{i}</svg>
-                    {t}
+                  <div key={t} style={{ fontSize:'.75rem', color:'var(--stone2)', fontWeight:600, display:'flex', alignItems:'center', gap:'.4rem' }}>
+                    <span>{i}</span> {t}
                   </div>
                 ))}
               </div>
-
-              {/* Fabric / care */}
-              {(product.fabric || product.careInstructions) && (
-                <>
-                  <div style={{ height:1, background:'var(--sand)' }}/>
-                  {product.fabric          && <div style={{ fontSize:'.78rem', color:'var(--stone2)' }}><strong style={{ color:'var(--ink)', fontWeight:500 }}>Fabric:</strong> {product.fabric}</div>}
-                  {product.careInstructions && <div style={{ fontSize:'.78rem', color:'var(--stone2)' }}><strong style={{ color:'var(--ink)', fontWeight:500 }}>Care:</strong> {product.careInstructions}</div>}
-                </>
-              )}
             </div>
           </div>
         </div>
       </div>
-
-      {/* ── FAQ ──────────────────────────────────────────────────────────── */}
-      <section style={{ borderTop: '1px solid var(--sand)', padding: 'clamp(3rem,6vw,5rem) 0' }}>
-        <div className="container" style={{ maxWidth: 760 }}>
-          <span className="label" style={{ marginBottom: '.75rem', display: 'block' }}>FAQs</span>
-          <h2 style={{ fontFamily: 'var(--serif)', fontWeight: 300, fontSize: 'clamp(1.4rem,3vw,2rem)', letterSpacing: '-.01em', marginBottom: '2rem' }}>
-            Common questions
-          </h2>
-
-          {[
-            {
-              q: `What sizes are available for ${product.name}?`,
-              a: product.sizes?.length
-                ? `${product.name} is available in sizes: ${product.sizes.join(', ')}. If you're between sizes, we recommend sizing up.`
-                : 'Please check the size picker above for available sizes.',
-            },
-            {
-              q: `What is the fabric of ${product.name}?`,
-              a: product.fabric
-                ? `${product.name} is made from ${product.fabric}. We use premium fabrics for lasting comfort.`
-                : 'Fabric details are listed in the product description above.',
-            },
-            {
-              q: 'Can I customize or design my own t-shirt on SNERA?',
-              a: 'Yes — SNERA offers customizable t-shirts. You can upload your own design or artwork, choose placement, size, and premium 220 GSM cotton color, and we print and deliver it across India.',
-            },
-            {
-              q: 'What is your return policy?',
-              a: 'We accept returns within 7 days of delivery on eligible items in original, unused condition. Refunds are processed within 5–7 business days. Sale and customised items are not eligible.',
-            },
-            {
-              q: 'How long does delivery take?',
-              a: 'Orders are dispatched within 24–48 hours. Standard delivery takes 5–7 business days. Express delivery (2–3 days) is available at checkout.',
-            },
-            {
-              q: 'What payment methods are accepted?',
-              a: 'We accept all major credit/debit cards, UPI, net banking, and wallets via Razorpay. All transactions are secured.',
-            },
-            {
-              q: 'Can I exchange for a different size?',
-              a: 'Yes — exchanges for a different size are accepted within 7 days of delivery. Contact us at contact@snera.in to initiate.',
-            },
-          ].map(({ q, a }, i) => (
-            <div
-              key={i}
-              itemScope
-              itemType="https://schema.org/Question"
-              style={{ borderBottom: '1px solid var(--sand)' }}
-            >
-              <button
-                type="button"
-                onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                aria-expanded={openFaq === i}
-                style={{
-                  width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  padding: '1.1rem 0', background: 'none', border: 'none', cursor: 'pointer',
-                  textAlign: 'left', gap: '1rem',
-                }}
-              >
-                <span itemProp="name" style={{ fontSize: '.85rem', fontWeight: 500, color: 'var(--ink)', lineHeight: 1.5 }}>{q}</span>
-                <svg
-                  viewBox="0 0 24 24"
-                  style={{
-                    width: 16, height: 16, flexShrink: 0, stroke: 'var(--stone)',
-                    fill: 'none', strokeWidth: 1.8, transition: 'transform .2s',
-                    transform: openFaq === i ? 'rotate(180deg)' : 'none',
-                  }}
-                >
-                  <polyline points="6 9 12 15 18 9" />
-                </svg>
-              </button>
-              {openFaq === i && (
-                <div
-                  itemScope
-                  itemType="https://schema.org/Answer"
-                  style={{ paddingBottom: '1.1rem' }}
-                >
-                  <p itemProp="text" style={{ fontSize: '.82rem', color: 'var(--stone2)', lineHeight: 1.8, margin: 0 }}>{a}</p>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <style>{`
-        @media(max-width:768px){
-          .container>div>div[style*="grid-template-columns"]{grid-template-columns:1fr!important}
-        }
-      `}</style>
     </>
   );
 }
