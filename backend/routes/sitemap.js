@@ -17,6 +17,7 @@
 
 const router  = require('express').Router();
 const Product = require('../models/Product');
+const Blog    = require('../models/Blog');
 
 const BASE     = process.env.FRONTEND_URL || 'https://snera.in';
 const API_BASE = process.env.BACKEND_URL  || 'https://snera.in';
@@ -54,6 +55,10 @@ router.get('/', async (req, res) => {
     <loc>${BASE}/api/sitemap/products.xml</loc>
     <lastmod>${today()}</lastmod>
   </sitemap>
+  <sitemap>
+    <loc>${BASE}/api/sitemap/blog.xml</loc>
+    <lastmod>${today()}</lastmod>
+  </sitemap>
 </sitemapindex>`;
 
   res.header('Content-Type', 'application/xml');
@@ -74,6 +79,10 @@ router.get('.xml', async (req, res) => {
     <loc>${BASE}/api/sitemap/products.xml</loc>
     <lastmod>${today()}</lastmod>
   </sitemap>
+  <sitemap>
+    <loc>${BASE}/api/sitemap/blog.xml</loc>
+    <lastmod>${today()}</lastmod>
+  </sitemap>
 </sitemapindex>`;
 
   res.header('Content-Type', 'application/xml');
@@ -86,6 +95,7 @@ router.get('/pages.xml', (req, res) => {
   const pages = [
     { loc: '/',               priority: '1.0', changefreq: 'daily'   },
     { loc: '/shop',           priority: '0.9', changefreq: 'daily'   },
+    { loc: '/blog',           priority: '0.8', changefreq: 'daily'   },
     { loc: '/about',          priority: '0.8', changefreq: 'monthly' },
     { loc: '/size-guide',     priority: '0.8', changefreq: 'monthly' },
     { loc: '/care-guide',     priority: '0.7', changefreq: 'monthly' },
@@ -153,6 +163,34 @@ router.get('/products.xml', async (req, res) => {
 <urlset
   xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+${urls}
+</urlset>`;
+
+    res.header('Content-Type', 'application/xml');
+    res.header('Cache-Control', 'public, max-age=3600');
+    res.send(xml);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Blog Sitemap ────────────────────────────────────────────────────────────
+router.get('/blog.xml', async (req, res) => {
+  try {
+    const posts = await Blog.find({ isPublished: true })
+      .select('slug updatedAt publishedAt')
+      .lean();
+
+    const urls = posts.map(b => `
+  <url>
+    <loc>${xmlEscape(`${BASE}/blog/${b.slug}`)}</loc>
+    <lastmod>${(b.updatedAt || b.publishedAt) ? new Date(b.updatedAt || b.publishedAt).toISOString().split('T')[0] : today()}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>`).join('');
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls}
 </urlset>`;
 

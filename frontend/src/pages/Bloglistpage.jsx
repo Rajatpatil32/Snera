@@ -35,6 +35,28 @@ export default function BlogListPage() {
       <Helmet>
         <title>Fashion &amp; Style Blog | SNERA</title>
         <meta name="description" content="Discover fashion tips, care guides, style inspiration and behind-the-scenes stories from SNERA." />
+        <link rel="canonical" href="https://snera.in/blog" />
+        {(currentPage > 1 || selectedCategory) && <meta name="robots" content="noindex, follow" />}
+        {blogs.length > 0 && (
+          <script type="application/ld+json">{JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'CollectionPage',
+            '@id': 'https://snera.in/blog#collection',
+            name: 'SNERA Blog',
+            description: 'Fashion tips, fabric care guides, and behind-the-scenes stories from SNERA.',
+            url: 'https://snera.in/blog',
+            isPartOf: { '@id': 'https://snera.in/#website' },
+            mainEntity: {
+              '@type': 'ItemList',
+              itemListElement: blogs.map((b, i) => ({
+                '@type': 'ListItem',
+                position: i + 1,
+                url: `https://snera.in/blog/${b.slug}`,
+                name: b.title,
+              })),
+            },
+          })}</script>
+        )}
       </Helmet>
 
       <div style={{ paddingTop: 'var(--nav-h)' }}>
