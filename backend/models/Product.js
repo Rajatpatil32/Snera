@@ -37,6 +37,32 @@ const productSchema = new mongoose.Schema({
   // Flat images fallback (used if no colorGroups set)
   images: { type: [String], default: [] },
 
+  // ── New: design-based mode ────────────────────────────────────────────────
+  // When true, the product is built from one design artwork positioned on
+  // global TshirtMockup templates, instead of uploaded per-colour photos.
+  designMode: { type: Boolean, default: false },
+  designUrl:  { type: String },   // transparent PNG artwork
+  placement: {
+    x: Number, y: Number, w: Number, h: Number,
+    rotation: { type: Number, default: 0 },
+    opacity:  { type: Number, default: 1 },
+    blend:    { type: String, default: 'source-over' },
+  },
+  // One entry per colour the design is offered in. `image` is the server-baked
+  // composite (design + global mockup), regenerated whenever placement/design/
+  // colour list changes — the admin never re-uploads it.
+  designColors: {
+    type: [{
+      mockup:    { type: mongoose.Schema.Types.ObjectId, ref: 'TshirtMockup', required: true },
+      name:      { type: String, required: true },
+      hex:       { type: String, required: true },
+      image:     { type: String },   // baked composite, set by the server
+      soldSizes: { type: [String], default: [] },
+      isDefault: { type: Boolean, default: false },
+    }],
+    default: [],
+  },
+
   glyph:      { type: String, default: '◈' },
   badge:      { type: String, enum: ['New', 'Sale', ''], default: 'New' },
   isActive:   { type: Boolean, default: true },
@@ -68,6 +94,10 @@ productSchema.pre('save', async function (next) {
 
 // ─── Virtual: primary image (first image of default colour) ──────────────────
 productSchema.virtual('primaryImage').get(function () {
+  if (this.designMode && this.designColors?.length) {
+    const def = this.designColors.find(c => c.isDefault) || this.designColors[0];
+    return def?.image || null;
+  }
   if (this.colorGroups?.length) {
     const def = this.colorGroups.find(c => c.isDefault) || this.colorGroups[0];
     return def?.images?.[0] || null;

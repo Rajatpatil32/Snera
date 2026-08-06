@@ -1,8 +1,34 @@
 const router  = require('express').Router();
 const slugify = require('slugify');
 const Product = require('../models/Product');
+const TshirtMockup = require('../models/TshirtMockup');
 const auth    = require('../middleware/auth');
 const { onProductCreated, onProductUpdated, onProductDeleted } = require('../services/productHooks');
+const { composeDesign } = require('../services/compose');
+const { smartUpload } = require('../services/ftp');
+
+// ─── Bake each designColors[] entry (design + global mockup) into a flat image ──
+// Runs on create/update whenever the product is in designMode, so the admin
+// never re-uploads photos per colour — the server composes them.
+async function bakeDesignColors(product) {
+  if (!product.designMode || !product.designUrl || !product.placement || !product.designColors?.length) return;
+
+  for (const color of product.designColors) {
+    const mockup = await TshirtMockup.findById(color.mockup);
+    if (!mockup) continue;
+    try {
+      const composedBuf = await composeDesign(mockup.image, product.designUrl, product.placement);
+      const filename = `snera_${product._id}_${color.mockup}_${Date.now()}.webp`;
+      const { url } = await smartUpload(composedBuf, filename, null);
+      color.image = url;
+      color.name  = color.name  || mockup.name;
+      color.hex   = color.hex   || mockup.hex;
+    } catch (err) {
+      console.error(`✗ Bake failed for colour ${color.name || color.mockup}:`, err.message);
+    }
+  }
+  await product.save();
+}
 
 // ─── STATIC NAMED ROUTES FIRST (before /:slug wildcard) ──────────────────────
 
@@ -59,6 +85,7 @@ router.post('/', auth, async (req, res) => {
     let slug = base; let n = 1;
     while (await Product.findOne({ slug })) slug = `${base}-${n++}`;
     const product = await Product.create({ ...req.body, slug });
+    await bakeDesignColors(product);   // 🎨 compose design onto each selected mockup
     onProductCreated(product);   // 🔁 auto-sync to Google Merchant
     res.status(201).json(product);
   } catch (err) {
@@ -71,6 +98,11 @@ router.put('/:id', auth, async (req, res) => {
   try {
     const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
     if (!product) return res.status(404).json({ error: 'Product not found' });
+    // Only re-bake when the design, its placement, or the colour list changed —
+    // avoids re-compositing on unrelated edits (price, description, etc.)
+    if (product.designMode && ('designUrl' in req.body || 'placement' in req.body || 'designColors' in req.body)) {
+      await bakeDesignColors(product);
+    }
     onProductUpdated(product);   // 🔁 auto-sync to Google Merchant
     res.json(product);
   } catch (err) {

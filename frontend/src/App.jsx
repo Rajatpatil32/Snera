@@ -37,6 +37,7 @@ import AdminOrderDetailPage  from './pages/admin/AdminOrderDetailPage';
 import AdminProductsPage     from './pages/admin/AdminProductsPage';
 import AdminProductFormPage  from './pages/admin/AdminProductFormPage';
 import AdminImagesPage       from './pages/admin/AdminImagesPage';
+import AdminMockupsPage      from './pages/admin/AdminMockupsPage';
 import NotFoundPage          from './pages/NotFoundPage';
 
 import BlogListPage          from './pages/Bloglistpage';
@@ -130,6 +131,7 @@ export default function App() {
               <Route path="products/:id/edit"      element={<AdminProductFormPage/>}/>
               <Route path="collections"            element={<AdminCollectionsPage/>}/>
               <Route path="images"                 element={<AdminImagesPage/>}/>
+              <Route path="mockups"                element={<AdminMockupsPage/>}/>
 
               <Route path="blog"               element={<AdminBlogPage/>}/>
               <Route path="blog/new"           element={<AdminBlogFormPage/>}/>

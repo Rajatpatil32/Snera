@@ -76,6 +76,15 @@ router.get('/admin/all', auth, async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// ADMIN: single blog by id, full content, any publish status
+router.get('/admin/:id', auth, async (req, res) => {
+  try {
+    const blog = await Blog.findById(req.params.id);
+    if (!blog) return res.status(404).json({ error: 'Not found' });
+    res.json(blog);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 // ADMIN: create blog
 router.post('/admin', auth, async (req, res) => {
   try {

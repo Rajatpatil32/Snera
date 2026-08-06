@@ -46,6 +46,7 @@ app.use('/api/auth',     require('./routes/auth'));
 app.use('/api/products', require('./routes/products'));
 app.use('/api/orders',   require('./routes/orders'));
 app.use('/api/upload',   require('./routes/upload'));
+app.use('/api/mockups',  require('./routes/mockups'));
 
 // Sitemap — mounted at /api/sitemap
 // Accessible at:

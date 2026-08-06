@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import API, { getImageUrl } from '../../utils/api';
 import ProductDesignComposer from './ProductDesignComposer';
+import DesignPlacer from './DesignPlacer';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -35,8 +36,13 @@ const emptyForm = {
   glyph: '◈', badge: 'New',
   isActive: true, isFeatured: false,
   tags: '', weight: 220,
-  colorGroups: [], // primary data
+  colorGroups: [], // legacy: uploaded photos per colour
   images: [],      // legacy fallback
+  // ── Design mode: one artwork positioned on global mockups ────────────────
+  designMode: false,
+  designUrl: '',
+  placement: null,
+  designColors: [], // [{ mockup, name, hex, isDefault, image? }]
   // ── SEO ──────────────────────────────────────────────────────────────────
   seo: {
     metaTitle: '',
@@ -301,6 +307,43 @@ export default function AdminProductFormPage() {
   const [composerFor, setComposerFor] = useState(null); // index of colour group
   const [showPreset, setShowPreset] = useState(false);
 
+  // ── Design mode state ────────────────────────────────────────────────────
+  const [mockups, setMockups] = useState([]);
+  const [designUploading, setDesignUploading] = useState(false);
+  const [showPlacer, setShowPlacer] = useState(false);
+  useEffect(() => {
+    API.get('/mockups').then(r => setMockups(r.data.mockups || [])).catch(() => setMockups([]));
+  }, []);
+
+  const uploadDesign = async (file) => {
+    setDesignUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('image', file);
+      const res = await API.post('/upload', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      set('designUrl', res.data.url);
+    } catch (err) {
+      setError('Design upload failed: ' + (err.response?.data?.error || err.message));
+    } finally { setDesignUploading(false); }
+  };
+
+  const toggleDesignColor = (mockup) => setForm(f => {
+    const exists = f.designColors.some(c => c.mockup === mockup._id);
+    let designColors;
+    if (exists) {
+      designColors = f.designColors.filter(c => c.mockup !== mockup._id);
+      if (designColors.length && !designColors.some(c => c.isDefault)) designColors[0].isDefault = true;
+    } else {
+      designColors = [...f.designColors, {
+        mockup: mockup._id, name: mockup.name, hex: mockup.hex, isDefault: f.designColors.length === 0,
+      }];
+    }
+    return { ...f, designColors };
+  });
+  const setDefaultDesignColor = (mockupId) => setForm(f => ({
+    ...f, designColors: f.designColors.map(c => ({ ...c, isDefault: c.mockup === mockupId })),
+  }));
+
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
   const toggleSize = (sz, field) =>
     setForm(f => ({ ...f, [field]: f[field].includes(sz) ? f[field].filter(s => s !== sz) : [...f[field], sz] }));
@@ -365,8 +408,14 @@ export default function AdminProductFormPage() {
     if (!form.name.trim()) return setError('Product name is required');
     if (!form.price || isNaN(+form.price)) return setError('Valid price required');
     if (!form.description.trim()) return setError('Description is required');
-    if (!form.colorGroups.length) return setError('Add at least one colour group with images');
-    if (hasGroupError) return setError(`Each colour needs at least ${MIN_IMAGES} images`);
+    if (form.designMode) {
+      if (!form.designUrl) return setError('Upload a design artwork');
+      if (!form.placement) return setError('Position the design on a mockup first');
+      if (!form.designColors.length) return setError('Select at least one T-shirt colour');
+    } else {
+      if (!form.colorGroups.length) return setError('Add at least one colour group with images');
+      if (hasGroupError) return setError(`Each colour needs at least ${MIN_IMAGES} images`);
+    }
 
     setSaving(true); setError(''); setSuccess('');
     const payload = {
@@ -375,7 +424,9 @@ export default function AdminProductFormPage() {
       comparePrice: form.comparePrice ? Number(form.comparePrice) : undefined,
       tags: form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
       // Also keep flat images = primary colour's images (for backwards compat)
-      images: (form.colorGroups.find(g => g.isDefault) || form.colorGroups[0])?.images || [],
+      images: form.designMode
+        ? [(form.designColors.find(c => c.isDefault) || form.designColors[0])?.image].filter(Boolean)
+        : (form.colorGroups.find(g => g.isDefault) || form.colorGroups[0])?.images || [],
       seo: {
         ...form.seo,
         keywords: form.seo.keywords
@@ -477,7 +528,93 @@ export default function AdminProductFormPage() {
               </div>
             </div>
 
-            {/* ── COLOUR GROUPS ── */}
+            {/* ── DESIGN MODE ── */}
+            <div className="admin-card">
+              <h3 style={{ fontFamily: 'var(--serif)', fontWeight: 400, fontSize: '1rem', marginBottom: '1rem' }}>Design-Based Product</h3>
+              <Toggle
+                on={form.designMode}
+                onChange={v => set('designMode', v)}
+                label="Use a design overlaid on global mockups"
+                desc="Upload one artwork, position it once, and reuse it across every T-shirt colour — no per-colour photo uploads."
+              />
+
+              {form.designMode && (
+                <div style={{ marginTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                  {/* Design artwork */}
+                  <div>
+                    <label className="form-label">Design Artwork (transparent PNG)</label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      {form.designUrl && (
+                        <img src={getImageUrl(form.designUrl)} alt="Design" style={{ width: 70, height: 70, objectFit: 'contain', background: 'var(--off)', border: '1px solid var(--sand)' }} />
+                      )}
+                      <input type="file" accept="image/png" disabled={designUploading}
+                        onChange={e => e.target.files[0] && uploadDesign(e.target.files[0])} style={{ fontSize: '.72rem' }} />
+                      {designUploading && <span style={{ fontSize: '.68rem', color: 'var(--stone)' }}>Uploading…</span>}
+                    </div>
+                  </div>
+
+                  {/* Colours available for this product */}
+                  <div>
+                    <label className="form-label">T-Shirt Colours</label>
+                    {mockups.length === 0 ? (
+                      <p style={{ fontSize: '.7rem', color: 'var(--stone2)' }}>
+                        No global mockups yet — add them under <strong>T-Shirt Mockups</strong> in the sidebar first.
+                      </p>
+                    ) : (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.5rem' }}>
+                        {mockups.map(m => {
+                          const entry = form.designColors.find(c => c.mockup === m._id);
+                          return (
+                            <button key={m._id} type="button" onClick={() => toggleDesignColor(m)} style={{
+                              display: 'flex', alignItems: 'center', gap: '.4rem', padding: '.4rem .7rem',
+                              border: `1px solid ${entry ? 'var(--ink)' : 'var(--sand)'}`,
+                              background: entry ? 'var(--ink)' : 'transparent',
+                              color: entry ? 'var(--white)' : 'var(--stone2)',
+                              cursor: 'pointer', fontSize: '.7rem', fontFamily: 'var(--sans)',
+                            }}>
+                              <span style={{ width: 12, height: 12, borderRadius: '50%', background: m.hex, border: '1px solid rgba(255,255,255,.3)' }} />
+                              {m.name}
+                              {entry && (
+                                <span
+                                  onClick={e => { e.stopPropagation(); setDefaultDesignColor(m._id); }}
+                                  title="Set as default"
+                                  style={{ marginLeft: '.3rem', fontSize: '.85rem' }}
+                                >{entry.isDefault ? '★' : '☆'}</span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Placement */}
+                  <div>
+                    <button type="button" className="btn btn-dark" style={{ fontSize: '.62rem' }}
+                      disabled={!form.designUrl || !form.designColors.length}
+                      onClick={() => setShowPlacer(true)}>
+                      {form.placement ? 'Edit Placement' : 'Position Design'}
+                    </button>
+                    {!form.designUrl && <p style={{ fontSize: '.65rem', color: 'var(--stone2)', marginTop: '.4rem' }}>Upload a design first.</p>}
+                    {form.designUrl && !form.designColors.length && <p style={{ fontSize: '.65rem', color: 'var(--stone2)', marginTop: '.4rem' }}>Select at least one colour first.</p>}
+                    {form.placement && <p style={{ fontSize: '.65rem', color: 'var(--stone)', marginTop: '.4rem' }}>Placement saved. The composed preview per colour bakes automatically when you save the product.</p>}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {showPlacer && (
+              <DesignPlacer
+                designUrl={form.designUrl}
+                mockupImage={mockups.find(m => m._id === (form.designColors.find(c => c.isDefault)?.mockup || form.designColors[0]?.mockup))?.image}
+                initialPlacement={form.placement}
+                onSave={(placement) => { set('placement', placement); setShowPlacer(false); }}
+                onCancel={() => setShowPlacer(false)}
+              />
+            )}
+
+            {/* ── COLOUR GROUPS (legacy — per-colour photo uploads) ── */}
+            {!form.designMode && (
             <div className="admin-card">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
                 <div>
@@ -546,6 +683,7 @@ export default function AdminProductFormPage() {
                 ))
               )}
             </div>
+            )}
           </div>
 
           {/* ── RIGHT ── */}
@@ -850,7 +988,7 @@ export default function AdminProductFormPage() {
                   { ok: !!form.seo.focusKeyword && form.seo.metaDescription.toLowerCase().includes(form.seo.focusKeyword.toLowerCase()), label: 'Focus keyword in meta desc' },
                   { ok: form.seo.keywords.split(',').filter(Boolean).length >= 3, label: 'At least 3 keywords added' },
                   { ok: !!form.seo.ogTitle, label: 'OG Title set (WhatsApp)' },
-                  { ok: form.colorGroups.length > 0 && form.colorGroups.some(g => g.images.length > 0), label: 'Product images uploaded' },
+                  { ok: form.designMode ? (form.designUrl && form.placement && form.designColors.length > 0) : (form.colorGroups.length > 0 && form.colorGroups.some(g => g.images.length > 0)), label: 'Product images uploaded' },
                   { ok: !!form.description, label: 'Description filled' },
                 ].map(({ ok, label }) => (
                   <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '.4rem', fontSize: '.68rem', padding: '.3rem .5rem', background: ok ? 'rgba(61,122,86,.06)' : 'transparent', color: ok ? 'var(--success)' : 'var(--stone)' }}>

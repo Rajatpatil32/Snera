@@ -319,21 +319,77 @@ function HomeFAQ() {
   );
 }
 
+function BlogSection({ blogs }) {
+  if (!blogs.length) return null;
+
+  return (
+    <section className="sect" style={{ background: 'var(--white)', borderTop: '1px solid var(--sand)' }}>
+      <div className="container">
+        <div className="sect-head reveal" style={{
+          display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
+          flexWrap: 'wrap', gap: '1rem',
+        }}>
+          <div>
+            <span className="label">From The Journal</span>
+            <h2 style={{ marginBottom: 0 }}>Style Tips & <em className="gradient-text">Stories</em></h2>
+            <p style={{ marginTop: '.5rem', maxWidth: 480 }}>Fashion tips, fabric care guides, and behind-the-scenes stories from the SNERA studio.</p>
+          </div>
+          <Link to="/blog" className="btn btn-outline" style={{ flexShrink: 0 }}>
+            View All Posts →
+          </Link>
+        </div>
+
+        <div className="reveal reveal-d1" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'clamp(1.5rem, 3vw, 2.5rem)', marginTop: '2.5rem' }}>
+          {blogs.map(blog => (
+            <Link key={blog._id} to={`/blog/${blog.slug}`} className="why-card" style={{ padding: 0, overflow: 'hidden', display: 'block' }}>
+              <div style={{ aspectRatio: '16/9', overflow: 'hidden' }}>
+                <img src={blog.featuredImage} alt={blog.title}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform .5s var(--ease)' }}
+                  onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                  onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+                />
+              </div>
+              <div style={{ padding: '1.4rem' }}>
+                <p style={{ fontSize: '.6rem', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 600, marginBottom: '.6rem' }}>
+                  {blog.category} · {blog.readTime} min read
+                </p>
+                <h3 style={{ fontFamily: 'var(--serif)', fontWeight: 400, fontSize: '1.25rem', lineHeight: 1.4, color: 'var(--ink)', marginBottom: '.7rem' }}>
+                  {blog.title}
+                </h3>
+                <p style={{ fontSize: '.82rem', color: 'var(--stone2)', lineHeight: 1.7 }}>
+                  {blog.excerpt.length > 110 ? blog.excerpt.slice(0, 110) + '…' : blog.excerpt}
+                </p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function HomePage() {
   const [shelves, setShelves] = useState([]);
+  const [blogs, setBlogs] = useState([]);
 
   useEffect(() => {
     API.get('/collections').then(async (r) => {
       const cols = r.data.collections || r.data || [];
       const results = await Promise.all(
         cols.map(c =>
-          API.get(`/products?category=${encodeURIComponent(c.name)}&limit=6`)
+          API.get(`/products?category=${encodeURIComponent(c.name)}&limit=8`)
             .then(res => ({ collection: c, products: res.data.products || [] }))
             .catch(() => ({ collection: c, products: [] }))
         )
       );
       setShelves(results.filter(s => s.products.length > 0));
     });
+  }, []);
+
+  useEffect(() => {
+    API.get('/blog/featured/recent?limit=3')
+      .then(r => setBlogs(r.data || []))
+      .catch(() => setBlogs([]));
   }, []);
 
   useReveal();
@@ -354,21 +410,21 @@ export default function HomePage() {
       />
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
-      <section id="hero" style={{
+      <section id="hero" className="hero-sect" style={{
         minHeight: '100svh', paddingTop: 'var(--nav-h)',
         display: 'grid', gridTemplateColumns: '1.1fr 0.9fr',
-        background: 'var(--gradient-hero)',
-        color: 'var(--white)', position: 'relative', overflow: 'hidden'
+        background: 'linear-gradient(160deg, var(--off) 0%, var(--white) 55%, var(--off2) 100%)',
+        color: 'var(--ink)', position: 'relative', overflow: 'hidden'
       }}>
         {/* Glow backdrop */}
         <div style={{
           position: 'absolute', top: '-20%', left: '-10%', width: '60vw', height: '60vw',
-          background: 'radial-gradient(circle, rgba(108,92,231,.25) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(108,92,231,.12) 0%, transparent 70%)',
           pointerEvents: 'none', zIndex: 0
         }} />
         <div style={{
           position: 'absolute', bottom: '-10%', right: '-5%', width: '50vw', height: '50vw',
-          background: 'radial-gradient(circle, rgba(232,67,147,.2) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(232,67,147,.1) 0%, transparent 70%)',
           pointerEvents: 'none', zIndex: 0
         }} />
 
@@ -378,15 +434,15 @@ export default function HomePage() {
           padding: 'clamp(3rem,7vw,6rem) clamp(1.25rem,4vw,3rem) clamp(3rem,7vw,6rem) clamp(1.25rem,6vw,6rem)',
           position: 'relative', zIndex: 1
         }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '.6rem', padding: '.4rem .9rem', background: 'rgba(255,255,255,.08)', backdropFilter: 'blur(10px)', borderRadius: '30px', border: '1px solid rgba(255,255,255,.15)', marginBottom: '1.75rem', width: 'fit-content', opacity: 0, animation: 'fadeUp .8s var(--ease) .2s forwards' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '.6rem', padding: '.4rem .9rem', background: 'var(--white)', borderRadius: '30px', border: '1px solid rgba(108,92,231,.18)', boxShadow: '0 4px 14px rgba(108,92,231,.08)', marginBottom: '1.75rem', width: 'fit-content', opacity: 0, animation: 'fadeUp .8s var(--ease) .2s forwards' }}>
             <span style={{ fontSize: '.7rem' }}>✨</span>
-            <span style={{ fontSize: '.68rem', letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--accent-soft)', fontWeight: 700 }}>Custom T-Shirts · Printed in India</span>
+            <span style={{ fontSize: '.68rem', letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--accent2)', fontWeight: 700 }}>Custom T-Shirts · Printed in India</span>
           </div>
 
           <div style={{ opacity: 0, animation: 'fadeUp .9s var(--ease) .34s forwards', marginBottom: '1.5rem' }}>
             <h1 style={{
               fontFamily: 'var(--sans)', fontWeight: 700,
-              fontSize: 'clamp(2.8rem,6.2vw,5.5rem)', lineHeight: 1.05, letterSpacing: '-.03em'
+              fontSize: 'clamp(2.8rem,6.2vw,5.5rem)', lineHeight: 1.05, letterSpacing: '-.03em', color: 'var(--ink)'
             }}>
               DESIGN.<br />
               <span className="gradient-text">PRINT. WEAR.</span><br />
@@ -395,7 +451,7 @@ export default function HomePage() {
           </div>
 
           <p style={{
-            fontSize: '1rem', color: 'rgba(255,255,255,.75)', lineHeight: 1.75, maxWidth: '40ch', marginBottom: '2.5rem',
+            fontSize: '1rem', color: 'var(--stone2)', lineHeight: 1.75, maxWidth: '40ch', marginBottom: '2.5rem',
             opacity: 0, animation: 'fadeUp .9s var(--ease) .48s forwards'
           }}>
             SNERA lets you design your own custom t-shirts — printed on 220 GSM heavyweight cotton and delivered across India in 5 days.
@@ -405,7 +461,7 @@ export default function HomePage() {
             <a href="#concept" className="btn btn-gradient btn-pulse" style={{ padding: '1rem 2.2rem', fontSize: '.78rem' }}>
               ✨ Design Your Tee Now
             </a>
-            <Link to="/shop" className="btn" style={{ border: '1px solid rgba(255,255,255,.3)', color: 'var(--white)', padding: '.95rem 2rem', fontSize: '.75rem' }}>
+            <Link to="/shop" className="btn btn-outline" style={{ padding: '.95rem 2rem', fontSize: '.75rem' }}>
               Browse Collection
             </Link>
           </div>
@@ -413,7 +469,7 @@ export default function HomePage() {
           {/* Stats Bar */}
           <div style={{
             display: 'flex', alignItems: 'center', gap: '1.5rem',
-            marginTop: '3.5rem', paddingTop: '2rem', borderTop: '1px solid rgba(255,255,255,.12)',
+            marginTop: '3.5rem', paddingTop: '2rem', borderTop: '1px solid var(--sand)',
             opacity: 0, animation: 'fadeUp .9s var(--ease) .78s forwards'
           }}>
             {[
@@ -423,10 +479,10 @@ export default function HomePage() {
               ['4.9★', 'Customer Rating']
             ].map(([n, l], i) => (
               <React.Fragment key={l}>
-                {i > 0 && <div style={{ width: 1, height: 28, background: 'rgba(255,255,255,.15)', flexShrink: 0 }} />}
+                {i > 0 && <div style={{ width: 1, height: 28, background: 'var(--sand)', flexShrink: 0 }} />}
                 <div>
-                  <div style={{ fontFamily: 'var(--sans)', fontSize: '1.4rem', fontWeight: 700, color: 'var(--white)' }}>{n}</div>
-                  <div style={{ fontSize: '.6rem', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--accent-soft)', marginTop: '.1rem', fontWeight: 600 }}>{l}</div>
+                  <div style={{ fontFamily: 'var(--sans)', fontSize: '1.4rem', fontWeight: 700, color: 'var(--ink)' }}>{n}</div>
+                  <div style={{ fontSize: '.6rem', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--accent)', marginTop: '.1rem', fontWeight: 600 }}>{l}</div>
                 </div>
               </React.Fragment>
             ))}
@@ -434,36 +490,52 @@ export default function HomePage() {
         </div>
 
         {/* Right Graphic Mockup */}
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', zIndex: 1 }}>
-          <div style={{
+        <div className="hero-media" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', zIndex: 1 }}>
+          <div className="hero-media-card" style={{
             position: 'relative', width: '100%', maxWidth: '480px', aspectRatio: '4/5',
             borderRadius: 'var(--radius-lg)', overflow: 'hidden',
-            boxShadow: '0 30px 80px rgba(0,0,0,.5)',
-            border: '1px solid rgba(255,255,255,.15)'
+            boxShadow: '0 30px 80px rgba(108,92,231,.16)',
+            border: '1px solid var(--sand)'
           }}>
             <img
               src="https://suvidhasetu.netraa.co.in/uploads/hero.webp"
               alt="SNERA Custom T-Shirts"
               loading="eager"
               fetchPriority="high"
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 15%' }}
             />
             {/* T-Shirt Badge Floating Overlay */}
             <div style={{
               position: 'absolute', bottom: '1.5rem', left: '1.5rem', right: '1.5rem',
-              background: 'rgba(15,14,26,.85)', backdropFilter: 'blur(16px)',
-              border: '1px solid rgba(255,255,255,.15)', borderRadius: 'var(--radius)',
+              background: 'rgba(255,255,255,.92)', backdropFilter: 'blur(16px)',
+              border: '1px solid rgba(108,92,231,.12)', borderRadius: 'var(--radius)',
+              boxShadow: '0 10px 30px rgba(0,0,0,.08)',
               padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between'
             }}>
               <div>
-                <div style={{ fontSize: '.65rem', letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--accent-soft)', fontWeight: 700 }}>Custom Print Ready</div>
-                <div style={{ fontSize: '.9rem', fontWeight: 600, color: 'var(--white)' }}>220 GSM Heavyweight Oversized Tee</div>
+                <div style={{ fontSize: '.65rem', letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--accent2)', fontWeight: 700 }}>Custom Print Ready</div>
+                <div style={{ fontSize: '.9rem', fontWeight: 600, color: 'var(--ink)' }}>220 GSM Heavyweight Oversized Tee</div>
               </div>
               <span style={{ fontSize: '1.5rem' }}>👕</span>
             </div>
           </div>
         </div>
       </section>
+
+      <style>{`
+        @media (max-width: 960px) {
+          .hero-sect {
+            grid-template-columns: 1fr !important;
+            min-height: auto !important;
+            padding-bottom: 2.5rem;
+          }
+          .hero-media { padding: 0 clamp(1.25rem,6vw,3rem) 1rem !important; }
+          .hero-media-card { max-width: 420px !important; aspect-ratio: 4/3.4 !important; }
+        }
+        @media (max-width: 480px) {
+          .hero-media-card { aspect-ratio: 4/3.6 !important; }
+        }
+      `}</style>
 
       {/* ── MARQUEE ───────────────────────────────────────────────────────── */}
       <div className="marquee">
@@ -549,6 +621,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ── FROM THE JOURNAL ─────────────────────────────────────────────── */}
+      <BlogSection blogs={blogs} />
 
       {/* ── FAQ ──────────────────────────────────────────────────────────── */}
       <HomeFAQ />

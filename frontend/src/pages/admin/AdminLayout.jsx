@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { to: '/admin/products',     label: 'Products',      icon: <><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 3h-2a2 2 0 0 0-4 0H8a2 2 0 0 0-2 2v2h12V5a2 2 0 0 0-2-2z"/></> },
   { to: '/admin/products/new', label: 'Add Product',   icon: <><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></> },
   { to: '/admin/images',       label: 'Image Library', icon: <><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></> },
+  { to: '/admin/mockups',      label: 'T-Shirt Mockups', icon: <><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></> },
   // 🆕 NEW MENU ITEMS
   { to: '/admin/blog',         label: 'Blog',          icon: <><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></> },
   { to: '/admin/products/import', label: 'Bulk Import',   icon: <><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></>, extra: null },
