@@ -198,7 +198,7 @@ function buildOrderConfirmationHTML(order) {
               ${[
       ['📦', 'Order Processing', 'We\'re picking and packing your items carefully.'],
       ['🚚', 'Shipped', 'You\'ll receive a tracking number once dispatched.'],
-      ['🏠', 'Delivered', 'Expected within 3–5 business days.'],
+      ['🏠', 'Delivered', 'Expected within 7–8 business days.'],
     ].map(([icon, title, desc]) => `
                 <tr>
                   <td width="36" valign="top" style="padding-bottom:14px;font-size:18px;">${icon}</td>
@@ -308,6 +308,9 @@ async function sendOrderConfirmation(order) {
       cc: [
         {
           email: 'snerastore@gmail.com',
+        },
+        {
+          email: 'contact@snera.in',
         },
         {
           email: 'rajatpatil32@gmail.com',

@@ -222,6 +222,14 @@ export default function CheckoutPage() {
   const [errors,     setErrors]     = useState({});
   const [rzpLoaded,  setRzpLoaded]  = useState(false);
   const [showWaConfirm, setShowWaConfirm] = useState(false); // WhatsApp confirm modal
+  const [showDiscountOffer, setShowDiscountOffer] = useState(false); // pre-Razorpay discount nudge
+  const [codEnabled, setCodEnabled] = useState(false); // toggled via backend/.env COD_ENABLED
+
+  useEffect(() => {
+    API.get('/config')
+      .then(r => setCodEnabled(!!r.data?.codEnabled))
+      .catch(() => setCodEnabled(false));
+  }, []);
 
   useEffect(() => { loadRazorpay().then(setRzpLoaded); }, []);
 
@@ -386,11 +394,39 @@ export default function CheckoutPage() {
     }
   };
 
+  // ── Discount-offer WhatsApp redirect ──────────────────────────────────────
+  // Shown right before the Razorpay popup. Doesn't place an order — just
+  // opens WhatsApp with the cart pre-filled so the team can quote a deal.
+  const handleDiscountWhatsApp = () => {
+    const itemLines = items
+      .map(i => `• ${i.name} (${i.size}${i.colour ? `, ${i.colour}` : ''}) × ${i.qty} — ${fmt(i.price * i.qty)}`)
+      .join('\n');
+
+    const msg = [
+      `Hi SNERA! I'm about to check out and wanted to ask about a discount 🙂`,
+      ``,
+      itemLines,
+      ``,
+      `Subtotal: ${fmt(total)}`,
+      `Shipping: ${shipping === 0 ? 'Free' : fmt(shipping)}`,
+      `*Total: ${fmt(grandTotal)}*`,
+      ``,
+      `Could you offer a better price on this order?`,
+    ].join('\n');
+
+    window.open(
+      `https://wa.me/${OWNER_WHATSAPP}?text=${encodeURIComponent(msg)}`,
+      '_blank'
+    );
+    setShowDiscountOffer(false);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
     if (payMethod === 'whatsapp') { setShowWaConfirm(true); return; }
-    payMethod === 'cod' ? await handleCOD() : await handleRazorpay();
+    if (payMethod === 'razorpay') { setShowDiscountOffer(true); return; }
+    await handleCOD();
   };
 
   if (items.length === 0) return (
@@ -479,11 +515,6 @@ export default function CheckoutPage() {
                         desc: 'UPI, Credit / Debit Card, Net Banking, Wallets via Razorpay. 256-bit SSL encrypted.',
                         sub: ['UPI','Visa','Mastercard','RuPay','Wallets'],
                       },
-                      // {
-                      //   val: 'cod', title: 'Cash on Delivery', badge: null,
-                      //   desc: 'Pay when your order arrives at your doorstep. Available across India.',
-                      //   sub: null,
-                      // },
                       {
                         val: 'whatsapp', title: 'Order via WhatsApp', badge: 'Chat with us',
                         desc: 'Discuss size, customisation, or bulk queries directly with the SNERA team before paying.',
@@ -495,6 +526,12 @@ export default function CheckoutPage() {
                           </svg>
                         ),
                       },
+                      // COD shown last, only when enabled via backend/.env → COD_ENABLED=true
+                      ...(codEnabled ? [{
+                        val: 'cod', title: 'Cash on Delivery', badge: null,
+                        desc: 'Pay when your order arrives at your doorstep. Available across India.',
+                        sub: null,
+                      }] : []),
                     ].map(({ val, title, badge, desc, sub, icon }) => (
                       <label key={val} style={{
                         display: 'flex', alignItems: 'flex-start', gap: '1rem', padding: '1rem 1.25rem',
@@ -670,6 +707,41 @@ export default function CheckoutPage() {
                 disabled={submitting}
               >
                 {submitting ? 'Saving…' : 'Open WhatsApp →'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ── Discount offer modal (shown before Razorpay) ── */}
+      {showDiscountOffer && (
+        <div style={{
+          position:'fixed', inset:0, background:'rgba(28,27,24,.55)', backdropFilter:'blur(4px)',
+          zIndex:200, display:'flex', alignItems:'center', justifyContent:'center', padding:'1rem',
+        }}>
+          <div style={{ background:'var(--white)', maxWidth:420, width:'100%', padding:'2rem', border:'1px solid var(--sand)' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:'.75rem', marginBottom:'1rem' }}>
+              <span style={{ fontSize:'1.6rem' }}>🎁</span>
+              <h3 style={{ fontFamily:'var(--serif)', fontWeight:300, fontSize:'1.2rem' }}>Get it at a discounted price!</h3>
+            </div>
+
+            <p style={{ fontSize:'.8rem', color:'var(--stone2)', lineHeight:1.75, marginBottom:'1.5rem' }}>
+              Before you pay, want to chat with our team on WhatsApp? We can often offer a better price on your order.
+            </p>
+
+            <div style={{ display:'flex', gap:'.75rem' }}>
+              <button
+                className="btn btn-ghost"
+                style={{ flex:1, fontSize:'.7rem' }}
+                onClick={() => { setShowDiscountOffer(false); handleRazorpay(); }}
+              >
+                No, continue to pay
+              </button>
+              <button
+                className="btn btn-dark"
+                style={{ flex:2, fontSize:'.7rem', background:'#25D366', borderColor:'#25D366', justifyContent:'center' }}
+                onClick={handleDiscountWhatsApp}
+              >
+                Yes, chat on WhatsApp →
               </button>
             </div>
           </div>

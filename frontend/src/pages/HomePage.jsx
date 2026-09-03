@@ -28,7 +28,7 @@ function HowItWorksSection() {
       icon: '📦',
       step: '03',
       title: 'Printed & Delivered',
-      desc: 'Handcrafted and screen/DTG printed in India. Delivered to your doorstep in 5 business days.'
+      desc: 'Handcrafted and screen/DTG printed in India. Delivered to your doorstep in 7–8 business days.'
     }
   ];
 
@@ -135,7 +135,7 @@ Respond ONLY with a JSON object, no markdown:
               {[
                 ['🎨 Unlimited Print Possibilities', 'Front, back, sleeve prints, puff print, DTG, or high-density screen printing.'],
                 ['👕 220 GSM Heavyweight Cotton', 'Pre-shrunk, bio-washed fabric engineered for durability and ultimate comfort.'],
-                ['⚡ Fast 5-Day Delivery', 'Custom orders prepared, printed, and shipped anywhere in India in 5 business days.'],
+                ['⚡ Fast Delivery', 'Custom orders prepared, printed, and shipped anywhere in India in 7–8 business days.'],
               ].map(([title, body], i) => (
                 <div key={i} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
                   <div style={{
@@ -261,8 +261,8 @@ const WHY = [
   },
   {
     icon: '🚀',
-    title: '5-Day Fast Delivery Across India',
-    body: 'Every custom order is printed on-demand and delivered directly to your home within 5 business days.'
+    title: 'Fast Delivery Across India',
+    body: 'Every custom order is printed on-demand and delivered directly to your home within 7–8 business days.'
   },
 ];
 
@@ -272,7 +272,7 @@ const HOME_FAQS = [
   { q: 'Is there a minimum order quantity (MOQ) for custom tees?', a: 'No! We print single custom t-shirts as well as bulk orders for events, brands, and groups.' },
   { q: 'Does SNERA offer free shipping?', a: 'Yes! Free shipping on all orders above ₹999 across India.' },
   { q: 'What printing techniques do you use?', a: 'We offer Direct-to-Garment (DTG), Screen Printing, Puff Printing, and Embroidery depending on your design requirements.' },
-  { q: 'How long does custom t-shirt delivery take?', a: 'Your order is printed and dispatched within 24–48 hours, reaching you in 5 business days anywhere in India.' },
+  { q: 'How long does custom t-shirt delivery take?', a: 'Your order is printed and dispatched within 24–48 hours, reaching you in 7–8 business days anywhere in India.' },
 ];
 
 function HomeFAQ() {
@@ -475,7 +475,7 @@ export default function HomePage() {
             {[
               ['220 GSM', 'Heavy Cotton'],
               ['12+', 'Colorways'],
-              ['5-Day', 'Fast Delivery'],
+              ['7–8 Day', 'Fast Delivery'],
               ['4.9★', 'Customer Rating']
             ].map(([n, l], i) => (
               <React.Fragment key={l}>
@@ -540,7 +540,7 @@ export default function HomePage() {
       {/* ── MARQUEE ───────────────────────────────────────────────────────── */}
       <div className="marquee">
         <div className="marquee-track">
-          {['Custom T-Shirts', '220 GSM Heavyweight Cotton', 'Design Your Own Tee', 'Free Shipping ₹999+', 'Screen & DTG Printing', 'Delivered in 5 Days', 'Made in India'].map((t, i) => (
+          {['Custom T-Shirts', '220 GSM Heavyweight Cotton', 'Design Your Own Tee', 'Free Shipping ₹999+', 'Screen & DTG Printing', 'Delivered in 7–8 Days', 'Made in India'].map((t, i) => (
             <span key={i} className="marquee-item">{t}</span>
           ))}
         </div>

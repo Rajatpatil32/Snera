@@ -7,6 +7,15 @@ export default function AdminProductsPage() {
   const [loading,  setLoading]  = useState(true);
   const [deleting, setDeleting] = useState(null);
 
+  // Bulk price update panel
+  const [showBulkPrice, setShowBulkPrice] = useState(false);
+  const [bulkAmount,    setBulkAmount]    = useState('');
+  const [bulkMode,      setBulkMode]      = useState('flat');      // 'flat' | 'percent'
+  const [bulkDirection, setBulkDirection] = useState('increase');  // 'increase' | 'decrease'
+  const [bulkIncludeCompare, setBulkIncludeCompare] = useState(true);
+  const [bulkSubmitting, setBulkSubmitting] = useState(false);
+  const [bulkError,     setBulkError]     = useState('');
+
   const load = () => {
     setLoading(true);
     API.get('/products/admin/all')
@@ -19,6 +28,35 @@ export default function AdminProductsPage() {
   const toggleActive = async (product) => {
     await API.put(`/products/${product._id}`, { isActive: !product.isActive });
     load();
+  };
+
+  const submitBulkPrice = async () => {
+    const amt = Number(bulkAmount);
+    if (!amt || amt <= 0) { setBulkError('Enter a valid amount greater than 0'); return; }
+
+    const verb  = bulkDirection === 'increase' ? 'increase' : 'decrease';
+    const unit  = bulkMode === 'percent' ? '%' : '₹';
+    if (!window.confirm(`${verb === 'increase' ? 'Increase' : 'Decrease'} the price of ALL ${products.length} products by ${unit}${amt}${bulkMode === 'percent' ? '' : ''}? This cannot be undone.`))
+      return;
+
+    setBulkSubmitting(true);
+    setBulkError('');
+    try {
+      const res = await API.post('/products/admin/bulk-price-update', {
+        amount: amt,
+        direction: bulkDirection,
+        mode: bulkMode,
+        includeComparePrice: bulkIncludeCompare,
+      });
+      setShowBulkPrice(false);
+      setBulkAmount('');
+      load();
+      window.alert(`Updated prices for ${res.data.updated} product(s).`);
+    } catch (err) {
+      setBulkError(err?.response?.data?.error || 'Failed to update prices');
+    } finally {
+      setBulkSubmitting(false);
+    }
   };
 
   const deleteProduct = async (id) => {
@@ -38,10 +76,75 @@ export default function AdminProductsPage() {
             ({products.length})
           </span>
         </h1>
-        <Link to="/admin/products/new" className="btn btn-dark" style={{ fontSize: '.62rem' }}>
-          + Add Product
-        </Link>
+        <div style={{ display: 'flex', gap: '.6rem' }}>
+          <button
+            onClick={() => setShowBulkPrice(v => !v)}
+            className="btn"
+            style={{
+              fontSize: '.62rem', cursor: 'pointer', background: 'none',
+              border: '1px solid var(--stone)', color: 'var(--ink, #1C1B18)',
+              fontFamily: 'var(--sans)', padding: '.6rem 1rem',
+            }}
+          >
+            {showBulkPrice ? 'Close' : '⇅ Bulk Price Update'}
+          </button>
+          <Link to="/admin/products/new" className="btn btn-dark" style={{ fontSize: '.62rem' }}>
+            + Add Product
+          </Link>
+        </div>
       </div>
+
+      {showBulkPrice && (
+        <div className="admin-card" style={{ marginBottom: '1.25rem', display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '.6rem', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--stone)', marginBottom: '.35rem' }}>
+              Direction
+            </label>
+            <select value={bulkDirection} onChange={e => setBulkDirection(e.target.value)} style={{ padding: '.5rem .6rem', border: '1px solid var(--stone)', fontFamily: 'var(--sans)', fontSize: '.75rem' }}>
+              <option value="increase">Increase</option>
+              <option value="decrease">Decrease</option>
+            </select>
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '.6rem', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--stone)', marginBottom: '.35rem' }}>
+              Amount
+            </label>
+            <input
+              type="number" min="0" step="any" value={bulkAmount}
+              onChange={e => setBulkAmount(e.target.value)}
+              placeholder={bulkMode === 'percent' ? 'e.g. 10' : 'e.g. 100'}
+              style={{ padding: '.5rem .6rem', border: '1px solid var(--stone)', fontFamily: 'var(--sans)', fontSize: '.75rem', width: 120 }}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '.6rem', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--stone)', marginBottom: '.35rem' }}>
+              Type
+            </label>
+            <select value={bulkMode} onChange={e => setBulkMode(e.target.value)} style={{ padding: '.5rem .6rem', border: '1px solid var(--stone)', fontFamily: 'var(--sans)', fontSize: '.75rem' }}>
+              <option value="flat">Flat ₹ amount</option>
+              <option value="percent">Percent (%)</option>
+            </select>
+          </div>
+
+          <label style={{ display: 'flex', alignItems: 'center', gap: '.4rem', fontSize: '.72rem', color: 'var(--stone2)' }}>
+            <input type="checkbox" checked={bulkIncludeCompare} onChange={e => setBulkIncludeCompare(e.target.checked)} />
+            Also adjust compare-at price
+          </label>
+
+          <button
+            onClick={submitBulkPrice}
+            disabled={bulkSubmitting}
+            className="btn btn-dark"
+            style={{ fontSize: '.62rem', opacity: bulkSubmitting ? .6 : 1 }}
+          >
+            {bulkSubmitting ? 'Applying…' : `Apply to all ${products.length} products`}
+          </button>
+
+          {bulkError && <div style={{ fontSize: '.7rem', color: 'var(--error)', width: '100%' }}>{bulkError}</div>}
+        </div>
+      )}
 
       <div className="admin-card" style={{ padding: 0 }}>
         {loading ? (

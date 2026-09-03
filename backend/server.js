@@ -64,6 +64,14 @@ app.use('/api/google-merchant',  require('./routes/googleMerchant'));
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', brand: 'SNERA' }));
 
+// Public runtime config — lets the frontend know which checkout options
+// are turned on without a rebuild. Toggle via backend/.env → COD_ENABLED=true|false
+app.get('/api/config', (req, res) => {
+  res.json({
+    codEnabled: String(process.env.COD_ENABLED).toLowerCase() === 'true',
+  });
+});
+
 //temp
 app.get('/api/test-email', async (req, res) => {
   try {

@@ -122,6 +122,12 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Order must have at least one item' });
 
     const method = payment?.method || 'razorpay';
+
+    // COD can be toggled off from backend/.env (COD_ENABLED) without a redeploy —
+    // reject here too in case a stale frontend still shows the option.
+    if (method === 'cod' && String(process.env.COD_ENABLED).toLowerCase() !== 'true')
+      return res.status(400).json({ error: 'Cash on Delivery is currently unavailable. Please choose another payment method.' });
+
     const order  = await Order.create({
       customer, address, items,
       subtotal:    subtotal    || 0,

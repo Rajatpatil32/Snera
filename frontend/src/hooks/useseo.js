@@ -313,7 +313,7 @@ export function faqSchema(product) {
     },
     {
       q: 'How long does delivery take?',
-      a: 'Standard delivery takes 5–7 business days across India. Express delivery (2–3 days) is available at checkout. Orders are dispatched within 24–48 hours.',
+      a: 'Standard delivery takes 7–8 business days across India. Express delivery (2–3 days) is available at checkout. Orders are dispatched within 24–48 hours.',
     },
     {
       q: 'What payment methods are accepted?',

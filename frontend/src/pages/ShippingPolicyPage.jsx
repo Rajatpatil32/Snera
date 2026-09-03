@@ -67,7 +67,7 @@ export default function ShippingPolicyPage() {
         <PolicySection title="2. Shipping Methods & Delivery Times">
           <p>We offer the following shipping options for domestic orders within India:</p>
           <ul>
-            <li><strong>Standard Shipping:</strong> 5–7 business days — ₹99 (Free on orders above ₹999)</li>
+            <li><strong>Standard Shipping:</strong> 7–8 business days — ₹99 (Free on orders above ₹999)</li>
             <li><strong>Express Shipping:</strong> 2–3 business days — ₹199</li>
           </ul>
           <p>Delivery times are estimates and may vary depending on your location, courier partner availability, and other unforeseen circumstances such as weather disruptions or public holidays.</p>

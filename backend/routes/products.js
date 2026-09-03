@@ -121,8 +121,6 @@ router.delete('/:id', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
-
 // POST /api/products/admin/bulk-import — bulk create from CSV
 router.post('/admin/bulk-import', auth, async (req, res) => {
   try {
@@ -179,3 +177,43 @@ router.post('/admin/bulk-import', auth, async (req, res) => {
     res.json({ results });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
+
+// POST /api/products/admin/bulk-price-update — adjust ALL product prices in one click
+// body: { amount: Number, direction: 'increase' | 'decrease', mode: 'flat' | 'percent', includeComparePrice?: Boolean }
+router.post('/admin/bulk-price-update', auth, async (req, res) => {
+  try {
+    const { amount, direction = 'increase', mode = 'flat', includeComparePrice = false } = req.body;
+
+    const amt = Number(amount);
+    if (!amt || isNaN(amt) || amt <= 0)
+      return res.status(400).json({ error: 'A positive amount is required' });
+    if (!['increase', 'decrease'].includes(direction))
+      return res.status(400).json({ error: "direction must be 'increase' or 'decrease'" });
+    if (!['flat', 'percent'].includes(mode))
+      return res.status(400).json({ error: "mode must be 'flat' or 'percent'" });
+
+    const sign = direction === 'increase' ? 1 : -1;
+    const adjust = (price) => {
+      if (price == null) return price;
+      const delta = mode === 'percent' ? price * (amt / 100) : amt;
+      const next = price + sign * delta;
+      return Math.max(0, Math.round(next * 100) / 100); // never go below 0, round to paise
+    };
+
+    const products = await Product.find({}, '_id price comparePrice');
+    if (!products.length) return res.json({ success: true, updated: 0 });
+
+    const ops = products.map(p => {
+      const update = { price: adjust(p.price) };
+      if (includeComparePrice && p.comparePrice != null) update.comparePrice = adjust(p.comparePrice);
+      return { updateOne: { filter: { _id: p._id }, update: { $set: update } } };
+    });
+
+    await Product.bulkWrite(ops);
+    res.json({ success: true, updated: ops.length });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+module.exports = router;
