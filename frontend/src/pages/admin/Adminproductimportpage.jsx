@@ -26,9 +26,10 @@ const REQUIRED   = ['name', 'price', 'category', 'description'];
 const MIN_IMAGES = 3;
 
 // Every field the Product model supports — use TRUE/FALSE for booleans
-const SAMPLE_CSV = `name,price,comparePrice,category,gender,description,fabric,careInstructions,sizes,soldSizes,tags,badge,glyph,weight,isActive,isFeatured,seo.metaTitle,seo.metaDescription,seo.focusKeyword,seo.keywords,seo.ogTitle,seo.ogDescription,seo.canonicalUrl,seo.noIndex
-SNERA Essential Tee,1299,1599,Tops,Unisex,Premium cotton tee with relaxed fit,100% Cotton 220gsm,Machine wash cold,S|M|L|XL,,cotton tee minimal,New,◈,220,TRUE,FALSE,SNERA Essential Tee | Buy Online India,Premium 100% cotton tee with relaxed fit. Free shipping above ₹999.,oversized tee india,"oversized tee,cotton tee,snera",SNERA Essential Tee | Shop Now,Premium cotton tee — shop now,,FALSE
-SNERA Relaxed Cargo,2499,,Bottoms,Men,Utility cargo with 6 pockets,98% Cotton 2% Spandex,Hand wash cold,S|M|L|XL|XXL,XXL,cargo pants streetwear,New,◈,280,TRUE,TRUE,SNERA Relaxed Cargo | Utility Pants India,6-pocket utility cargo. Relaxed fit. Free shipping above ₹999.,cargo pants india,"cargo pants,utility pants,snera",SNERA Relaxed Cargo | Shop Now,Utility cargo pants — shop now,,FALSE`;
+const SAMPLE_CSV = `name,price,comparePrice,category,gender,description,fabric,careInstructions,sizes,sizePricing,soldSizes,tags,badge,glyph,weight,isActive,isFeatured,seo.metaTitle,seo.metaDescription,seo.focusKeyword,seo.keywords,seo.ogTitle,seo.ogDescription,seo.canonicalUrl,seo.noIndex
+SNERA Essential Tee,1299,1599,Tops,Unisex,Premium cotton tee with relaxed fit,100% Cotton 220gsm,Machine wash cold,S|M|L|XL,XL:50|XXL:100,,cotton tee minimal,New,◈,220,TRUE,FALSE,SNERA Essential Tee | Buy Online India,Premium 100% cotton tee with relaxed fit. Free shipping above ₹999.,oversized tee india,"oversized tee,cotton tee,snera",SNERA Essential Tee | Shop Now,Premium cotton tee — shop now,,FALSE
+SNERA Relaxed Cargo,2499,,Bottoms,Men,Utility cargo with 6 pockets,98% Cotton 2% Spandex,Hand wash cold,S|M|L|XL|XXL,,XXL,cargo pants streetwear,New,◈,280,TRUE,TRUE,SNERA Relaxed Cargo | Utility Pants India,6-pocket utility cargo. Relaxed fit. Free shipping above ₹999.,cargo pants india,"cargo pants,utility pants,snera",SNERA Relaxed Cargo | Shop Now,Utility cargo pants — shop now,,FALSE
+SNERA Custom Photo Mug,499,,Gifts,Unisex,Ceramic mug printed with your own photo or design,"Ceramic, dishwasher safe","Not microwave safe",,,,mug gift photo,New,◈,350,TRUE,FALSE,Custom Photo Mug | Personalised Gifts India,Print your own photo on a ceramic mug. Free shipping above ₹999.,custom photo mug india,"photo mug,custom mug,personalised gift",Custom Photo Mug | Shop Now,Personalised photo mug — shop now,,FALSE`;
 
 const COLOUR_PRESETS = [
   { name: 'Black',      hex: '#1C1B18' },
@@ -578,14 +579,15 @@ export default function AdminProductImportPage() {
                   // ── Core fields ──
                   ['name',                true,  'SNERA Essential Tee'],
                   ['price',               true,  '1299'],
-                  ['category',            true,  'Tops / Bottoms / Outerwear / Accessories'],
+                  ['category',            true,  'Any text — e.g. Tops, Gifts, Mugs'],
                   ['description',         true,  'Premium cotton tee with relaxed fit'],
                   // ── Product details ──
                   ['comparePrice',        false, '1599  (strike-through price)'],
                   ['gender',              false, 'Unisex / Men / Women'],
-                  ['fabric',              false, '100% Cotton 220gsm'],
-                  ['careInstructions',    false, 'Machine wash cold'],
-                  ['sizes',               false, 'S,M,L,XL  or  S|M|L|XL'],
+                  ['fabric',              false, '100% Cotton 220gsm  or  Ceramic, dishwasher safe'],
+                  ['careInstructions',    false, 'Machine wash cold  or  Not dishwasher safe'],
+                  ['sizes',               false, 'S,M,L,XL  or  S|M|L|XL — leave BLANK for no size (e.g. mugs, gifts)'],
+                  ['sizePricing',         false, 'XL:50|XXL:100  (XL costs +₹50, XXL costs +₹100)'],
                   ['soldSizes',           false, 'XXL  (sizes currently out of stock)'],
                   ['tags',                false, 'cotton,tee,minimal'],
                   ['badge',               false, 'New / Sale / (leave blank = none)'],
@@ -659,7 +661,7 @@ export default function AdminProductImportPage() {
                     <td style={TD}>₹{row.price}{row.compareprice && <span style={{ color: 'var(--stone2)', marginLeft: '.4rem', textDecoration: 'line-through' }}>₹{row.compareprice}</span>}</td>
                     <td style={TD}>{row.category}</td>
                     <td style={TD}>{row.gender || 'Unisex'}</td>
-                    <td style={{ ...TD, color: 'var(--stone2)' }}>{row.sizes || 'S,M,L,XL'}</td>
+                    <td style={{ ...TD, color: 'var(--stone2)' }}>{row.sizes || '— (no size)'}</td>
                     <td style={TD}>{row.badge || '—'}</td>
                   </tr>
                 ))}

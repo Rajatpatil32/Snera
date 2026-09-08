@@ -142,7 +142,7 @@ function MeasurementRow({ item, onChange }) {
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: '.8rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginTop: '.18rem', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '.68rem', color: 'var(--stone)' }}>Size: {item.size}</span>
+            {item.size && <span style={{ fontSize: '.68rem', color: 'var(--stone)' }}>Size: {item.size}</span>}
             {item.colour && (
               <>
                 <span style={{ color: 'var(--sand2)' }}>·</span>
@@ -358,7 +358,7 @@ export default function CheckoutPage() {
       const orderNum = r.data.order.orderNumber;
 
       const itemLines = items
-        .map(i => `• ${i.name} (${i.size}${i.colour ? `, ${i.colour}` : ''}) × ${i.qty} — ${fmt(i.price * i.qty)}`)
+        .map(i => `• ${i.name}${[i.size, i.colour].filter(Boolean).length ? ` (${[i.size, i.colour].filter(Boolean).join(', ')})` : ''} × ${i.qty} — ${fmt(i.price * i.qty)}`)
         .join('\n');
 
       const msg = [
@@ -399,7 +399,7 @@ export default function CheckoutPage() {
   // opens WhatsApp with the cart pre-filled so the team can quote a deal.
   const handleDiscountWhatsApp = () => {
     const itemLines = items
-      .map(i => `• ${i.name} (${i.size}${i.colour ? `, ${i.colour}` : ''}) × ${i.qty} — ${fmt(i.price * i.qty)}`)
+      .map(i => `• ${i.name}${[i.size, i.colour].filter(Boolean).length ? ` (${[i.size, i.colour].filter(Boolean).join(', ')})` : ''} × ${i.qty} — ${fmt(i.price * i.qty)}`)
       .join('\n');
 
     const msg = [
@@ -581,7 +581,7 @@ export default function CheckoutPage() {
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: '.8rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '.2rem' }}>{item.name}</div>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '.12rem' }}>
-                            <span style={{ fontSize: '.68rem', color: 'var(--stone)' }}>Size: {item.size}</span>
+                            {item.size && <span style={{ fontSize: '.68rem', color: 'var(--stone)' }}>Size: {item.size}</span>}
                             {item.colour && (
                               <span style={{ display: 'flex', alignItems: 'center', gap: '.35rem', fontSize: '.68rem', color: 'var(--stone)' }}>
                                 {item.colourHex && <span style={{ width: 10, height: 10, borderRadius: '50%', background: item.colourHex, border: '1px solid rgba(0,0,0,.18)', display: 'inline-block', flexShrink: 0 }}/>}
@@ -685,7 +685,7 @@ export default function CheckoutPage() {
             {/* Order preview */}
             <div style={{ background:'var(--off)', border:'1px solid var(--sand)', padding:'.85rem 1rem', marginBottom:'1.25rem', fontSize:'.75rem', lineHeight:1.8, color:'var(--stone2)', fontFamily:'monospace' }}>
               {items.map(i => (
-                <div key={i.key}>• {i.name} ({i.size}{i.colour?`, ${i.colour}`:''}) × {i.qty} — {fmt(i.price*i.qty)}</div>
+                <div key={i.key}>• {i.name}{[i.size, i.colour].filter(Boolean).length ? ` (${[i.size, i.colour].filter(Boolean).join(', ')})` : ''} × {i.qty} — {fmt(i.price*i.qty)}</div>
               ))}
               <div style={{ borderTop:'1px solid var(--sand)', marginTop:'.5rem', paddingTop:'.5rem', fontWeight:600, color:'var(--ink)' }}>
                 Total: {fmt(grandTotal)}

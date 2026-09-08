@@ -6,6 +6,8 @@ export default function AdminProductsPage() {
   const [products, setProducts] = useState([]);
   const [loading,  setLoading]  = useState(true);
   const [deleting, setDeleting] = useState(null);
+  const [selected, setSelected] = useState([]); // ids of checked products
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   // Bulk price update panel
   const [showBulkPrice, setShowBulkPrice] = useState(false);
@@ -67,6 +69,25 @@ export default function AdminProductsPage() {
     load();
   };
 
+  // ── Multi-select + bulk delete ──────────────────────────────────────────
+  const toggleSelect = (id) => setSelected(s => s.includes(id) ? s.filter(x => x !== id) : [...s, id]);
+  const toggleSelectAll = () => setSelected(s => s.length === products.length ? [] : products.map(p => p._id));
+
+  const deleteSelected = async () => {
+    if (!selected.length) return;
+    if (!window.confirm(`Archive ${selected.length} selected product${selected.length !== 1 ? 's' : ''}? They will be hidden from the store.`)) return;
+    setBulkDeleting(true);
+    try {
+      await API.post('/products/admin/bulk-archive', { ids: selected });
+      setSelected([]);
+      load();
+    } catch (err) {
+      window.alert(err?.response?.data?.error || 'Failed to archive selected products');
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
   return (
     <>
       <div className="admin-header">
@@ -77,6 +98,21 @@ export default function AdminProductsPage() {
           </span>
         </h1>
         <div style={{ display: 'flex', gap: '.6rem' }}>
+          {selected.length > 0 && (
+            <button
+              onClick={deleteSelected}
+              disabled={bulkDeleting}
+              className="btn"
+              style={{
+                fontSize: '.62rem', cursor: 'pointer', background: 'none',
+                border: '1px solid var(--error)', color: 'var(--error)',
+                fontFamily: 'var(--sans)', padding: '.6rem 1rem',
+                opacity: bulkDeleting ? .6 : 1,
+              }}
+            >
+              {bulkDeleting ? 'Archiving…' : `🗑 Archive Selected (${selected.length})`}
+            </button>
+          )}
           <button
             onClick={() => setShowBulkPrice(v => !v)}
             className="btn"
@@ -156,6 +192,14 @@ export default function AdminProductsPage() {
             <table className="admin-table">
               <thead>
                 <tr>
+                  <th style={{ width: 32 }}>
+                    <input
+                      type="checkbox"
+                      checked={products.length > 0 && selected.length === products.length}
+                      onChange={toggleSelectAll}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  </th>
                   <th>Image</th>
                   <th>Name</th>
                   <th>Category</th>
@@ -169,14 +213,22 @@ export default function AdminProductsPage() {
               <tbody>
                 {products.length === 0 ? (
                   <tr>
-                    <td colSpan={8} style={{ textAlign: 'center', color: 'var(--stone)', padding: '3rem' }}>
+                    <td colSpan={9} style={{ textAlign: 'center', color: 'var(--stone)', padding: '3rem' }}>
                       No products yet.{' '}
                       <Link to="/admin/products/new" style={{ color: 'var(--accent)' }}>Add your first product →</Link>
                     </td>
                   </tr>
                 ) : (
                   products.map(p => (
-                    <tr key={p._id}>
+                    <tr key={p._id} style={selected.includes(p._id) ? { background: 'rgba(28,27,24,.03)' } : undefined}>
+                      <td>
+                        <input
+                          type="checkbox"
+                          checked={selected.includes(p._id)}
+                          onChange={() => toggleSelect(p._id)}
+                          style={{ cursor: 'pointer' }}
+                        />
+                      </td>
                       {/* Thumbnail */}
                       <td>
                         <div style={{

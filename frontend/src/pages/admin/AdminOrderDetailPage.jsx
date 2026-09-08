@@ -98,7 +98,7 @@ export default function AdminOrderDetailPage() {
                 {order.items.map((item, i) => (
                   <tr key={i}>
                     <td style={{fontWeight:500}}>{item.name}</td>
-                    <td>{item.size}</td>
+                    <td>{item.size || '—'}</td>
                     <td>{item.qty}</td>
                     <td>{fmt(item.price)}</td>
                     <td style={{fontWeight:500}}>{fmt(item.price * item.qty)}</td>

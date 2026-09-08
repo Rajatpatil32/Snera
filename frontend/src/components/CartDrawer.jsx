@@ -89,7 +89,7 @@ export default function CartDrawer() {
                 <div>
                   <div style={{fontSize:'.84rem',fontWeight:600,color:'var(--ink)',marginBottom:'.2rem'}}>{item.name}</div>
                   <div style={{fontSize:'.72rem',color:'var(--stone2)',marginBottom:'.4rem',display:'flex',flexDirection:'column',gap:'.15rem'}}>
-                    <span>Size: <strong style={{color:'var(--ink)'}}>{item.size}</strong></span>
+                    {item.size && <span>Size: <strong style={{color:'var(--ink)'}}>{item.size}</strong></span>}
                     {item.colour && (
                       <span style={{display:'flex',alignItems:'center',gap:'.35rem'}}>
                         {item.colourHex && <span style={{width:10,height:10,borderRadius:'50%',background:item.colourHex,border:'1px solid rgba(0,0,0,.15)',display:'inline-block',flexShrink:0}}/>}

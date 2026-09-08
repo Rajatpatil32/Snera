@@ -8,7 +8,7 @@ import { useReveal } from '../hooks/useReveal';
 
 const WA_NUMBER = '919826992021';
 
-const CATEGORIES = ['Custom Oversized Tee', 'Classic Fit Tee', 'Polo T-Shirt', 'Custom Hoodie', 'Drop Shoulder Tee', 'Custom Tank Top', 'Other Custom Wear'];
+const CATEGORIES = ['Custom Oversized Tee', 'Classic Fit Tee', 'Polo T-Shirt', 'Custom Hoodie', 'Drop Shoulder Tee', 'Custom Tank Top', 'Custom Mug', 'Custom Keychain', 'Custom Phone Case', 'Custom Tote Bag', 'Other Custom Item'];
 
 function HowItWorksSection() {
   const steps = [
@@ -72,12 +72,12 @@ function ConceptSection() {
     setError('');
     setLoading(true);
     setGuidance(null);
-    const catLine = category ? `Category: ${category}\n` : '';
-    const prompt = `You are a creative t-shirt design consultant for SNERA, a custom t-shirt brand in India.
-A customer shared their t-shirt concept:
+    const catLine = category ? `Item type: ${category}\n` : '';
+    const prompt = `You are a creative product design consultant for SNERA, a brand in India that prints custom t-shirts and personalised gifts (mugs, keychains, phone cases, tote bags, apparel, and more).
+A customer shared their custom design concept:
 ${catLine}Concept: "${text.trim()}"
-Respond ONLY with a JSON object, no markdown:
-{"silhouette":"t-shirt fit recommendation e.g. Boxy Oversized Fit","palette":"2-3 color combinations for print and shirt base","fabric":"specific cotton GSM recommendation","detail":"one specific print technique e.g. Puff Print on Chest"}`;
+Respond ONLY with a JSON object, no markdown, tailored to the item type above (if it's apparel, talk about fit/fabric; if it's a gift item like a mug or keychain, talk about material/finish instead):
+{"silhouette":"fit or form recommendation appropriate to the item, e.g. Boxy Oversized Fit for a tee, or Ceramic Matte Finish for a mug","palette":"2-3 color combinations for the print/design and base item","fabric":"material recommendation appropriate to the item (cotton GSM for apparel, or material like ceramic/acrylic/ABS for gifts)","detail":"one specific print/engraving technique e.g. Puff Print on Chest, or UV Print on Mug"}`;
     try {
       const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
@@ -93,10 +93,16 @@ Respond ONLY with a JSON object, no markdown:
       setGuidance(JSON.parse(raw));
     } catch {
       setGuidance({
-        silhouette: 'Heavyweight Boxy Oversized Tee',
-        palette: 'Deep Cobalt Blue artwork on Cream 220 GSM Cotton base',
-        fabric: '100% Super-Combed 220 GSM Premium Cotton',
-        detail: 'High-density Screen Print on Chest & Back'
+        silhouette: category && /mug|keychain|case|bag|item/i.test(category)
+          ? 'Premium Matte Finish'
+          : 'Heavyweight Boxy Oversized Tee',
+        palette: 'Deep Cobalt Blue artwork on Cream base',
+        fabric: category && /mug|keychain|case|bag|item/i.test(category)
+          ? 'Durable Ceramic / Acrylic Material'
+          : '100% Super-Combed 220 GSM Premium Cotton',
+        detail: category && /mug|keychain|case|bag|item/i.test(category)
+          ? 'High-resolution UV Print'
+          : 'High-density Screen Print on Chest & Back'
       });
     } finally {
       setLoading(false);
@@ -106,7 +112,7 @@ Respond ONLY with a JSON object, no markdown:
   const openWA = () => {
     const g = guidance;
     const catLine = category ? `*Type:* ${category}\n` : '';
-    const msg = `Hello SNERA 👋\n\nI want to design a custom t-shirt!\n\n*My Concept:*\n"${text.trim()}"\n\n${catLine}*Design Specs:*\n• *Fit:* ${g.silhouette}\n• *Colorway:* ${g.palette}\n• *Fabric:* ${g.fabric}\n• *Print Detail:* ${g.detail}\n\nLet's get this printed!`;
+    const msg = `Hello SNERA 👋\n\nI want to design a custom item!\n\n*My Concept:*\n"${text.trim()}"\n\n${catLine}*Design Specs:*\n• *Fit / Form:* ${g.silhouette}\n• *Colorway:* ${g.palette}\n• *Material:* ${g.fabric}\n• *Print Detail:* ${g.detail}\n\nLet's get this made!`;
     window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
@@ -126,10 +132,10 @@ Respond ONLY with a JSON object, no markdown:
               fontSize: 'clamp(2rem,4.5vw,3.5rem)', letterSpacing: '-.02em', lineHeight: 1.12,
               marginBottom: '1.25rem'
             }}>
-              Have a Tee Idea?<br /><span className="gradient-text">We'll Print It Perfectly.</span>
+              Have a Tee or Gift Idea?<br /><span className="gradient-text">We'll Make It Perfectly.</span>
             </h2>
             <p style={{ fontSize: '.9rem', color: 'var(--stone2)', lineHeight: 1.8, maxWidth: '42ch', marginBottom: '2rem' }}>
-              Describe your custom t-shirt idea — an occasion, a graphic concept, or a custom text layout. Get instant AI design guidance and connect directly with our production team on WhatsApp.
+              Describe your custom t-shirt or gift idea — an occasion, a graphic concept, or a custom text layout. Get instant AI design guidance and connect directly with our production team on WhatsApp.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {[
@@ -162,7 +168,7 @@ Respond ONLY with a JSON object, no markdown:
 
               {/* Category chips */}
               <div style={{ fontSize: '.68rem', letterSpacing: '.16em', textTransform: 'uppercase', fontWeight: 600, color: 'var(--accent)', marginBottom: '.75rem' }}>
-                Select Apparel Type
+                Select Item Type
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '1.5rem' }}>
                 {CATEGORIES.map(c => (
@@ -178,12 +184,13 @@ Respond ONLY with a JSON object, no markdown:
 
               {/* Textarea */}
               <div style={{ fontSize: '.68rem', letterSpacing: '.16em', textTransform: 'uppercase', fontWeight: 600, color: 'var(--accent)', marginBottom: '.75rem' }}>
-                Describe Your T-Shirt Design
+                Describe Your Design
               </div>
               <textarea
+                id="concept-textarea"
                 value={text}
                 onChange={e => { setText(e.target.value); setError(''); }}
-                placeholder="e.g. A minimal vintage typography design on the chest reading 'TOKYO 1984' in vibrant neon blue on a black oversized tee..."
+                placeholder="e.g. A minimal vintage typography design reading 'TOKYO 1984' in vibrant neon blue — on a black oversized tee, or a matte black mug..."
                 rows={4}
                 style={{
                   width: '100%', border: '1px solid var(--sand)',
@@ -215,10 +222,10 @@ Respond ONLY with a JSON object, no markdown:
                 <div style={{ marginTop: '1.5rem', borderTop: '1px solid var(--sand)', paddingTop: '1.5rem', animation: 'fadeUp .4s var(--ease) forwards' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '1.25rem' }}>
                     {[
-                      ['Recommended Fit', guidance.silhouette],
+                      ['Recommended Fit / Form', guidance.silhouette],
                       ['Colorway Spec', guidance.palette],
-                      ['Fabric Spec', guidance.fabric],
-                      ['Print Technique', guidance.detail],
+                      ['Material Spec', guidance.fabric],
+                      ['Print / Finish Technique', guidance.detail],
                     ].map(([label, val]) => (
                       <div key={label} style={{ background: 'var(--off)', padding: '1rem', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(108,92,231,.08)' }}>
                         <div style={{ fontSize: '.62rem', letterSpacing: '.14em', textTransform: 'uppercase', fontWeight: 700, color: 'var(--accent)', marginBottom: '.3rem' }}>{label}</div>
@@ -267,7 +274,7 @@ const WHY = [
 ];
 
 const HOME_FAQS = [
-  { q: 'How do I order a custom t-shirt on SNERA?', a: 'You can browse our shop collection or submit your custom design idea in the Design Studio above. Our team will review your specs and send you a digital preview via WhatsApp before printing.' },
+  { q: 'How do I order a custom t-shirt or gift on SNERA?', a: 'You can browse our shop collection or submit your custom design idea in the Design Studio above — apparel or gift items alike. Our team will review your specs and send you a digital preview via WhatsApp before printing.' },
   { q: 'What fabric quality does SNERA use?', a: 'All SNERA t-shirts are crafted from 220 GSM super-combed 100% heavyweight cotton — pre-shrunk, bio-washed, and ultra-durable.' },
   { q: 'Is there a minimum order quantity (MOQ) for custom tees?', a: 'No! We print single custom t-shirts as well as bulk orders for events, brands, and groups.' },
   { q: 'Does SNERA offer free shipping?', a: 'Yes! Free shipping on all orders above ₹999 across India.' },

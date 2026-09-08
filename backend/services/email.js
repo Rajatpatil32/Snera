@@ -80,7 +80,7 @@ function buildOrderConfirmationHTML(order) {
     <tr>
       <td style="padding:12px 16px;border-bottom:1px solid #F2F0EB;font-size:13px;color:#2E2D29;">
         ${item.name}
-        <div style="font-size:11px;color:#A09D96;margin-top:2px;">Size: ${item.size}</div>
+        ${item.size ? `<div style="font-size:11px;color:#A09D96;margin-top:2px;">Size: ${item.size}</div>` : ''}
       </td>
       <td style="padding:12px 16px;border-bottom:1px solid #F2F0EB;font-size:13px;color:#2E2D29;text-align:center;">${item.qty}</td>
       <td style="padding:12px 16px;border-bottom:1px solid #F2F0EB;font-size:13px;color:#2E2D29;text-align:right;font-weight:500;">${fmtINR(item.price * item.qty)}</td>
@@ -293,67 +293,50 @@ function buildShippingHTML(order) {
 // const api = new SibApiV3Sdk.TransactionalEmailsApi();
 
 async function sendOrderConfirmation(order) {
+  const ccList = ['snerastore@gmail.com', 'contact@snera.in', 'rajatpatil32@gmail.com'];
+
+  // Preferred: Brevo transactional API (used in production)
+  if (process.env.BREVO_API_KEY) {
+    try {
+      await api.sendTransacEmail({
+        sender: {
+          email: process.env.EMAIL_FROM,
+          name: 'SNERA',
+        },
+        to: [{ email: order.customer.email }],
+        cc: ccList.map(email => ({ email })),
+        subject: `Order Confirmed — ${order.orderNumber}`,
+        htmlContent: buildOrderConfirmationHTML(order),
+      });
+      console.log(`✓ Order confirmation email sent to ${order.customer.email} (Brevo)`);
+      return;
+    } catch (err) {
+      console.error('✗ Brevo send failed, falling back to SMTP:', err.message);
+      // fall through to SMTP below
+    }
+  }
+
+  // Fallback: Nodemailer SMTP/Gmail — used when BREVO_API_KEY isn't set
+  // (e.g. local development), or if the Brevo call above failed.
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    console.log('⚠ Email not configured (no BREVO_API_KEY and no EMAIL_USER/EMAIL_PASS) — skipping order confirmation email');
+    return;
+  }
   try {
-    await api.sendTransacEmail({
-      sender: {
-        email: process.env.EMAIL_FROM,
-        name: 'SNERA',
-      },
-
-      to: [
-        {
-          email: order.customer.email,
-        },
-      ],
-      cc: [
-        {
-          email: 'snerastore@gmail.com',
-        },
-        {
-          email: 'contact@snera.in',
-        },
-        {
-          email: 'rajatpatil32@gmail.com',
-        },
-      ],
-
-      subject: `Order Confirmed — ${order.orderNumber}`,
-
-      htmlContent: buildOrderConfirmationHTML(order),
+    const transporter = createTransporter();
+    await transporter.sendMail({
+      from: process.env.EMAIL_FROM,
+      to: order.customer.email,
+      cc: ccList.join(', '),
+      subject: `Order Confirmed — ${order.orderNumber} | SNERA`,
+      html: buildOrderConfirmationHTML(order),
     });
-
+    console.log(`✓ Order confirmation email sent to ${order.customer.email} (SMTP)`);
   } catch (err) {
-    console.log(err);
+    console.error('✗ Failed to send order confirmation email:', err.message);
+    // Non-fatal — order still created
   }
 }
-// ─── Public API ───────────────────────────────────────────────────────────────
-// async function sendOrderConfirmation(order) {
-//   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-//     console.log('⚠ Email not configured — skipping order confirmation email');
-//     return;
-//   }
-//   try {
-//     const transporter = createTransporter();
-//     transporter.verify(function (error, success) {
-//   if (error) {
-//     console.log('SMTP ERROR:', error);
-//   } else {
-//     console.log('SMTP SERVER READY');
-//   }
-// });
-//     await transporter.sendMail({
-//       from: process.env.EMAIL_FROM,
-//       to:      order.customer.email,
-//       cc: "snerastore@gmail.com, rajatpatil32@gmail.com",
-//       subject: `Order Confirmed — ${order.orderNumber} | SNERA`,
-//       html:    buildOrderConfirmationHTML(order),
-//     });
-//     console.log(`✓ Order confirmation email sent to ${order.customer.email}`);
-//   } catch (err) {
-//     console.error('✗ Failed to send order confirmation email:', err);
-//     // Non-fatal — order still created
-//   }
-// }
 
 async function sendShippingNotification(order) {
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
@@ -385,4 +368,5 @@ module.exports = {
   sendOrderConfirmation,
   sendShippingNotification,
   getCourierTrackingUrl,
+  buildOrderConfirmationHTML, // exported for local testing (see test-email-local.js)
 };

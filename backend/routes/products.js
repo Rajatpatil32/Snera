@@ -121,6 +121,23 @@ router.delete('/:id', auth, async (req, res) => {
   }
 });
 
+// POST /api/products/admin/bulk-archive — archive many products at once (select-then-delete in Admin)
+// body: { ids: [productId, ...] }
+router.post('/admin/bulk-archive', auth, async (req, res) => {
+  try {
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || !ids.length)
+      return res.status(400).json({ error: 'ids array required' });
+
+    await Product.updateMany({ _id: { $in: ids } }, { isActive: false });
+    ids.forEach(id => onProductDeleted(id)); // 🔁 remove each from Google Merchant
+
+    res.json({ success: true, archived: ids.length });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /api/products/admin/bulk-import — bulk create from CSV
 router.post('/admin/bulk-import', auth, async (req, res) => {
   try {
@@ -148,8 +165,15 @@ router.post('/admin/bulk-import', auth, async (req, res) => {
           description:      p.description       || '',
           fabric:           p.fabric            || '',
           careInstructions: p.careinstructions  || p.careInstructions || '',
-          sizes:            p.sizes  ? String(p.sizes).split(/[,|]/).map(s => s.trim()).filter(Boolean) : ['S','M','L','XL'],
+          sizes:            p.sizes  ? String(p.sizes).split(/[,|]/).map(s => s.trim()).filter(Boolean) : [],
           soldSizes:        p.soldsizes ? String(p.soldsizes).split(/[,|]/).map(s => s.trim()).filter(Boolean) : [],
+          // Optional per-size price add-on, e.g. "XL:50|XXL:100" → XL costs +₹50, XXL costs +₹100
+          sizePricing:      (p.sizepricing || p.sizePricing)
+            ? String(p.sizepricing || p.sizePricing).split(/[,|]/).map(pair => {
+                const [size, extra] = pair.split(':').map(s => s.trim());
+                return { size, extraPrice: Number(extra) || 0 };
+              }).filter(sp => sp.size)
+            : [],
           tags:             p.tags   ? String(p.tags).split(/[,|]/).map(t => t.trim()).filter(Boolean) : [],
           badge:            VALID_BADGES.includes(p.badge) ? p.badge : 'New',
           glyph:            p.glyph             || '◈',

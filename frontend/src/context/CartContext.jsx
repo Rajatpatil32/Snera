@@ -9,11 +9,15 @@ function cartReducer(state, action) {
       return { ...state, items: action.payload };
 
     case 'ADD': {
-      const { product, size, qty = 1, colour } = action.payload;
+      const { product, size, qty = 1, colour, price } = action.payload;
       // Key includes colour so same product in different colours = separate line items
       const colourKey = colour?.name || '';
       const key = `${product._id}_${size}_${colourKey}`;
       const exists = state.items.find(i => i.key === key);
+
+      // Use the explicit per-unit price if passed (accounts for size price add-ons),
+      // otherwise fall back to the product's base price.
+      const unitPrice = price != null ? price : product.price;
 
       if (exists) {
         return {
@@ -27,7 +31,7 @@ function cartReducer(state, action) {
           key,
           id:         product._id,
           name:       product.name,
-          price:      product.price,
+          price:      unitPrice,
           size,
           qty,
           // Colour info (null for products without colour groups)

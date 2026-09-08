@@ -29,10 +29,11 @@ const COLOUR_PRESETS = [
 ];
 
 const emptyForm = {
-  name: '', category: 'Tops', gender: 'Unisex',
+  name: '', category: '', gender: 'Unisex',
   price: '', comparePrice: '',
   description: '', fabric: '', careInstructions: '',
   sizes: ['S', 'M', 'L', 'XL'], soldSizes: [],
+  sizePricing: [], // optional per-size price add-on, e.g. XL = +₹50
   glyph: '◈', badge: 'New',
   isActive: true, isFeatured: false,
   tags: '', weight: 220,
@@ -122,7 +123,7 @@ const smBtn = (bg, color) => ({
 
 // ─── Colour Group Card ────────────────────────────────────────────────────────
 function ColourGroupCard({
-  group, index, isDefault, totalGroups,
+  group, index, isDefault, totalGroups, productSizes,
   onChange, onDelete, onSetDefault, onUpload, onOpenComposer,
 }) {
   const fileRef = useRef();
@@ -273,7 +274,7 @@ function ColourGroupCard({
               Sold Out Sizes (for {group.name || 'this colour'})
             </div>
             <div style={{ display: 'flex', gap: '.35rem', flexWrap: 'wrap' }}>
-              {SIZES_ALL.map(sz => (
+              {(productSizes?.length ? productSizes : SIZES_ALL).map(sz => (
                 <button key={sz} type="button" onClick={() => toggleSoldSize(sz)} style={{
                   width: 38, height: 38, border: '1px solid', cursor: 'pointer',
                   fontFamily: 'var(--sans)', fontSize: '.7rem', fontWeight: 500,
@@ -306,6 +307,8 @@ export default function AdminProductFormPage() {
   const [success, setSuccess] = useState('');
   const [composerFor, setComposerFor] = useState(null); // index of colour group
   const [showPreset, setShowPreset] = useState(false);
+  const [customSizeInput, setCustomSizeInput] = useState(''); // free-text size for non-apparel items (mugs, keychains, etc.)
+  const [isNewCategory, setIsNewCategory] = useState(false); // true when admin picked "+ Add new category" in the dropdown
 
   // ── Design mode state ────────────────────────────────────────────────────
   const [mockups, setMockups] = useState([]);
@@ -345,8 +348,39 @@ export default function AdminProductFormPage() {
   }));
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
-  const toggleSize = (sz, field) =>
-    setForm(f => ({ ...f, [field]: f[field].includes(sz) ? f[field].filter(s => s !== sz) : [...f[field], sz] }));
+
+  // Toggling a standard apparel size or "One Size" on/off. When deselecting,
+  // route through removeSize() so sizePricing / soldSizes / per-colour
+  // soldSizes for that size get cleaned up too — otherwise stale entries
+  // silently persist even though the size is no longer offered.
+  const toggleStandardSize = (sz) => {
+    if (form.sizes.includes(sz)) {
+      removeSize(sz);
+    } else {
+      setForm(f => ({ ...f, sizes: [...f.sizes, sz] }));
+    }
+  };
+
+  const addCustomSize = () => {
+    const sz = customSizeInput.trim();
+    if (!sz) return;
+    setForm(f => f.sizes.includes(sz) ? f : { ...f, sizes: [...f.sizes, sz] });
+    setCustomSizeInput('');
+  };
+  const removeSize = (sz) => setForm(f => ({
+    ...f,
+    sizes: f.sizes.filter(s => s !== sz),
+    soldSizes: (f.soldSizes || []).filter(s => s !== sz),
+    sizePricing: (f.sizePricing || []).filter(sp => sp.size !== sz),
+    colorGroups: (f.colorGroups || []).map(g => ({ ...g, soldSizes: (g.soldSizes || []).filter(s => s !== sz) })),
+  }));
+
+  const setSizeExtraPrice = (sz, extraPrice) => setForm(f => {
+    const existing = (f.sizePricing || []).filter(sp => sp.size !== sz);
+    const val = Number(extraPrice) || 0;
+    // Only store an entry when it's non-zero — keeps the array clean.
+    return { ...f, sizePricing: val !== 0 ? [...existing, { size: sz, extraPrice: val }] : existing };
+  });
 
   // Load product if editing
   useEffect(() => {
@@ -361,6 +395,7 @@ export default function AdminProductFormPage() {
       }
       setForm({
         ...emptyForm, ...p, price: p.price || '', comparePrice: p.comparePrice || '', tags: (p.tags || []).join(', '), colorGroups,
+        sizePricing: p.sizePricing || [],
         seo: {
           metaTitle: p.seo?.metaTitle || '',
           metaDescription: p.seo?.metaDescription || '',
@@ -406,6 +441,7 @@ export default function AdminProductFormPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name.trim()) return setError('Product name is required');
+    if (!form.category.trim()) return setError('Category is required — type any name, e.g. "Gifts"');
     if (!form.price || isNaN(+form.price)) return setError('Valid price required');
     if (!form.description.trim()) return setError('Description is required');
     if (form.designMode) {
@@ -476,9 +512,42 @@ export default function AdminProductFormPage() {
                 <div className="form-row">
                   <div className="form-group">
                     <label className="form-label">Category *</label>
-                    <select className="form-select" value={form.category} onChange={e => set('category', e.target.value)}>
-                      {categories.map(c => <option key={c}>{c}</option>)}
-                    </select>
+                    {(() => {
+                      const showNewCategoryInput = isNewCategory || (!!form.category && !categories.includes(form.category));
+                      return (
+                        <>
+                          <select
+                            className="form-select"
+                            value={showNewCategoryInput ? '__new__' : form.category}
+                            onChange={e => {
+                              if (e.target.value === '__new__') {
+                                setIsNewCategory(true);
+                                set('category', '');
+                              } else {
+                                setIsNewCategory(false);
+                                set('category', e.target.value);
+                              }
+                            }}
+                          >
+                            <option value="" disabled>Select a category…</option>
+                            {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                            <option value="__new__">+ Add new category…</option>
+                          </select>
+                          {showNewCategoryInput && (
+                            <input
+                              className="form-input" style={{ marginTop: '.5rem' }}
+                              value={form.category}
+                              onChange={e => set('category', e.target.value)}
+                              placeholder="Type new category — e.g. Gifts"
+                              autoFocus
+                            />
+                          )}
+                        </>
+                      );
+                    })()}
+                    <p style={{ fontSize: '.65rem', color: 'var(--stone2)', marginTop: '.3rem' }}>
+                      Pick an existing category, or choose "+ Add new category…" to type one — no need to create a Collection first.
+                    </p>
                   </div>
                   <div className="form-group">
                     <label className="form-label">Gender</label>
@@ -493,12 +562,12 @@ export default function AdminProductFormPage() {
                 </div>
                 <div className="form-row">
                   <div className="form-group">
-                    <label className="form-label">Fabric</label>
-                    <input className="form-input" value={form.fabric} onChange={e => set('fabric', e.target.value)} placeholder="100% Cotton, 220 GSM" />
+                    <label className="form-label">Fabric / Material</label>
+                    <input className="form-input" value={form.fabric} onChange={e => set('fabric', e.target.value)} placeholder="e.g. 100% Cotton, 220 GSM — or Ceramic, dishwasher safe" />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Care</label>
-                    <input className="form-input" value={form.careInstructions} onChange={e => set('careInstructions', e.target.value)} placeholder="Machine wash cold" />
+                    <label className="form-label">Care Instructions</label>
+                    <input className="form-input" value={form.careInstructions} onChange={e => set('careInstructions', e.target.value)} placeholder="e.g. Machine wash cold — or Not dishwasher safe" />
                   </div>
                 </div>
                 <div className="form-group">
@@ -510,13 +579,15 @@ export default function AdminProductFormPage() {
 
             {/* Sizes (global) */}
             <div className="admin-card">
-              <h3 style={{ fontFamily: 'var(--serif)', fontWeight: 400, fontSize: '1rem', marginBottom: '1rem' }}>Available Sizes</h3>
+              <h3 style={{ fontFamily: 'var(--serif)', fontWeight: 400, fontSize: '1rem', marginBottom: '1rem' }}>Available Sizes {form.sizes.length === 0 && <span style={{ fontWeight: 400, fontSize: '.68rem', color: 'var(--stone)' }}>(optional)</span>}</h3>
               <p style={{ fontSize: '.68rem', color: 'var(--stone2)', marginBottom: '.75rem' }}>
-                These apply globally. Per-colour sold-out sizes are set inside each colour group.
+                Sizes are entirely optional — leave none selected for products with no variant at all (the size picker simply won't show on the product page).
+                When used, these apply globally, and per-colour sold-out sizes are set inside each colour group.
+                For non-apparel items (mugs, keychains, gifts, etc.), use "One Size" or add your own variant below instead of the apparel sizes.
               </p>
-              <div style={{ display: 'flex', gap: '.4rem', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: '.4rem', flexWrap: 'wrap', marginBottom: '.9rem' }}>
                 {SIZES_ALL.map(sz => (
-                  <button key={sz} type="button" onClick={() => toggleSize(sz, 'sizes')} style={{
+                  <button key={sz} type="button" onClick={() => toggleStandardSize(sz)} style={{
                     width: 42, height: 42, border: '1px solid', cursor: 'pointer',
                     fontFamily: 'var(--sans)', fontSize: '.72rem', fontWeight: 500,
                     background: form.sizes.includes(sz) ? 'var(--ink)' : 'transparent',
@@ -525,7 +596,77 @@ export default function AdminProductFormPage() {
                     transition: 'all var(--t)',
                   }}>{sz}</button>
                 ))}
+                <button type="button" onClick={() => toggleStandardSize('One Size')} style={{
+                  height: 42, padding: '0 .8rem', border: '1px solid', cursor: 'pointer',
+                  fontFamily: 'var(--sans)', fontSize: '.68rem', fontWeight: 500, whiteSpace: 'nowrap',
+                  background: form.sizes.includes('One Size') ? 'var(--ink)' : 'transparent',
+                  color: form.sizes.includes('One Size') ? 'var(--white)' : 'var(--stone2)',
+                  borderColor: form.sizes.includes('One Size') ? 'var(--ink)' : 'var(--sand)',
+                  transition: 'all var(--t)',
+                }}>One Size</button>
               </div>
+
+              {/* Any custom sizes already added (e.g. "325ml", "Small Mug") that aren't in the apparel/One-Size buttons above */}
+              {form.sizes.filter(sz => !SIZES_ALL.includes(sz) && sz !== 'One Size').length > 0 && (
+                <div style={{ display: 'flex', gap: '.4rem', flexWrap: 'wrap', marginBottom: '.9rem' }}>
+                  {form.sizes.filter(sz => !SIZES_ALL.includes(sz) && sz !== 'One Size').map(sz => (
+                    <span key={sz} style={{
+                      display: 'flex', alignItems: 'center', gap: '.35rem',
+                      padding: '.4rem .7rem', border: '1px solid var(--ink)', background: 'var(--ink)',
+                      color: 'var(--white)', fontSize: '.7rem', fontFamily: 'var(--sans)',
+                    }}>
+                      {sz}
+                      <button type="button" onClick={() => removeSize(sz)} style={{
+                        background: 'none', border: 'none', color: 'var(--white)', cursor: 'pointer',
+                        fontSize: '.85rem', lineHeight: 1, padding: 0,
+                      }}>×</button>
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Free-text custom size/variant — for gifts or any non-apparel product */}
+              <div style={{ display: 'flex', gap: '.5rem' }}>
+                <input
+                  className="form-input" style={{ flex: 1 }} value={customSizeInput}
+                  onChange={e => setCustomSizeInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addCustomSize(); } }}
+                  placeholder="Add a custom variant — e.g. 325ml, Small Mug, Standard"
+                />
+                <button type="button" className="btn" onClick={addCustomSize} style={{ fontSize: '.65rem', whiteSpace: 'nowrap' }}>
+                  + Add
+                </button>
+              </div>
+
+              {/* Per-size price add-on — e.g. XL costs ₹50 more than the base price */}
+              {form.sizes.length > 0 && (
+                <div style={{ marginTop: '1.1rem', paddingTop: '1rem', borderTop: '1px solid var(--sand)' }}>
+                  <div style={{ fontSize: '.68rem', color: 'var(--stone2)', marginBottom: '.75rem' }}>
+                    Optional — charge more for specific sizes (e.g. XL/XXL). Leave 0 to keep the base price (₹{form.price || '0'}).
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
+                    {form.sizes.map(sz => {
+                      const extra = (form.sizePricing || []).find(sp => sp.size === sz)?.extraPrice || 0;
+                      return (
+                        <div key={sz} style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
+                          <span style={{ width: 90, fontSize: '.72rem', fontWeight: 500, color: 'var(--ink)' }}>{sz}</span>
+                          <span style={{ fontSize: '.7rem', color: 'var(--stone)' }}>+ ₹</span>
+                          <input
+                            type="number" className="form-input" style={{ width: 100 }} step="any"
+                            value={extra || ''} placeholder="0"
+                            onChange={e => setSizeExtraPrice(sz, e.target.value)}
+                          />
+                          {extra > 0 && (
+                            <span style={{ fontSize: '.68rem', color: 'var(--stone2)' }}>
+                              → ₹{(Number(form.price || 0) + extra).toLocaleString('en-IN')} for {sz}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* ── DESIGN MODE ── */}
@@ -674,6 +815,7 @@ export default function AdminProductFormPage() {
                     index={i}
                     isDefault={g.isDefault}
                     totalGroups={form.colorGroups.length}
+                    productSizes={form.sizes}
                     onChange={updateGroup}
                     onDelete={deleteGroup}
                     onSetDefault={setDefault}

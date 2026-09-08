@@ -86,10 +86,16 @@ export default function ProductDetailPage() {
   const soldSizes   = activeGroup?.soldSizes?.length ? activeGroup.soldSizes : product.soldSizes || [];
 
   const isSold = (sz) => soldSizes.includes(sz);
+  const requiresSize = (product.sizes || []).length > 0; // some gift items have no size/variant at all
+
+  // ── Size-based price add-on (e.g. XL/XXL cost more than the base price) ────
+  const sizeExtra   = (sz) => (product.sizePricing || []).find(sp => sp.size === sz)?.extraPrice || 0;
+  const finalPrice  = product.price + sizeExtra(selSize);
+  const finalCompare = product.comparePrice ? product.comparePrice + sizeExtra(selSize) : null;
 
   // ── Add to cart ────────────────────────────────────────────────────────────
   const addToCart = () => {
-    if (!selSize) return;
+    if (requiresSize && !selSize) return;
     dispatch({
       type: 'ADD',
       payload: {
@@ -97,8 +103,9 @@ export default function ProductDetailPage() {
           ...product,
           images: images.length ? images : product.images,
         },
-        size: selSize,
+        size: requiresSize ? selSize : null,
         qty,
+        price: finalPrice, // size-adjusted unit price
       },
     });
     dispatch({ type: 'OPEN' });
@@ -234,16 +241,21 @@ export default function ProductDetailPage() {
 
               {/* Price */}
               <div style={{ display:'flex', alignItems:'center', gap:'.9rem' }}>
-                <span style={{ fontSize:'1.2rem', fontWeight:500 }}>{fmt(product.price)}</span>
-                {product.comparePrice && (
-                  <span style={{ fontSize:'.9rem', color:'var(--stone)', textDecoration:'line-through' }}>{fmt(product.comparePrice)}</span>
+                <span style={{ fontSize:'1.2rem', fontWeight:500 }}>{fmt(finalPrice)}</span>
+                {finalCompare && (
+                  <span style={{ fontSize:'.9rem', color:'var(--stone)', textDecoration:'line-through' }}>{fmt(finalCompare)}</span>
                 )}
-                {product.comparePrice && (
+                {finalCompare && (
                   <span style={{ fontSize:'.58rem', letterSpacing:'.14em', textTransform:'uppercase', fontWeight:600, padding:'.2rem .55rem', background:'var(--accent)', color:'var(--white)' }}>
-                    {Math.round((1-product.price/product.comparePrice)*100)}% off
+                    {Math.round((1-finalPrice/finalCompare)*100)}% off
                   </span>
                 )}
               </div>
+              {sizeExtra(selSize) > 0 && (
+                <p style={{ fontSize:'.68rem', color:'var(--stone2)', marginTop:'-.7rem' }}>
+                  Includes +{fmt(sizeExtra(selSize))} for size {selSize}
+                </p>
+              )}
 
               <div style={{ height:1, background:'var(--sand)' }}/>
 
@@ -290,34 +302,46 @@ export default function ProductDetailPage() {
                 </div>
               )}
 
-              {/* ── Size picker ── */}
+              {/* ── Size picker (only for products that actually have sizes/variants) ── */}
+              {requiresSize && (
               <div>
                 <div style={{ fontSize:'.6rem', letterSpacing:'.18em', textTransform:'uppercase', color:'var(--stone)', marginBottom:'.6rem' }}>Size</div>
                 <div style={{ display:'flex', gap:'.45rem', flexWrap:'wrap' }}>
-                  {(product.sizes || []).map(sz => (
-                    <button
-                      key={sz}
-                      type="button"
-                      onClick={() => !isSold(sz) && setSelSize(sz)}
-                      disabled={isSold(sz)}
-                      style={{
-                        width:42, height:42, border:'1px solid',
-                        fontSize:'.7rem', fontWeight:500, letterSpacing:'.04em',
-                        display:'flex', alignItems:'center', justifyContent:'center',
-                        cursor: isSold(sz) ? 'not-allowed' : 'pointer',
-                        fontFamily:'var(--sans)',
-                        background:  selSize===sz ? 'var(--ink)' : 'transparent',
-                        color:       selSize===sz ? 'var(--white)' : isSold(sz) ? 'var(--sand2)' : 'var(--stone2)',
-                        borderColor: selSize===sz ? 'var(--ink)' : 'var(--sand)',
-                        opacity:     isSold(sz) ? .4 : 1,
-                        textDecoration: isSold(sz) ? 'line-through' : 'none',
-                        transition:'all var(--t)',
-                      }}
-                    >{sz}</button>
-                  ))}
+                  {(product.sizes || []).map(sz => {
+                    const extra = sizeExtra(sz);
+                    return (
+                    <div key={sz} style={{ position:'relative' }}>
+                      <button
+                        type="button"
+                        onClick={() => !isSold(sz) && setSelSize(sz)}
+                        disabled={isSold(sz)}
+                        style={{
+                          minWidth:42, height:42, padding:'0 .5rem', border:'1px solid',
+                          fontSize:'.7rem', fontWeight:500, letterSpacing:'.04em',
+                          display:'flex', alignItems:'center', justifyContent:'center',
+                          cursor: isSold(sz) ? 'not-allowed' : 'pointer',
+                          fontFamily:'var(--sans)',
+                          background:  selSize===sz ? 'var(--ink)' : 'transparent',
+                          color:       selSize===sz ? 'var(--white)' : isSold(sz) ? 'var(--sand2)' : 'var(--stone2)',
+                          borderColor: selSize===sz ? 'var(--ink)' : 'var(--sand)',
+                          opacity:     isSold(sz) ? .4 : 1,
+                          textDecoration: isSold(sz) ? 'line-through' : 'none',
+                          transition:'all var(--t)',
+                        }}
+                      >{sz}</button>
+                      {extra > 0 && !isSold(sz) && (
+                        <span style={{
+                          position:'absolute', top:-8, right:-8, background:'var(--accent)', color:'var(--white)',
+                          fontSize:'.52rem', fontWeight:600, padding:'.1rem .3rem', lineHeight:1.4, whiteSpace:'nowrap',
+                        }}>+{fmt(extra)}</span>
+                      )}
+                    </div>
+                    );
+                  })}
                 </div>
                 {!selSize && <p style={{ fontSize:'.68rem', color:'var(--accent)', marginTop:'.4rem' }}>Please select a size</p>}
               </div>
+              )}
 
               {/* ── Qty + Add to cart ── */}
               <div style={{ display:'flex', alignItems:'center', gap:'1rem' }}>
@@ -330,15 +354,15 @@ export default function ProductDetailPage() {
                 <button
                   type="button"
                   onClick={addToCart}
-                  disabled={!selSize}
+                  disabled={requiresSize && !selSize}
                   style={{
                     flex:1, padding:'.95rem',
-                    background: added ? 'var(--success)' : selSize ? 'var(--ink)' : 'var(--sand)',
+                    background: added ? 'var(--success)' : (!requiresSize || selSize) ? 'var(--ink)' : 'var(--sand)',
                     color:'var(--white)',
                     fontFamily:'var(--sans)', fontSize:'.68rem', fontWeight:500, letterSpacing:'.2em', textTransform:'uppercase',
-                    border:`1px solid ${added ? 'var(--success)' : selSize ? 'var(--ink)' : 'var(--sand)'}`,
+                    border:`1px solid ${added ? 'var(--success)' : (!requiresSize || selSize) ? 'var(--ink)' : 'var(--sand)'}`,
                     display:'flex', alignItems:'center', justifyContent:'center', gap:'.6rem',
-                    cursor: selSize ? 'pointer' : 'not-allowed',
+                    cursor: (!requiresSize || selSize) ? 'pointer' : 'not-allowed',
                     transition:'all var(--t)',
                   }}
                 >

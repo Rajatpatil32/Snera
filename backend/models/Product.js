@@ -25,6 +25,13 @@ const productSchema = new mongoose.Schema({
   careInstructions: { type: String },
 
   sizes:    { type: [String], default: ['XS','S','M','L','XL','XXL'] },
+  // Optional per-size price add-on (e.g. XL costs ₹50 more than base price).
+  // Only sizes with a non-zero entry here affect price; anything not listed
+  // simply uses the base `price` above.
+  sizePricing: {
+    type: [{ size: { type: String, required: true }, extraPrice: { type: Number, default: 0 } }],
+    default: [],
+  },
   // Global soldSizes kept for backwards compat; per-colour soldSizes live in colorGroups
   soldSizes: { type: [String], default: [] },
 
