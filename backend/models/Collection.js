@@ -5,6 +5,7 @@ const collectionSchema = new mongoose.Schema({
   slug:         { type: String, unique: true },
   description:  String,
   image:        String,
+  imageAspectRatio: { type: String, enum: ['9:16', '16:9'], default: '16:9' }, // controls how the banner image is framed on the homepage
   icon:         String,
   products:     [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
   isActive:     { type: Boolean, default: true },

@@ -6,6 +6,7 @@ const emptyForm = {
   name: '',
   description: '',
   image: '',
+  imageAspectRatio: '16:9', // controls how the banner shows on the homepage
   icon: '',
   displayOrder: 0,
   isActive: true,
@@ -47,12 +48,13 @@ export default function AdminCollectionFormPage() {
     if (!isEdit) return;
     API.get('/collections/admin/all')
       .then(r => {
-        const col = r.data.find(c => c._id === id);
+        const col = (r.data.collections || r.data || []).find(c => c._id === id);
         if (!col) return;
         setForm({
           name:         col.name         || '',
           description:  col.description  || '',
           image:        col.image        || '',
+          imageAspectRatio: col.imageAspectRatio || '16:9',
           icon:         col.icon         || '',
           displayOrder: col.displayOrder || 0,
           isActive:     col.isActive     ?? true,
@@ -191,10 +193,41 @@ export default function AdminCollectionFormPage() {
                   </div>
                 </div>
 
-                {/* Image preview */}
+                {/* Image display shape — controls how the banner is framed/cropped on the homepage */}
+                <div>
+                  <label style={label}>Image Display Shape (Homepage)</label>
+                  <div style={{ display: 'flex', gap: '.6rem' }}>
+                    {[
+                      { val: '16:9', desc: 'Wide — best for landscape photos' },
+                      { val: '9:16', desc: 'Tall — best for portrait/phone photos' },
+                    ].map(opt => (
+                      <button
+                        key={opt.val}
+                        type="button"
+                        onClick={() => set('imageAspectRatio', opt.val)}
+                        style={{
+                          flex: 1, padding: '.6rem .75rem', cursor: 'pointer', textAlign: 'left',
+                          border: `1px solid ${form.imageAspectRatio === opt.val ? 'var(--ink,#1C1B18)' : 'var(--sand,#e8e3db)'}`,
+                          background: form.imageAspectRatio === opt.val ? 'rgba(28,27,24,.04)' : 'transparent',
+                        }}
+                      >
+                        <div style={{ fontSize: '.78rem', fontWeight: 600 }}>{opt.val} {opt.val === '16:9' ? '(Landscape)' : '(Portrait)'}</div>
+                        <div style={{ fontSize: '.65rem', color: 'var(--stone2,#999)', marginTop: '.15rem' }}>{opt.desc}</div>
+                      </button>
+                    ))}
+                  </div>
+                  <p style={{ fontSize: '.62rem', color: '#bbb', marginTop: '.4rem' }}>
+                    The image will be cropped (not stretched) to fit this shape, regardless of the original photo's resolution.
+                  </p>
+                </div>
+
+                {/* Image preview — shown at the actual aspect ratio it will render at on the homepage */}
                 {form.image && (
-                  <div style={{ height: 140, overflow: 'hidden', border: '1px solid var(--sand,#e8e3db)' }}>
-                    <img src={form.image} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <div style={{
+                    aspectRatio: form.imageAspectRatio.replace(':', ' / '),
+                    maxHeight: 260, overflow: 'hidden', border: '1px solid var(--sand,#e8e3db)',
+                  }}>
+                    <img src={form.image} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }} />
                   </div>
                 )}
               </div>
@@ -317,10 +350,10 @@ export default function AdminCollectionFormPage() {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '.85rem' }}>
                 <div>
-                  <label style={label}>Display Order</label>
+                  <label style={label}>Display Order (Homepage & Shop Priority)</label>
                   <input style={input} type="number" value={form.displayOrder}
                     onChange={e => set('displayOrder', Number(e.target.value))} min={0} />
-                  <p style={{ fontSize: '.62rem', color: '#bbb', marginTop: '.25rem' }}>Lower = shown first</p>
+                  <p style={{ fontSize: '.62rem', color: '#bbb', marginTop: '.25rem' }}>Lower number = shown first — controls the order of shelves on the homepage and the category list in Shop/Nav.</p>
                 </div>
 
                 {/* Active toggle */}

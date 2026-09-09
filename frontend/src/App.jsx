@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { CartProvider } from './context/CartContext';
 import AdminCollectionsPage  from './pages/admin/AdminCollectionsPage';
+import AdminSeoPage from './pages/admin/AdminSeoPage';
 
 // Layout
 import Navbar      from './components/Navbar';
@@ -140,6 +141,7 @@ export default function App() {
               <Route path="collections/new"    element={<AdminCollectionFormPage/>}/>
               <Route path="collections/:id/edit" element={<AdminCollectionFormPage/>}/>
               <Route path="products/import"     element={<AdminProductImportPage/>}/>
+              <Route path="seo"                  element={<AdminSeoPage/>}/>
             </Route>
 
             {/* Fallback — real 404, not a redirect. Better for SEO crawl budget. */}

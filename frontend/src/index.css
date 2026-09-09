@@ -9,7 +9,7 @@ img {
 }
 
 .prod-card-img {
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 9 / 16;
   overflow: hidden;
   contain: layout style;
 }
@@ -278,7 +278,7 @@ ul { list-style: none; }
   border-color: rgba(108,92,231,.25);
 }
 .prod-card-img {
-  aspect-ratio: 3/4;
+  aspect-ratio: 9 / 16;
   position: relative;
   overflow: hidden;
   background: var(--gradient-card);
@@ -288,6 +288,7 @@ ul { list-style: none; }
 .prod-card-img img {
   width: 100%; height: 100%;
   object-fit: cover;
+  object-position: center;
   transition: transform .55s var(--ease);
 }
 .prod-card:hover .prod-card-img img { transform: scale(1.06); }

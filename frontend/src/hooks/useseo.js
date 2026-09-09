@@ -106,12 +106,12 @@ export function customizationServiceSchema() {
     '@context': 'https://schema.org',
     '@type': 'Service',
     '@id': `${SITE}/#customization-service`,
-    serviceType: 'Clothing Customization',
-    name: 'SNERA Custom Clothing Design',
-    description: 'SNERA offers custom clothing design and printing in India — customize t-shirts and apparel with your own design, uploaded online and delivered nationwide.',
+    serviceType: 'Clothing & Gift Customization',
+    name: 'SNERA Custom Clothing & Gift Design',
+    description: 'SNERA offers custom clothing and gift design and printing in India — customize t-shirts, apparel, mugs, keychains, and other gift items with your own design, uploaded online and delivered nationwide.',
     provider: { '@id': `${SITE}/#organization` },
     areaServed: { '@type': 'Country', name: 'India' },
-    audience: { '@type': 'Audience', audienceType: 'Individuals and businesses seeking custom clothing' },
+    audience: { '@type': 'Audience', audienceType: 'Individuals and businesses seeking custom clothing and gifts' },
   };
 }
 
@@ -119,14 +119,14 @@ export function customizationServiceSchema() {
 export function clothingStoreSchema() {
   return {
     '@context': 'https://schema.org',
-    '@type': ['ClothingStore', 'OnlineStore'],
+    '@type': ['ClothingStore', 'GiftShop', 'OnlineStore'],
     '@id': `${SITE}/#store`,
     name: BRAND,
     url: SITE,
     logo: LOGO_PNG,
     image: `${SITE}/images/og-image.webp`,
     description:
-      'SNERA — order customizable t-shirts and premium minimal essentials online in India. Design your own t-shirt or shop essentials for men and women. Free shipping above ₹999.',
+      'SNERA — order customizable t-shirts, apparel, and personalised gifts online in India. Design your own t-shirt or gift item, or shop essentials for men and women. Free shipping above ₹999.',
     priceRange: '₹₹',
     currenciesAccepted: 'INR',
     paymentAccepted: 'Credit Card, Debit Card, UPI, Net Banking',
@@ -144,6 +144,7 @@ export function clothingStoreSchema() {
         { '@type': 'OfferCatalog', name: 'Bottoms' },
         { '@type': 'OfferCatalog', name: 'Outerwear' },
         { '@type': 'OfferCatalog', name: 'Accessories' },
+        { '@type': 'OfferCatalog', name: 'Gifts' },
       ],
     },
     sameAs: [IG, SITE],
@@ -265,7 +266,7 @@ export function productSchema(product) {
         deliveryTime: {
           '@type': 'ShippingDeliveryTime',
           handlingTime: { '@type': 'QuantitativeValue', minValue: 0, maxValue: 1, unitCode: 'DAY' },
-          transitTime: { '@type': 'QuantitativeValue', minValue: 2, maxValue: 7, unitCode: 'DAY' },
+          transitTime: { '@type': 'QuantitativeValue', minValue: 7, maxValue: 8, unitCode: 'DAY' },
         },
       },
       hasMerchantReturnPolicy: {
@@ -321,7 +322,7 @@ export function faqSchema(product) {
     },
     {
       q: `Is ${product.name} available for cash on delivery?`,
-      a: 'We currently support prepaid orders via card, UPI, and net banking for a smoother experience.',
+      a: 'Yes — SNERA supports Cash on Delivery on eligible orders, alongside prepaid options via card, UPI, and net banking.',
     },
   ];
 
@@ -342,11 +343,11 @@ export function genericFaqSchema(pageId = 'home') {
   const faqs = [
     {
       q: 'What is SNERA?',
-      a: 'SNERA is an Indian fashion brand offering customizable and custom-printed clothing — starting with t-shirts — alongside premium minimal essentials for men and women. Crafted in India, built to last.',
+      a: 'SNERA is an Indian fashion and gifting brand offering customizable and custom-printed clothing — starting with t-shirts — as well as personalised gift items, alongside premium minimal essentials for men and women. Crafted in India, built to last.',
     },
     {
-      q: 'Does SNERA offer clothing customization?',
-      a: 'Yes — SNERA offers custom clothing design. You can personalize a t-shirt with your own artwork or text, choose fabric and color, and have it printed and delivered anywhere in India.',
+      q: 'Does SNERA offer clothing and gift customization?',
+      a: 'Yes — SNERA offers custom clothing and gift design. You can personalize a t-shirt or a gift item (like a mug, keychain, or phone case) with your own artwork or text, choose colour and material, and have it printed and delivered anywhere in India.',
     },
     {
       q: 'Does SNERA offer free shipping?',

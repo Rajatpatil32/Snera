@@ -1,4 +1,5 @@
 const { google } = require('googleapis');
+const fs = require('fs');
 
 const MERCHANT_ID = process.env.GOOGLE_MERCHANT_ID;
 const MAX_RETRIES = 3;
@@ -51,9 +52,11 @@ function isValidImageUrl(url) {
 // ─── Get authenticated Content API client ────────────────────────────────────
 async function getClient() {
   if (!process.env.GOOGLE_APPLICATION_CREDENTIALS)
-    throw new Error('GOOGLE_APPLICATION_CREDENTIALS is not set in .env');
+    throw new Error('Google Merchant sync skipped — GOOGLE_APPLICATION_CREDENTIALS is not set in .env (this is fine if you are not using Google Merchant Center)');
+  if (!fs.existsSync(process.env.GOOGLE_APPLICATION_CREDENTIALS))
+    throw new Error(`Google Merchant sync skipped — credentials file not found at "${process.env.GOOGLE_APPLICATION_CREDENTIALS}". Either place your Google service-account JSON key at that path, update GOOGLE_APPLICATION_CREDENTIALS to the correct path, or remove it from .env if you don't use Google Merchant Center.`);
   if (!MERCHANT_ID)
-    throw new Error('GOOGLE_MERCHANT_ID is not set in .env');
+    throw new Error('Google Merchant sync skipped — GOOGLE_MERCHANT_ID is not set in .env');
 
   const auth = new google.auth.GoogleAuth({
     keyFile: process.env.GOOGLE_APPLICATION_CREDENTIALS,

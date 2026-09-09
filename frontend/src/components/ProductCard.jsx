@@ -99,7 +99,8 @@ export default function ProductCard({ product, index = 0, showFlip = false }) {
                 inset: 0,
                 width: '100%',
                 height: '100%',
-                objectFit: 'cover',
+                objectFit: 'contain',
+                objectPosition: 'center',
                 transition: 'all .7s ease-in-out',
                 filter: flipped ? 'brightness(.92)' : 'brightness(1)',
                 opacity: flipped ? 0 : 1,
@@ -118,7 +119,8 @@ export default function ProductCard({ product, index = 0, showFlip = false }) {
                 inset: 0,
                 width: '100%',
                 height: '100%',
-                objectFit: 'cover',
+                objectFit: 'contain',
+                objectPosition: 'center',
                 transition: 'all .7s ease-in-out',
                 filter: flipped ? 'brightness(1.08)' : 'brightness(.95)',
                 opacity: flipped ? 1 : 0,
@@ -134,7 +136,7 @@ export default function ProductCard({ product, index = 0, showFlip = false }) {
               alt={`${product.name}${activeGroup ? ` — ${activeGroup.name}` : ''}`}
               loading="lazy"
               decoding="async"
-              style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform .55s var(--ease)' }}
+              style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center', transition: 'transform .55s var(--ease)' }}
             />
           ) : (
             <div className="prod-card-inner">

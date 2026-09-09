@@ -579,14 +579,30 @@ export default function HomePage() {
           <div className="container" style={{ position: 'relative' }}>
             <div className="sect-head reveal" style={{
               display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
-              borderBottom: 'none', flexWrap: 'wrap', gap: '1rem',
+              borderBottom: 'none', flexWrap: 'wrap', gap: '1.5rem',
             }}>
-              <div>
-                <span className="label">Featured Collection</span>
-                <h2 style={{ marginBottom: 0 }}>{shelf.collection.name}</h2>
-                {shelf.collection.description && (
-                  <p style={{ marginTop: '.5rem', maxWidth: 480 }}>{shelf.collection.description}</p>
+              <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                {shelf.collection.image && (
+                  <div style={{
+                    width: shelf.collection.imageAspectRatio === '9:16' ? 140 : 220,
+                    aspectRatio: (shelf.collection.imageAspectRatio || '16:9').replace(':', ' / '),
+                    overflow: 'hidden', borderRadius: 'var(--radius)', flexShrink: 0,
+                  }}>
+                    <img
+                      src={shelf.collection.image}
+                      alt={shelf.collection.name}
+                      loading="lazy"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
+                    />
+                  </div>
                 )}
+                <div>
+                  <span className="label">Featured Collection</span>
+                  <h2 style={{ marginBottom: 0 }}>{shelf.collection.name}</h2>
+                  {shelf.collection.description && (
+                    <p style={{ marginTop: '.5rem', maxWidth: 480 }}>{shelf.collection.description}</p>
+                  )}
+                </div>
               </div>
               <Link
                 to={`/shop?category=${encodeURIComponent(shelf.collection.name)}`}
