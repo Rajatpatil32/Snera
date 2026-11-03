@@ -47,6 +47,7 @@ app.use('/api/products', require('./routes/products'));
 app.use('/api/orders',   require('./routes/orders'));
 app.use('/api/upload',   require('./routes/upload'));
 app.use('/api/mockups',  require('./routes/mockups'));
+app.use('/api/design',   require('./routes/design'));
 
 // Sitemap — mounted at /api/sitemap
 // Accessible at:
@@ -147,6 +148,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/snera')
   .then(() => {
     console.log('✓ MongoDB connected');
     seedAdmin();
+    require('./services/designModel').retrain(require('./models/DesignQuery')).catch(console.error);
   })
   .catch(err => console.error('✗ MongoDB connection error:', err));
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import API from '../utils/api';
 import SEOHead from '../components/SEOHead';
@@ -16,16 +16,17 @@ const STATUS_LABELS = {
 export default function TrackOrderPage() {
   const [searchParams] = useSearchParams();
   const [orderNum, setOrderNum] = useState(searchParams.get('order') || '');
+  const [contact, setContact]   = useState('');
   const [order, setOrder]       = useState(null);
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState('');
 
   const track = async (e) => {
     e?.preventDefault();
-    if (!orderNum.trim()) return;
+    if (!orderNum.trim() || !contact.trim()) return;
     setLoading(true); setError(''); setOrder(null);
     try {
-      const r = await API.get(`/orders/track/${orderNum.trim().toUpperCase()}`);
+      const r = await API.post('/orders/track', { orderNumber: orderNum.trim(), contact: contact.trim() });
       setOrder(r.data);
     } catch (err) {
       setError(err.response?.data?.error || 'Order not found. Check the order number and try again.');
@@ -33,11 +34,6 @@ export default function TrackOrderPage() {
       setLoading(false);
     }
   };
-
-  // Auto-track if order number in URL
-  useEffect(() => {
-    if (searchParams.get('order')) track();
-  }, []); // eslint-disable-line
 
   const stepIdx = order ? STATUS_STEPS.indexOf(order.status) : -1;
 
@@ -63,22 +59,28 @@ export default function TrackOrderPage() {
               fontFamily:'var(--serif)',fontWeight:300,
               fontSize:'clamp(2rem,4vw,3rem)',letterSpacing:'-.01em'
             }}>Track your <em style={{fontStyle:'italic',color:'var(--accent)'}}>order.</em></h1>
-            <p style={{fontSize:'.86rem',color:'var(--stone2)',marginTop:'.5rem'}}>Enter your order number to see real-time status.</p>
+            <p style={{fontSize:'.86rem',color:'var(--stone2)',marginTop:'.5rem'}}>Enter your order number and the email or phone used at checkout.</p>
           </div>
         </div>
 
         <div className="container" style={{paddingTop:'3rem',paddingBottom:'5rem',maxWidth:640}}>
           {/* Search form */}
-          <form onSubmit={track} style={{display:'flex',gap:0,marginBottom:'3rem'}}>
+          <form onSubmit={track} style={{display:'flex',flexDirection:'column',gap:'.75rem',marginBottom:'3rem'}}>
             <input
               type="text"
               value={orderNum}
               onChange={e => setOrderNum(e.target.value)}
-              placeholder="e.g. SNR01001"
+              placeholder="Order number, e.g. SNR01001"
               className="form-input"
-              style={{flex:1,borderRight:'none'}}
             />
-            <button type="submit" className="btn btn-dark" disabled={loading} style={{whiteSpace:'nowrap'}}>
+            <input
+              type="text"
+              value={contact}
+              onChange={e => setContact(e.target.value)}
+              placeholder="Email or phone used at checkout"
+              className="form-input"
+            />
+            <button type="submit" className="btn btn-dark" disabled={loading} style={{justifyContent:'center'}}>
               {loading ? '...' : 'Track'}
             </button>
           </form>

@@ -43,7 +43,7 @@ export default function ShippingPolicyPage() {
       <div className="container" style={{ padding: 'clamp(2rem,4vw,3rem) clamp(1.25rem,4vw,3rem) 0' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: '1px', background: 'var(--sand)', border: '1px solid var(--sand)', marginBottom: '2.5rem' }}>
           {[
-            { label: 'Standard Delivery', value: '5–7 Business Days' },
+            { label: 'Standard Delivery', value: '7–8 Business Days' },
             { label: 'Express Delivery', value: '2–3 Business Days' },
             { label: 'Free Shipping Above', value: '₹999' },
             { label: 'Ships From', value: 'India' },

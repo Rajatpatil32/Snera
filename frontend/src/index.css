@@ -631,3 +631,120 @@ ul { list-style: none; }
   from { opacity: 0; transform: scale(.92); }
   to   { opacity: 1; transform: none; }
 }
+/* ─── PRODUCT QUICK-VIEW POPUP ───────────────────────────────────────────────── */
+.qvm-backdrop {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(26,24,40,.55); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center; padding: 1rem;
+  animation: qvmFade .25s var(--ease) both;
+}
+.qvm {
+  position: relative; width: 100%; max-width: 880px; max-height: 90vh; overflow-y: auto;
+  display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1.25rem,3vw,2.25rem);
+  padding: clamp(1.25rem,3vw,2rem);
+  background: var(--white); border-radius: var(--radius-lg);
+  box-shadow: 0 30px 80px rgba(26,24,40,.35);
+  animation: qvmPop .35s var(--ease-spring) both;
+}
+.qvm-close {
+  position: absolute; top: .8rem; right: .8rem; z-index: 2;
+  width: 34px; height: 34px; border-radius: 50%; border: none; cursor: pointer;
+  background: var(--off); color: var(--ink); font-size: .85rem;
+  transition: background var(--t), color var(--t), transform var(--t);
+}
+.qvm-close:hover { background: var(--accent); color: var(--white); transform: rotate(90deg); }
+.qvm-main {
+  position: relative; aspect-ratio: 3/4; background: var(--off); border-radius: var(--radius);
+  overflow: hidden; display: flex; align-items: center; justify-content: center;
+}
+.qvm-img { width: 100%; height: 100%; object-fit: contain; animation: qvmFade .3s var(--ease) both; }
+@keyframes qvmFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes qvmPop  { from { opacity: 0; transform: translateY(20px) scale(.96); } to { opacity: 1; transform: none; } }
+@media (max-width: 720px) {
+  .qvm-backdrop { align-items: flex-end; padding: 0; }
+  .qvm { grid-template-columns: 1fr; max-height: 92vh; border-radius: var(--radius-lg) var(--radius-lg) 0 0; animation-name: qvmSheet; }
+  .qvm-main { aspect-ratio: 4/4.2; }
+}
+@keyframes qvmSheet { from { transform: translateY(100%); } to { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .qvm, .qvm-backdrop, .qvm-img { animation: none !important; } }
+
+/* ─── LANDING PAGE MOTION (premium) ──────────────────────────────────────────── */
+:root { --ez: cubic-bezier(.16, 1, .3, 1); }
+
+/* Scroll progress bar */
+#scroll-progress {
+  position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 1200;
+  background: var(--gradient); transform-origin: 0 50%; transform: scaleX(0); pointer-events: none;
+}
+
+/* Headline: each line slides up out of a mask */
+.h-line { display: block; overflow: hidden; padding-bottom: .08em; }
+.h-line > span { display: inline-block; transform: translateY(110%); animation: lineUp 1.1s var(--ez) forwards; }
+@keyframes lineUp { to { transform: none; } }
+
+/* Slow gradient flow on accent text */
+.gradient-text { background-size: 200% auto; animation: gradShift 8s linear infinite; }
+@keyframes gradShift { to { background-position: 200% center; } }
+
+/* Hero image: settles in, floats, tilts with the cursor */
+.hero-float { animation: heroFloat 7s ease-in-out infinite; }
+@keyframes heroFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+.hero-media-card {
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform .6s var(--ez); will-change: transform;
+}
+.hero-media-card img { animation: imgSettle 1.8s var(--ez) .15s backwards; }
+@keyframes imgSettle { from { transform: scale(1.28); } }
+
+/* Floating glass chips */
+.hero-chip {
+  position: absolute; z-index: 3; display: flex; align-items: center; gap: .45rem;
+  padding: .55rem .95rem; border-radius: 30px; font-size: .68rem; font-weight: 700; letter-spacing: .06em; color: var(--ink);
+  background: rgba(255,255,255,.86); backdrop-filter: blur(14px);
+  border: 1px solid rgba(108,92,231,.14); box-shadow: 0 12px 30px rgba(108,92,231,.14);
+  animation: chipFloat 5s ease-in-out infinite;
+}
+.hero-chip.c1 { top: 9%; left: -4%; }
+.hero-chip.c2 { top: 54%; right: -5%; animation-delay: -2.3s; }
+@keyframes chipFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+@media (max-width: 480px) { .hero-chip { display: none; } }
+
+/* Scroll reveal: rise + un-blur with a long, soft ease */
+.reveal { opacity: 0; transform: translateY(36px); filter: blur(6px);
+  transition: opacity 1s var(--ez), transform 1s var(--ez), filter 1s var(--ez); }
+.reveal.in { opacity: 1; transform: none; filter: none; }
+
+/* Product cards: staggered rise (cards keep their own hover transition) */
+.prod-grid > .prod-card.in { animation: cardRise .9s var(--ez) backwards; }
+.prod-grid > .prod-card.in:nth-child(4n+2) { animation-delay: .08s; }
+.prod-grid > .prod-card.in:nth-child(4n+3) { animation-delay: .16s; }
+.prod-grid > .prod-card.in:nth-child(4n+4) { animation-delay: .24s; }
+@keyframes cardRise { from { opacity: 0; transform: translateY(40px) scale(.96); filter: blur(5px); } }
+
+/* How-it-works: connector line draws itself */
+.hiw-grid::before {
+  content: ''; position: absolute; left: 16.67%; right: 16.67%; top: 76px; height: 2px; z-index: 0;
+  background: repeating-linear-gradient(90deg, var(--accent) 0 8px, transparent 8px 16px); opacity: .45;
+  transform: scaleX(0); transform-origin: left; transition: transform 1.6s var(--ez) .4s;
+}
+.hiw-grid.in::before { transform: scaleX(1); }
+.hiw-card { z-index: 1; }
+@media (max-width: 900px) { .hiw-grid::before { display: none; } }
+
+/* Button shine sweep */
+.btn-gradient::after {
+  content: ''; position: absolute; top: 0; left: -120%; width: 55%; height: 100%; z-index: 1;
+  background: linear-gradient(110deg, transparent, rgba(255,255,255,.45), transparent);
+  transform: skewX(-20deg); transition: left .9s var(--ez); pointer-events: none;
+}
+.btn-gradient:hover::after { left: 140%; }
+
+.marquee:hover .marquee-track { animation-play-state: paused; }
+
+@media (prefers-reduced-motion: reduce) {
+  .h-line > span { animation: none; transform: none; }
+  .gradient-text, .hero-float, .hero-chip, .hero-media-card img, .prod-grid > .prod-card.in { animation: none !important; }
+  .reveal { opacity: 1; transform: none; filter: none; transition: none; }
+  .hero-media-card { transform: none; }
+  .hiw-grid::before { transform: scaleX(1); transition: none; }
+}

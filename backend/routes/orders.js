@@ -155,11 +155,22 @@ router.post('/', async (req, res) => {
   }
 });
 
-// GET /api/orders/track/:orderNumber  — public tracking
-router.get('/track/:orderNumber', async (req, res) => {
+// POST /api/orders/track  — public tracking (order number + email OR phone must match)
+router.post('/track', async (req, res) => {
   try {
-    const order = await Order.findOne({ orderNumber: req.params.orderNumber.toUpperCase() });
-    if (!order) return res.status(404).json({ error: 'Order not found. Please check the order number.' });
+    const orderNumber = String(req.body.orderNumber || '').trim().toUpperCase();
+    const contact     = String(req.body.contact || '').trim().toLowerCase();
+    if (!orderNumber || !contact)
+      return res.status(400).json({ error: 'Order number and email or phone are required.' });
+
+    const order  = await Order.findOne({ orderNumber });
+    const digits = contact.replace(/\D/g, '');
+    const verified = order && (
+      order.customer.email.toLowerCase() === contact ||
+      (digits.length >= 10 && order.customer.phone.replace(/\D/g, '').slice(-10) === digits.slice(-10))
+    );
+    // Same message for "no such order" and "wrong contact" so order numbers can't be probed
+    if (!verified) return res.status(404).json({ error: 'No order found with those details. Please check and try again.' });
 
     const { getCourierTrackingUrl } = require('../services/email');
     const courierTrackingUrl = order.trackingId

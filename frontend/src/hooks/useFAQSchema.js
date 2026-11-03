@@ -19,7 +19,7 @@ const SNERA_FAQS = [
   {
     question: 'How long does custom t-shirt production take?',
     answer:
-      'Custom orders typically take 10-14 days from final confirmation. We prioritise quality over speed to ensure your customised t-shirt meets our exacting standards. Bulk orders may have different timelines — connect with our team for specifics.',
+      'Custom orders typically take 7–8 days from final confirmation. We prioritise quality over speed to ensure your customised t-shirt meets our exacting standards. Bulk orders may have different timelines — connect with our team for specifics.',
   },
   {
     question: 'Can I customise an existing SNERA design?',

@@ -1,9 +1,8 @@
 import React, { useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { fmt, getImageUrl, BKGS } from '../utils/api';
+import ProductQuickView from './ProductQuickView';
 
 export default function ProductCard({ product, index = 0, showFlip = false }) {
-  const navigate = useNavigate();
   const bg = BKGS[index % BKGS.length];
 
   // ── Colour state ────────────────────────────────────────────────────────────
@@ -22,6 +21,7 @@ export default function ProductCard({ product, index = 0, showFlip = false }) {
   const [activeColour, setActiveColour] = useState(defaultIdx);
   const [imgIdx, setImgIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
+  const [quickOpen, setQuickOpen] = useState(false);
 
   // Active group data
   const activeGroup = hasGroups ? colorGroups[activeColour] : null;
@@ -39,15 +39,13 @@ export default function ProductCard({ product, index = 0, showFlip = false }) {
     setFlipped(false);
   }, []);
 
-  const go = () => {
-    const query = hasGroups ? `?colour=${activeColour}` : '';
-    navigate(`/product/${product.slug}${query}`);
-  };
+  const go = () => setQuickOpen(true);
 
   const handleMouseEnter = () => { if (showFlip && secondaryImage) setFlipped(true); };
   const handleMouseLeave = () => { if (showFlip) setFlipped(false); };
 
   return (
+    <>
     <article
       className="prod-card reveal"
       onClick={go}
@@ -214,5 +212,9 @@ export default function ProductCard({ product, index = 0, showFlip = false }) {
         </div>
       </div>
     </article>
+    {quickOpen && (
+      <ProductQuickView product={product} initialColour={activeColour} onClose={() => setQuickOpen(false)} />
+    )}
+    </>
   );
 }

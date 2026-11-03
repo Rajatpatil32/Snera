@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../utils/api';
 import SEOHead from '../components/SEOHead';
@@ -60,11 +60,77 @@ function HowItWorksSection() {
   );
 }
 
+// Shown only if the /design/suggest API is unreachable
+const fallbackGuidance = (category) => {
+  const gift = /mug|keychain|case|bag|item/i.test(category);
+  return {
+    silhouette: gift ? 'Premium Matte Finish' : 'Heavyweight Boxy Oversized Tee',
+    palette:    'Deep Cobalt Blue artwork on Cream base',
+    fabric:     gift ? 'Durable Ceramic / Acrylic Material' : '100% Super-Combed 220 GSM Premium Cotton',
+    detail:     gift ? 'High-resolution UV Print' : 'High-density Screen Print on Chest & Back',
+  };
+};
+
+// ── Premium-motion helpers ────────────────────────────────────────────────────
+function ScrollProgress() {
+  useEffect(() => {
+    const bar = document.getElementById('scroll-progress');
+    const onScroll = () => {
+      const h = document.documentElement;
+      bar.style.transform = `scaleX(${h.scrollTop / ((h.scrollHeight - h.clientHeight) || 1)})`;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+  return <div id="scroll-progress" aria-hidden="true" />;
+}
+
+// Counts "220 GSM" / "12+" / "4.9★" up from 0 when it scrolls into view
+function AnimatedStat({ value }) {
+  const ref = useRef(null);
+  const m = String(value).match(/^(\d+(?:\.\d+)?)(.*)$/);
+  const [shown, setShown] = useState(m ? 0 : null);
+  useEffect(() => {
+    if (!m) return;
+    const target = parseFloat(m[1]);
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setShown(target); return; }
+    const io = new IntersectionObserver(([e]) => {
+      if (!e.isIntersecting) return;
+      io.disconnect();
+      const t0 = performance.now(), dur = 1400;
+      const tick = t => {
+        const p = Math.min((t - t0) / dur, 1);
+        setShown(target * (1 - Math.pow(1 - p, 4)));
+        if (p < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    });
+    io.observe(ref.current);
+    return () => io.disconnect();
+  }, []); // eslint-disable-line
+  const dec = m ? (m[1].split('.')[1] || '').length : 0;
+  return <span ref={ref}>{m ? `${shown.toFixed(dec)}${m[2]}` : value}</span>;
+}
+
+const tiltMove = e => {
+  const card = e.currentTarget.querySelector('.hero-media-card');
+  if (!card) return;
+  const r = e.currentTarget.getBoundingClientRect();
+  card.style.setProperty('--ry', `${((e.clientX - r.left) / r.width - .5) * 9}deg`);
+  card.style.setProperty('--rx', `${-((e.clientY - r.top) / r.height - .5) * 9}deg`);
+};
+const tiltLeave = e => {
+  const card = e.currentTarget.querySelector('.hero-media-card');
+  if (card) { card.style.setProperty('--rx', '0deg'); card.style.setProperty('--ry', '0deg'); }
+};
+
 function ConceptSection() {
   const [category, setCategory] = useState('');
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
   const [guidance, setGuidance] = useState(null);
+  const [queryId, setQueryId] = useState(null);
   const [error, setError] = useState('');
 
   const handleSubmit = async () => {
@@ -72,44 +138,20 @@ function ConceptSection() {
     setError('');
     setLoading(true);
     setGuidance(null);
-    const catLine = category ? `Item type: ${category}\n` : '';
-    const prompt = `You are a creative product design consultant for SNERA, a brand in India that prints custom t-shirts and personalised gifts (mugs, keychains, phone cases, tote bags, apparel, and more).
-A customer shared their custom design concept:
-${catLine}Concept: "${text.trim()}"
-Respond ONLY with a JSON object, no markdown, tailored to the item type above (if it's apparel, talk about fit/fabric; if it's a gift item like a mug or keychain, talk about material/finish instead):
-{"silhouette":"fit or form recommendation appropriate to the item, e.g. Boxy Oversized Fit for a tee, or Ceramic Matte Finish for a mug","palette":"2-3 color combinations for the print/design and base item","fabric":"material recommendation appropriate to the item (cotton GSM for apparel, or material like ceramic/acrylic/ABS for gifts)","detail":"one specific print/engraving technique e.g. Puff Print on Chest, or UV Print on Mug"}`;
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 400,
-          messages: [{ role: 'user', content: prompt }]
-        })
-      });
-      const data = await res.json();
-      const raw = data.content.map(b => b.text || '').join('').replace(/```json|```/g, '').trim();
-      setGuidance(JSON.parse(raw));
+      const r = await API.post('/design/suggest', { category, concept: text.trim() });
+      setGuidance(r.data.guidance);
+      setQueryId(r.data.id);
     } catch {
-      setGuidance({
-        silhouette: category && /mug|keychain|case|bag|item/i.test(category)
-          ? 'Premium Matte Finish'
-          : 'Heavyweight Boxy Oversized Tee',
-        palette: 'Deep Cobalt Blue artwork on Cream base',
-        fabric: category && /mug|keychain|case|bag|item/i.test(category)
-          ? 'Durable Ceramic / Acrylic Material'
-          : '100% Super-Combed 220 GSM Premium Cotton',
-        detail: category && /mug|keychain|case|bag|item/i.test(category)
-          ? 'High-resolution UV Print'
-          : 'High-density Screen Print on Chest & Back'
-      });
+      setGuidance(fallbackGuidance(category));
+      setQueryId(null);
     } finally {
       setLoading(false);
     }
   };
 
   const openWA = () => {
+    if (queryId) API.post(`/design/${queryId}/accept`).catch(() => {}); // real data → retrains the model
     const g = guidance;
     const catLine = category ? `*Type:* ${category}\n` : '';
     const msg = `Hello SNERA 👋\n\nI want to design a custom item!\n\n*My Concept:*\n"${text.trim()}"\n\n${catLine}*Design Specs:*\n• *Fit / Form:* ${g.silhouette}\n• *Colorway:* ${g.palette}\n• *Material:* ${g.fabric}\n• *Print Detail:* ${g.detail}\n\nLet's get this made!`;
@@ -416,6 +458,8 @@ export default function HomePage() {
         })}
       />
 
+      <ScrollProgress />
+
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
       <section id="hero" className="hero-sect" style={{
         minHeight: '100svh', paddingTop: 'var(--nav-h)',
@@ -446,14 +490,14 @@ export default function HomePage() {
             <span style={{ fontSize: '.68rem', letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--accent2)', fontWeight: 700 }}>Custom T-Shirts · Printed in India</span>
           </div>
 
-          <div style={{ opacity: 0, animation: 'fadeUp .9s var(--ease) .34s forwards', marginBottom: '1.5rem' }}>
+          <div style={{ marginBottom: '1.5rem' }}>
             <h1 style={{
               fontFamily: 'var(--sans)', fontWeight: 700,
               fontSize: 'clamp(2.8rem,6.2vw,5.5rem)', lineHeight: 1.05, letterSpacing: '-.03em', color: 'var(--ink)'
             }}>
-              DESIGN.<br />
-              <span className="gradient-text">PRINT. WEAR.</span><br />
-              YOUR WAY.
+              <span className="h-line"><span style={{ animationDelay: '.30s' }}>DESIGN.</span></span>
+              <span className="h-line"><span style={{ animationDelay: '.45s' }}><span className="gradient-text">PRINT. WEAR.</span></span></span>
+              <span className="h-line"><span style={{ animationDelay: '.60s' }}>YOUR WAY.</span></span>
             </h1>
           </div>
 
@@ -461,7 +505,7 @@ export default function HomePage() {
             fontSize: '1rem', color: 'var(--stone2)', lineHeight: 1.75, maxWidth: '40ch', marginBottom: '2.5rem',
             opacity: 0, animation: 'fadeUp .9s var(--ease) .48s forwards'
           }}>
-            SNERA lets you design your own custom t-shirts — printed on 220 GSM heavyweight cotton and delivered across India in 5 days.
+            SNERA lets you design your own custom t-shirts — printed on 220 GSM heavyweight cotton and delivered across India in 7–8 days.
           </p>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem', flexWrap: 'wrap', opacity: 0, animation: 'fadeUp .9s var(--ease) .62s forwards' }}>
@@ -488,7 +532,7 @@ export default function HomePage() {
               <React.Fragment key={l}>
                 {i > 0 && <div style={{ width: 1, height: 28, background: 'var(--sand)', flexShrink: 0 }} />}
                 <div>
-                  <div style={{ fontFamily: 'var(--sans)', fontSize: '1.4rem', fontWeight: 700, color: 'var(--ink)' }}>{n}</div>
+                  <div style={{ fontFamily: 'var(--sans)', fontSize: '1.4rem', fontWeight: 700, color: 'var(--ink)' }}><AnimatedStat value={n} /></div>
                   <div style={{ fontSize: '.6rem', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--accent)', marginTop: '.1rem', fontWeight: 600 }}>{l}</div>
                 </div>
               </React.Fragment>
@@ -497,7 +541,10 @@ export default function HomePage() {
         </div>
 
         {/* Right Graphic Mockup */}
-        <div className="hero-media" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', zIndex: 1 }}>
+        <div className="hero-media" onMouseMove={tiltMove} onMouseLeave={tiltLeave} style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', zIndex: 1 }}>
+          <div className="hero-float" style={{ position: 'relative', width: '100%', maxWidth: 480, display: 'flex', justifyContent: 'center' }}>
+            <span className="hero-chip c1">✦ 220 GSM Cotton</span>
+            <span className="hero-chip c2">🇮🇳 Printed in India</span>
           <div className="hero-media-card" style={{
             position: 'relative', width: '100%', maxWidth: '480px', aspectRatio: '4/5',
             borderRadius: 'var(--radius-lg)', overflow: 'hidden',
@@ -525,6 +572,7 @@ export default function HomePage() {
               </div>
               <span style={{ fontSize: '1.5rem' }}>👕</span>
             </div>
+          </div>
           </div>
         </div>
       </section>
