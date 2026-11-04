@@ -28,7 +28,7 @@ function HowItWorksSection() {
       icon: '📦',
       step: '03',
       title: 'Printed & Delivered',
-      desc: 'Handcrafted and screen/DTG printed in India. Delivered to your doorstep in 7–8 business days.'
+      desc: 'Handcrafted and screen/DTG printed in India. Delivered to your doorstep in 5–7 business days.'
     }
   ];
 
@@ -125,6 +125,100 @@ const tiltLeave = e => {
   if (card) { card.style.setProperty('--rx', '0deg'); card.style.setProperty('--ry', '0deg'); }
 };
 
+// ── Promo video: lazy-loaded, muted loop, plays only while visible ────────────
+const PROMO_VIDEO = 'https://suvidhasetu.netraa.co.in/uploads/landing-page-video-promotion.mp4';
+
+function PromoVideo() {
+  const wrapRef = useRef(null);
+  const videoRef = useRef(null);
+  const [load, setLoad] = useState(false);
+  const [muted, setMuted] = useState(true);
+  const [failed, setFailed] = useState(false);
+  const [ratio, setRatio] = useState(16 / 9);
+  const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  useEffect(() => {
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) setLoad(true);          // start downloading only when near the screen
+      const v = videoRef.current;
+      if (!v) return;
+      if (e.isIntersecting && !reduce) v.play().catch(() => {}); else v.pause();
+    }, { rootMargin: '200px', threshold: 0.25 });
+    io.observe(wrapRef.current);
+    return () => io.disconnect();
+  }, [reduce]);
+
+  if (failed) return null; // video missing → no broken block on the page
+
+  const toggleSound = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = !v.muted;
+    setMuted(v.muted);
+    if (!v.muted) v.play().catch(() => {});
+  };
+
+  return (
+    <section className="sect" aria-label="SNERA video" style={{ background: 'var(--off)', padding: 'clamp(3rem,7vw,6rem) 0' }}>
+      <div className="container" style={{ maxWidth: 1000 }}>
+        <div className="sect-head" style={{ textAlign: 'center' }}>
+          <span className="label">See it in action</span>
+          <h2 style={{ fontFamily: 'var(--sans)', fontWeight: 700, fontSize: 'clamp(1.6rem,3.6vw,2.6rem)', lineHeight: 1.15, margin: '.6rem 0' }}>
+            From your idea to a printed tee
+          </h2>
+          <p style={{ color: 'var(--stone2)', fontSize: '.95rem', maxWidth: 560, margin: '0 auto' }}>
+            Design it, approve the preview, and we print and deliver it across India.
+          </p>
+        </div>
+        <div ref={wrapRef} className="reveal" style={{
+          position: 'relative', width: '100%', maxWidth: ratio < 1 ? 380 : '100%', margin: '0 auto',
+          aspectRatio: String(ratio), borderRadius: 'var(--radius-lg)', overflow: 'hidden', background: '#14121f',
+          boxShadow: '0 30px 80px rgba(26,24,40,.25)',
+        }}>
+          {load && (
+            <video
+              ref={videoRef}
+              src={PROMO_VIDEO}
+              autoPlay={!reduce}
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              controls={reduce}
+              onLoadedMetadata={e => { const v = e.currentTarget; if (v.videoWidth && v.videoHeight) setRatio(v.videoWidth / v.videoHeight); }}
+              onError={() => setFailed(true)}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            />
+          )}
+          {!reduce && load && (
+            <button type="button" onClick={toggleSound} aria-label={muted ? 'Turn sound on' : 'Turn sound off'} style={{
+              position: 'absolute', right: '1rem', bottom: '1rem', width: 42, height: 42, borderRadius: '50%',
+              border: 'none', cursor: 'pointer', background: 'rgba(20,18,31,.65)', color: '#fff', fontSize: '1rem',
+              backdropFilter: 'blur(8px)',
+            }}>{muted ? '🔇' : '🔊'}</button>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Hero animation: static file in /public, shown just below the hero ─────────
+function HeroAnimation() {
+  return (
+    <section aria-label="SNERA custom tees and gifts" style={{ background: '#f7f5ff' }}>
+      <iframe
+        src="/snera-hero-video.html"
+        title="SNERA custom tees, LED lamps, keychains and photo frames"
+        loading="lazy"
+        scrolling="no"
+        tabIndex={-1}
+        style={{ display: 'block', width: '100%', maxWidth: 1280, aspectRatio: '16 / 9', margin: '0 auto', border: 0 }}
+      />
+    </section>
+  );
+}
+
 function ConceptSection() {
   const [category, setCategory] = useState('');
   const [text, setText] = useState('');
@@ -183,7 +277,7 @@ function ConceptSection() {
               {[
                 ['🎨 Unlimited Print Possibilities', 'Front, back, sleeve prints, puff print, DTG, or high-density screen printing.'],
                 ['👕 220 GSM Heavyweight Cotton', 'Pre-shrunk, bio-washed fabric engineered for durability and ultimate comfort.'],
-                ['⚡ Fast Delivery', 'Custom orders prepared, printed, and shipped anywhere in India in 7–8 business days.'],
+                ['⚡ Fast Delivery', 'Custom orders prepared, printed, and shipped anywhere in India in 5–7 business days.'],
               ].map(([title, body], i) => (
                 <div key={i} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
                   <div style={{
@@ -311,7 +405,7 @@ const WHY = [
   {
     icon: '🚀',
     title: 'Fast Delivery Across India',
-    body: 'Every custom order is printed on-demand and delivered directly to your home within 7–8 business days.'
+    body: 'Every custom order is printed on-demand and delivered directly to your home within 5–7 business days.'
   },
 ];
 
@@ -321,7 +415,7 @@ const HOME_FAQS = [
   { q: 'Is there a minimum order quantity (MOQ) for custom tees?', a: 'No! We print single custom t-shirts as well as bulk orders for events, brands, and groups.' },
   { q: 'Does SNERA offer free shipping?', a: 'Yes! Free shipping on all orders above ₹999 across India.' },
   { q: 'What printing techniques do you use?', a: 'We offer Direct-to-Garment (DTG), Screen Printing, Puff Printing, and Embroidery depending on your design requirements.' },
-  { q: 'How long does custom t-shirt delivery take?', a: 'Your order is printed and dispatched within 24–48 hours, reaching you in 7–8 business days anywhere in India.' },
+  { q: 'How long does custom t-shirt delivery take?', a: 'Your order is printed and dispatched within 24–48 hours, reaching you in 5–7 business days anywhere in India.' },
 ];
 
 function HomeFAQ() {
@@ -446,14 +540,14 @@ export default function HomePage() {
   return (
     <>
       <SEOHead
-        title="Customizable T-Shirts India | Design Your Own Tee — SNERA"
-        description="Design and order custom t-shirts online with SNERA. Upload your design, choose premium 220 GSM cotton, and get it printed and delivered across India. Free shipping above ₹999."
+        title="Custom T-Shirt Printing India — On Demand, No Minimum | SNERA"
+        description="On-demand custom t-shirt printing in India with SNERA. Design your own tee. Upload your design, choose premium 220 GSM cotton, and get it printed and delivered across India. Free shipping above ₹999."
         url="https://snera.in"
         schemas={useSEO({
           type: 'home',
           pageUrl: '/',
-          pageName: 'Customizable T-Shirts India | Design Your Own Tee — SNERA',
-          pageDescription: 'Design and order custom t-shirts online with SNERA. Upload your design, choose premium 220 GSM cotton, and get it printed and delivered across India.',
+          pageName: 'Custom T-Shirt Printing India — On Demand, No Minimum | SNERA',
+          pageDescription: 'On-demand custom t-shirt printing in India with SNERA. Design your own tee. Upload your design, choose premium 220 GSM cotton, and get it printed and delivered across India.',
           breadcrumbs: [{ name: 'Home', url: '/' }],
         })}
       />
@@ -487,7 +581,7 @@ export default function HomePage() {
         }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '.6rem', padding: '.4rem .9rem', background: 'var(--white)', borderRadius: '30px', border: '1px solid rgba(108,92,231,.18)', boxShadow: '0 4px 14px rgba(108,92,231,.08)', marginBottom: '1.75rem', width: 'fit-content', opacity: 0, animation: 'fadeUp .8s var(--ease) .2s forwards' }}>
             <span style={{ fontSize: '.7rem' }}>✨</span>
-            <span style={{ fontSize: '.68rem', letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--accent2)', fontWeight: 700 }}>Custom T-Shirts · Printed in India</span>
+            <span style={{ fontSize: '.68rem', letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--accent2)', fontWeight: 700 }}>On-Demand T-Shirt Printing · India</span>
           </div>
 
           <div style={{ marginBottom: '1.5rem' }}>
@@ -505,7 +599,7 @@ export default function HomePage() {
             fontSize: '1rem', color: 'var(--stone2)', lineHeight: 1.75, maxWidth: '40ch', marginBottom: '2.5rem',
             opacity: 0, animation: 'fadeUp .9s var(--ease) .48s forwards'
           }}>
-            SNERA lets you design your own custom t-shirts — printed on 220 GSM heavyweight cotton and delivered across India in 7–8 days.
+            SNERA prints custom t-shirts on demand — design your own, no minimum order, printed on 220 GSM heavyweight cotton and delivered across India in 5–7 days.
           </p>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem', flexWrap: 'wrap', opacity: 0, animation: 'fadeUp .9s var(--ease) .62s forwards' }}>
@@ -526,7 +620,7 @@ export default function HomePage() {
             {[
               ['220 GSM', 'Heavy Cotton'],
               ['12+', 'Colorways'],
-              ['7–8 Day', 'Fast Delivery'],
+              ['5–7 Day', 'Fast Delivery'],
               ['4.9★', 'Customer Rating']
             ].map(([n, l], i) => (
               <React.Fragment key={l}>
@@ -592,22 +686,22 @@ export default function HomePage() {
         }
       `}</style>
 
+      {/* SNERA hero animation directly after the main hero */}
+      <HeroAnimation />
+
       {/* ── MARQUEE ───────────────────────────────────────────────────────── */}
       <div className="marquee">
         <div className="marquee-track">
-          {['Custom T-Shirts', '220 GSM Heavyweight Cotton', 'Design Your Own Tee', 'Free Shipping ₹999+', 'Screen & DTG Printing', 'Delivered in 7–8 Days', 'Made in India'].map((t, i) => (
+          {['Custom T-Shirts', '220 GSM Heavyweight Cotton', 'Design Your Own Tee', 'Free Shipping ₹999+', 'Screen & DTG Printing', 'Delivered in 5–7 Days', 'Made in India'].map((t, i) => (
             <span key={i} className="marquee-item">{t}</span>
           ))}
         </div>
       </div>
 
-      {/* ── HOW IT WORKS ──────────────────────────────────────────────────── */}
-      <HowItWorksSection />
-
       {/* ── SHOP BY COLLECTION ───────────────────────────────────────────── */}
       {shelves.map((shelf, idx) => (
+        <React.Fragment key={shelf.collection._id}>
         <section
-          key={shelf.collection._id}
           className="sect"
           style={{
             borderTop: '1px solid var(--sand)',
@@ -668,10 +762,15 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+        {idx === 0 && <PromoVideo />}
+        </React.Fragment>
       ))}
 
       {/* ── DESIGN STUDIO / CONCEPT SECTION ───────────────────────────────── */}
       <ConceptSection />
+
+      {/* ── HOW IT WORKS ──────────────────────────────────────────────────── */}
+      <HowItWorksSection />
 
       {/* ── WHY SNERA ─────────────────────────────────────────────────────── */}
       <section className="sect why-sect" id="why" style={{ background: 'var(--off)', borderTop: '1px solid var(--sand)' }}>

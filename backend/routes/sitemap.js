@@ -18,6 +18,7 @@
 const router  = require('express').Router();
 const Product = require('../models/Product');
 const Blog    = require('../models/Blog');
+const seoSlugs = require('../data/seoSlugs.json');
 
 const BASE     = process.env.FRONTEND_URL || 'https://snera.in';
 const API_BASE = process.env.BACKEND_URL  || 'https://snera.in';
@@ -100,11 +101,12 @@ router.get('/pages.xml', (req, res) => {
     { loc: '/size-guide',     priority: '0.8', changefreq: 'monthly' },
     { loc: '/care-guide',     priority: '0.7', changefreq: 'monthly' },
     { loc: '/contact',        priority: '0.7', changefreq: 'monthly' },
-    { loc: '/track-order',    priority: '0.5', changefreq: 'monthly' },
     { loc: '/privacy-policy', priority: '0.3', changefreq: 'yearly'  },
     { loc: '/refund-policy',  priority: '0.3', changefreq: 'yearly'  },
     { loc: '/terms',          priority: '0.3', changefreq: 'yearly'  },
     { loc: '/shipping-policy',priority: '0.3', changefreq: 'yearly'  },
+    { loc: '/custom',         priority: '0.9', changefreq: 'weekly'  },
+    ...seoSlugs.map(s => ({ loc: `/custom/${s}`, priority: '0.8', changefreq: 'monthly' })),
   ];
 
   const urls = pages.map(p => `

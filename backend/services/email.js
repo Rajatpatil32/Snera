@@ -198,7 +198,7 @@ function buildOrderConfirmationHTML(order) {
               ${[
       ['📦', 'Order Processing', 'We\'re picking and packing your items carefully.'],
       ['🚚', 'Shipped', 'You\'ll receive a tracking number once dispatched.'],
-      ['🏠', 'Delivered', 'Expected within 7–8 business days.'],
+      ['🏠', 'Delivered', 'Expected within 5–7 business days.'],
     ].map(([icon, title, desc]) => `
                 <tr>
                   <td width="36" valign="top" style="padding-bottom:14px;font-size:18px;">${icon}</td>

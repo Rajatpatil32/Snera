@@ -86,7 +86,7 @@ export default function Footer() {
             </div>
           </div>
           {[
-            {head:'Shop Apparel', links:[['New Arrivals','/shop'],['Men\'s Tees','/shop?gender=Men'],['Women\'s Tees','/shop?gender=Women'],['Unisex Collection','/shop?gender=Unisex']]},
+            {head:'Shop Apparel', links:[['New Arrivals','/shop'],['Men\'s Tees','/shop?gender=Men'],['Women\'s Tees','/shop?gender=Women'],['Unisex Collection','/shop?gender=Unisex'],['Custom Printing','/custom']]},
             {head:'Customer Care', links:[['Track Order','/track-order'],['Returns & Refunds','/refund-policy'],['Contact Us','/contact'],['Size Guide','/size-guide'],['Care Guide','/care-guide']]},
             {head:'Legal & Policy', links:[['Privacy Policy','/privacy-policy'],['Terms & Conditions','/terms'],['Shipping Policy','/shipping-policy']]},
           ].map(col => (

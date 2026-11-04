@@ -6,6 +6,8 @@ User-agent: *
 Allow: /
 Allow: /shop
 Allow: /product/
+Allow: /custom
+Allow: /custom/
 Allow: /privacy-policy
 Allow: /refund-policy
 Allow: /terms

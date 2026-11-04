@@ -16,6 +16,8 @@ export default function SEOHead({
   description = 'Premium essentials crafted for those who believe the quietest statement is often the loudest. Shop SNERA — minimal, timeless fashion.',
   image = 'https://snera.in/images/og-image.webp',
   url = 'https://snera.in',
+  noindex = false,                       // used by Checkout / Order success / Track order
+  canonical: canonicalOverride = null,
   product = null,    // kept for og:type + product price meta only (NOT for schema generation)
   schemas = [],      // all JSON-LD comes from useSEO hook, not built here
 }) {
@@ -29,8 +31,8 @@ export default function SEOHead({
     : null;
   const ogTitle         = product?.seo?.ogTitle         || metaTitle;
   const ogDescription   = product?.seo?.ogDescription   || metaDescription;
-  const canonical       = product?.seo?.canonicalUrl    || url;
-  const noIndex         = product?.seo?.noIndex         || false;
+  const canonical       = product?.seo?.canonicalUrl    || canonicalOverride || url;
+  const noIndex         = product?.seo?.noIndex         || noindex;
 
   return (
     <Helmet>

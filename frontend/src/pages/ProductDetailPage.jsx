@@ -429,7 +429,7 @@ export default function ProductDetailPage() {
             },
             {
               q: 'How long does delivery take?',
-              a: 'Orders are dispatched within 24–48 hours. Standard delivery takes 7–8 business days. Express delivery (2–3 days) is available at checkout.',
+              a: 'Orders are dispatched within 24–48 hours. Standard delivery takes 5–7 business days. Express delivery (2–3 days) is available at checkout.',
             },
             {
               q: 'What payment methods are accepted?',

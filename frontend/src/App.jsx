@@ -12,6 +12,7 @@ import CartDrawer  from './components/CartDrawer';
 import Toast       from './components/Toast';
 
 // Public pages
+import SeoLandingPage from './pages/SeoLandingPage';
 import HomePage          from './pages/HomePage';
 import ShopPage          from './pages/ShopPage';
 import ProductDetailPage from './pages/ProductDetailPage';
@@ -114,6 +115,8 @@ export default function App() {
               <StoreLayout><ShippingPolicyPage/></StoreLayout>
             }/>
 
+            <Route path="/custom" element={<StoreLayout><SeoLandingPage/></StoreLayout>}/>
+            <Route path="/custom/:slug" element={<StoreLayout><SeoLandingPage/></StoreLayout>}/>
             <Route path="/blog" element={<StoreLayout><BlogListPage/></StoreLayout>}/>
             <Route path="/blog/:slug" element={<StoreLayout><BlogDetailPage/></StoreLayout>}/>
             <Route path="/collection/:slug" element={<StoreLayout><CollectionDetailPage/></StoreLayout>}/>
