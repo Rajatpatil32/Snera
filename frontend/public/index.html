@@ -151,7 +151,13 @@
       "publisher": { "@id": "https://snera.in/#organization" }
     }
     </script>
-  </head>
+    <link rel="preload" href="/snera-loader.gif" as="image" />
+  <style>
+    :root { --loader-gif: url('/snera-loader.gif'); }
+    #boot-loader { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: #fff; }
+    #boot-loader img { width: 96px; height: 96px; }
+  </style>
+</head>
   <body>
     <!--
       noscript: React is a SPA — crawlers with JS disabled see this.
@@ -166,6 +172,6 @@
         <p><a href="mailto:contact@snera.in">contact@snera.in</a></p>
       </div>
     </noscript>
-    <div id="root"></div>
+    <div id="root"><div id="boot-loader"><img src="/snera-loader.gif" width="96" height="96" alt="Loading SNERA" /></div></div>
   </body>
 </html>

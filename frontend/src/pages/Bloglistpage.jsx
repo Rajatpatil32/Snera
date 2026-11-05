@@ -103,7 +103,7 @@ export default function BlogListPage() {
           {/* Main */}
           <main style={{ flex: 1 }}>
             {loading ? (
-              <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--stone2,#999)' }}>Loading…</div>
+              <div className="page-loader"><div className="loader-ring"/></div>
             ) : blogs.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '4rem' }}>
                 <p style={{ color: 'var(--stone2,#999)', marginBottom: '1rem' }}>No posts found.</p>

@@ -513,6 +513,7 @@ function BlogSection({ blogs }) {
 
 export default function HomePage() {
   const [shelves, setShelves] = useState([]);
+  const [shelvesLoading, setShelvesLoading] = useState(true);
   const [blogs, setBlogs] = useState([]);
 
   useEffect(() => {
@@ -526,7 +527,7 @@ export default function HomePage() {
         )
       );
       setShelves(results.filter(s => s.products.length > 0));
-    });
+    }).catch(() => setShelves([])).finally(() => setShelvesLoading(false));
   }, []);
 
   useEffect(() => {
@@ -699,6 +700,18 @@ export default function HomePage() {
       </div>
 
       {/* ── SHOP BY COLLECTION ───────────────────────────────────────────── */}
+      {/* Products still loading from the backend: loader here only, the rest of the page is already visible */}
+      {shelvesLoading && (
+        <>
+          <section className="sect" style={{ borderTop: '1px solid var(--sand)', background: 'var(--off)' }}>
+            <div className="container">
+              <div className="page-loader" style={{ minHeight: 360 }}><div className="loader-ring" /></div>
+            </div>
+          </section>
+          <PromoVideo />
+        </>
+      )}
+
       {shelves.map((shelf, idx) => (
         <React.Fragment key={shelf.collection._id}>
         <section
@@ -765,6 +778,9 @@ export default function HomePage() {
         {idx === 0 && <PromoVideo />}
         </React.Fragment>
       ))}
+
+      {/* Backend failed or no products: still show the video */}
+      {!shelvesLoading && shelves.length === 0 && <PromoVideo />}
 
       {/* ── DESIGN STUDIO / CONCEPT SECTION ───────────────────────────────── */}
       <ConceptSection />

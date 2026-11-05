@@ -403,11 +403,8 @@ ul { list-style: none; }
   display: flex; align-items: center; justify-content: center;
 }
 .loader-ring {
-  width: 36px; height: 36px;
-  border: 2px solid var(--sand);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin .8s linear infinite;
+  width: 96px; height: 96px;
+  background: var(--loader-gif) center / contain no-repeat; /* path set in public/index.html, so the bundler leaves it alone */
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
