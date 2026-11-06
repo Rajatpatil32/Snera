@@ -10,7 +10,6 @@ const GENDERS = ['Men', 'Women', 'Unisex'];
 const SIZES_ALL = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 const BADGES = ['', 'New', 'Sale'];
 const GLYPHS = ['◈', '◇', '△', '◯', '⬡', '◻', '◆'];
-const MIN_IMAGES = 3; // minimum per colour group
 
 // Popular fashion colours with preset hex
 const COLOUR_PRESETS = [
@@ -109,7 +108,7 @@ function ImgSlot({ url, index, onRemove, onMakePrimary }) {
       ) : (
         <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '.3rem' }}>
           <span style={{ fontSize: '1.2rem', opacity: .18 }}>◈</span>
-          <span style={{ fontSize: '.56rem', color: 'var(--stone)', letterSpacing: '.06em' }}>{index < MIN_IMAGES ? `Req. ${index + 1}` : `Opt. ${index + 1}`}</span>
+          <span style={{ fontSize: '.56rem', color: 'var(--stone)', letterSpacing: '.06em' }}>{`Image ${index + 1}`}</span>
         </div>
       )}
     </div>
@@ -130,8 +129,6 @@ function ColourGroupCard({
   const [uploading, setUploading] = useState(false);
   const [open, setOpen] = useState(true);
 
-  const pct = Math.min(100, Math.round((group.images.length / MIN_IMAGES) * 100));
-  const needed = Math.max(0, MIN_IMAGES - group.images.length);
 
   const handleFiles = async (files) => {
     const arr = Array.from(files).filter(f => f.type.startsWith('image/'));
@@ -159,8 +156,8 @@ function ColourGroupCard({
     onChange(index, { ...group, soldSizes: s.includes(sz) ? s.filter(x => x !== sz) : [...s, sz] });
   };
 
-  // Slots: always show at least MIN_IMAGES + 1 empty for adding
-  const slots = Array.from({ length: Math.max(MIN_IMAGES + 1, group.images.length + 1) });
+  // Slots: always show at least 4 so there is room to add
+  const slots = Array.from({ length: Math.max(4, group.images.length + 1) });
 
   return (
     <div style={{ border: `1.5px solid ${isDefault ? 'var(--ink)' : 'var(--sand)'}`, background: 'var(--white)', marginBottom: '1rem' }}>
@@ -192,13 +189,10 @@ function ColourGroupCard({
           <span style={{ fontSize: '.62rem', color: isDefault ? 'rgba(255,255,255,.5)' : 'var(--stone)', fontFamily: 'monospace' }}>{group.hex}</span>
         </div>
 
-        {/* Progress bar */}
+        {/* Image count */}
         <div style={{ width: 80 }}>
-          <div style={{ height: 4, background: isDefault ? 'rgba(255,255,255,.2)' : 'var(--sand)', borderRadius: 2, overflow: 'hidden' }}>
-            <div style={{ height: '100%', width: `${pct}%`, background: pct >= 100 ? 'var(--success)' : '#8B7355', transition: 'width .3s' }} />
-          </div>
           <span style={{ fontSize: '.54rem', color: isDefault ? 'rgba(255,255,255,.55)' : 'var(--stone)', marginTop: 2, display: 'block' }}>
-            {group.images.length}/{MIN_IMAGES} images
+            {group.images.length} image{group.images.length !== 1 ? 's' : ''}
           </span>
         </div>
 
@@ -236,7 +230,7 @@ function ColourGroupCard({
               fontSize: '.68rem', color: 'var(--stone2)', transition: 'all .2s',
             }}>
               <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" multiple hidden onChange={e => handleFiles(e.target.files)} />
-              📁 {uploading ? 'Uploading…' : `Direct Upload (${group.images.length} / min ${MIN_IMAGES})`}
+              📁 {uploading ? 'Uploading…' : `Direct Upload (${group.images.length})`}
             </label>
             <button type="button" onClick={() => onOpenComposer(index)} style={{
               flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.5rem',
@@ -260,13 +254,6 @@ function ColourGroupCard({
               />
             ))}
           </div>
-
-          {/* Validation hint */}
-          {needed > 0 && (
-            <p style={{ fontSize: '.66rem', color: 'var(--accent)', margin: 0 }}>
-              ⚠ Add {needed} more image{needed !== 1 ? 's' : ''} to this colour
-            </p>
-          )}
 
           {/* Sold-out sizes for this colour */}
           <div>
@@ -434,8 +421,6 @@ export default function AdminProductFormPage() {
   }));
 
   // Validation
-  const groupErrors = form.colorGroups.map(g => g.images.length < MIN_IMAGES);
-  const hasGroupError = groupErrors.some(Boolean);
 
   // Save
   const handleSubmit = async (e) => {
@@ -450,7 +435,6 @@ export default function AdminProductFormPage() {
       if (!form.designColors.length) return setError('Select at least one T-shirt colour');
     } else {
       if (!form.colorGroups.length) return setError('Add at least one colour group with images');
-      if (hasGroupError) return setError(`Each colour needs at least ${MIN_IMAGES} images`);
     }
 
     setSaving(true); setError(''); setSuccess('');
@@ -761,7 +745,7 @@ export default function AdminProductFormPage() {
                 <div>
                   <h3 style={{ fontFamily: 'var(--serif)', fontWeight: 400, fontSize: '1rem' }}>Colour Groups &amp; Images</h3>
                   <p style={{ fontSize: '.68rem', color: 'var(--stone2)', marginTop: '.2rem' }}>
-                    Each colour has its own image set (min {MIN_IMAGES} per colour)
+                    Each colour has its own image set
                   </p>
                 </div>
                 <div style={{ position: 'relative' }}>
@@ -900,10 +884,10 @@ export default function AdminProductFormPage() {
                     <span style={{ fontSize: '.78rem', flex: 1 }}>{g.name || 'Unnamed'}</span>
                     <span style={{
                       fontSize: '.58rem', letterSpacing: '.1em',
-                      color: g.images.length >= MIN_IMAGES ? 'var(--success)' : 'var(--accent)',
+                      color: g.images.length > 0 ? 'var(--success)' : 'var(--stone)',
                       fontWeight: 500,
                     }}>
-                      {g.images.length}/{MIN_IMAGES}
+                      {g.images.length} image{g.images.length !== 1 ? 's' : ''}
                       {g.isDefault && <span style={{ color: 'var(--stone)', marginLeft: '.3rem' }}>· default</span>}
                     </span>
                   </div>
@@ -915,15 +899,10 @@ export default function AdminProductFormPage() {
             <div className="admin-card">
               {error && <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', padding: '.8rem', marginBottom: '1rem', fontSize: '.78rem', color: '#991B1B' }}>{error}</div>}
               {success && <div style={{ background: 'rgba(61,122,86,.08)', border: '1px solid rgba(61,122,86,.3)', padding: '.8rem', marginBottom: '1rem', fontSize: '.78rem', color: 'var(--success)' }}>{success}</div>}
-              {hasGroupError && (
-                <div style={{ background: 'rgba(139,115,85,.08)', border: '1px solid rgba(139,115,85,.25)', padding: '.75rem', marginBottom: '1rem', fontSize: '.72rem', color: 'var(--accent)', lineHeight: 1.6 }}>
-                  Each colour group needs at least {MIN_IMAGES} images.
-                </div>
-              )}
               <button
                 type="submit" className="btn btn-dark"
-                style={{ width: '100%', justifyContent: 'center', opacity: (saving || hasGroupError) ? 0.6 : 1 }}
-                disabled={saving || hasGroupError}
+                style={{ width: '100%', justifyContent: 'center', opacity: saving ? 0.6 : 1 }}
+                disabled={saving}
               >
                 {saving ? 'Saving…' : isEdit ? 'Update Product' : 'Create Product'}
               </button>

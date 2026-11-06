@@ -155,7 +155,7 @@
   <style>
     :root { --loader-gif: url('/snera-loader.gif'); }
     #boot-loader { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: #fff; }
-    #boot-loader img { width: 96px; height: 96px; }
+    #boot-loader img { width: clamp(140px, 34vmin, 300px); height: clamp(140px, 34vmin, 300px); }
   </style>
 </head>
   <body>
@@ -172,6 +172,6 @@
         <p><a href="mailto:contact@snera.in">contact@snera.in</a></p>
       </div>
     </noscript>
-    <div id="root"><div id="boot-loader"><img src="/snera-loader.gif" width="96" height="96" alt="Loading SNERA" /></div></div>
+    <div id="root"><div id="boot-loader"><img src="/snera-loader.gif" width="300" height="300" alt="Loading SNERA" /></div></div>
   </body>
 </html>

@@ -401,10 +401,18 @@ ul { list-style: none; }
 .page-loader {
   min-height: 60vh;
   display: flex; align-items: center; justify-content: center;
+  position: relative;
 }
+/* Loader alone (e.g. admin/pages without a loader box): scales with the screen */
 .loader-ring {
-  width: 96px; height: 96px;
+  width: clamp(120px, 40vmin, 300px); height: clamp(120px, 40vmin, 300px);
   background: var(--loader-gif) center / contain no-repeat; /* path set in public/index.html, so the bundler leaves it alone */
+}
+/* Inside a .page-loader box: sized from that box (small box = small loader),
+   capped by the screen size, and always centred */
+.page-loader > .loader-ring {
+  position: absolute; inset: 0; margin: auto; width: 100%;
+  height: min(86%, clamp(160px, 60vmin, 320px)); pointer-events: none;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 

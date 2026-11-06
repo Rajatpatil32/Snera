@@ -23,7 +23,6 @@ function parseCSV(text) {
 }
 
 const REQUIRED   = ['name', 'price', 'category', 'description'];
-const MIN_IMAGES = 3;
 
 // Every field the Product model supports — use TRUE/FALSE for booleans
 const SAMPLE_CSV = `name,price,comparePrice,category,gender,description,fabric,careInstructions,sizes,sizePricing,soldSizes,tags,badge,glyph,weight,isActive,isFeatured,seo.metaTitle,seo.metaDescription,seo.focusKeyword,seo.keywords,seo.ogTitle,seo.ogDescription,seo.canonicalUrl,seo.noIndex
@@ -82,7 +81,7 @@ function ImgSlot({ url, index, onRemove, onMakePrimary }) {
       ) : (
         <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '.3rem' }}>
           <span style={{ fontSize: '1.2rem', opacity: .18 }}>◈</span>
-          <span style={{ fontSize: '.56rem', color: 'var(--stone)', letterSpacing: '.06em' }}>{index < MIN_IMAGES ? `Req. ${index + 1}` : `Opt. ${index + 1}`}</span>
+          <span style={{ fontSize: '.56rem', color: 'var(--stone)', letterSpacing: '.06em' }}>{`Image ${index + 1}`}</span>
         </div>
       )}
     </div>
@@ -96,8 +95,6 @@ function ColourGroupCard({ group, index, isDefault, totalGroups, onChange, onDel
   const [open, setOpen]           = useState(true);
   const [showPreset, setShowPreset] = useState(false);
 
-  const pct    = Math.min(100, Math.round((group.images.length / MIN_IMAGES) * 100));
-  const needed = Math.max(0, MIN_IMAGES - group.images.length);
 
   // ── Direct upload ──
   const handleFiles = async (files) => {
@@ -121,7 +118,7 @@ function ColourGroupCard({ group, index, isDefault, totalGroups, onChange, onDel
     onChange(index, { ...group, images: imgs });
   };
 
-  const slots = Array.from({ length: Math.max(MIN_IMAGES + 1, group.images.length + 1) });
+  const slots = Array.from({ length: Math.max(4, group.images.length + 1) });
 
   return (
     <div style={{ border: `1.5px solid ${isDefault ? 'var(--ink)' : 'var(--sand)'}`, background: 'var(--white)', marginBottom: '1rem' }}>
@@ -145,13 +142,10 @@ function ColourGroupCard({ group, index, isDefault, totalGroups, onChange, onDel
           <span style={{ fontSize: '.62rem', color: isDefault ? 'rgba(255,255,255,.5)' : 'var(--stone)', fontFamily: 'monospace' }}>{group.hex}</span>
         </div>
 
-        {/* Progress */}
+        {/* Image count */}
         <div style={{ width: 80 }}>
-          <div style={{ height: 4, background: isDefault ? 'rgba(255,255,255,.2)' : 'var(--sand)', borderRadius: 2, overflow: 'hidden' }}>
-            <div style={{ height: '100%', width: `${pct}%`, background: pct >= 100 ? 'var(--success)' : '#8B7355', transition: 'width .3s' }} />
-          </div>
           <span style={{ fontSize: '.54rem', color: isDefault ? 'rgba(255,255,255,.55)' : 'var(--stone)', marginTop: 2, display: 'block' }}>
-            {group.images.length}/{MIN_IMAGES} images
+            {group.images.length} image{group.images.length !== 1 ? 's' : ''}
           </span>
         </div>
 
@@ -195,7 +189,7 @@ function ColourGroupCard({ group, index, isDefault, totalGroups, onChange, onDel
                 hidden
                 onChange={e => handleFiles(e.target.files)}
               />
-              📁 {uploading ? 'Uploading…' : `Direct Upload (${group.images.length} / min ${MIN_IMAGES})`}
+              📁 {uploading ? 'Uploading…' : `Direct Upload (${group.images.length})`}
             </label>
 
             {/* Option 2: Design Composer — opens ProductDesignComposer via parent */}
@@ -228,12 +222,6 @@ function ColourGroupCard({ group, index, isDefault, totalGroups, onChange, onDel
               />
             ))}
           </div>
-
-          {needed > 0 && (
-            <p style={{ fontSize: '.66rem', color: 'var(--accent)', margin: 0 }}>
-              ⚠ Add {needed} more image{needed !== 1 ? 's' : ''} to this colour
-            </p>
-          )}
         </div>
       )}
     </div>
@@ -280,7 +268,6 @@ function ImageDialog({ product, onDone, onSkip }) {
   };
 
   const totalImages = colorGroups.reduce((s, g) => s + g.images.length, 0);
-  const hasEnough   = colorGroups.every(g => g.images.length >= MIN_IMAGES);
 
   const handleSave = async () => {
     setSaving(true);
@@ -308,7 +295,7 @@ function ImageDialog({ product, onDone, onSkip }) {
           </p>
           <h2 style={{ fontFamily: 'var(--serif)', fontWeight: 400, fontSize: '1.5rem' }}>{product.name}</h2>
           <p style={{ fontSize: '.75rem', color: 'var(--stone2)', marginTop: '.3rem' }}>
-            Add colour groups with at least {MIN_IMAGES} images each — same as the product form.
+            Add colour groups and their images — same as the product form.
           </p>
         </div>
 
@@ -366,10 +353,8 @@ function ImageDialog({ product, onDone, onSkip }) {
         </div>
 
         {/* Summary */}
-        <p style={{ fontSize: '.72rem', color: hasEnough ? 'var(--success)' : 'var(--accent)', marginBottom: '1.25rem' }}>
-          {hasEnough
-            ? `✅ ${totalImages} images across ${colorGroups.length} colour${colorGroups.length > 1 ? 's' : ''} — ready to save`
-            : `⚠ Each colour needs at least ${MIN_IMAGES} images`}
+        <p style={{ fontSize: '.72rem', color: 'var(--success)', marginBottom: '1.25rem' }}>
+          {`✅ ${totalImages} images across ${colorGroups.length} colour${colorGroups.length > 1 ? 's' : ''} — ready to save`}
         </p>
 
         {/* Actions */}
